@@ -1,0 +1,30 @@
+services:
+  microscope-01:
+    image: dperson/samba
+    environment:
+      USER: "labuser;labpass"
+      SHARE: "microscope;/data;yes;no;no;labuser"
+    volumes:
+      - ./instruments/microscope-01/sample_data:/data
+    ports:
+      - "4451:445"
+
+  spectrometer-01:
+    image: dperson/samba
+    environment:
+      USER: "labuser;labpass"
+      SHARE: "spectrometer;/data;yes;no;no;labuser"
+    volumes:
+      - ./instruments/spectrometer-01/sample_data:/data
+    ports:
+      - "4452:445"
+
+  xray-diffraction-01:
+    image: dperson/samba
+    environment:
+      USER: "labuser;labpass"
+      SHARE: "xrd;/data;yes;no;no;labuser"
+    volumes:
+      - ./instruments/xray-diffraction-01/sample_data:/data
+    ports:
+      - "4453:445"

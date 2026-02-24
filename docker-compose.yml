@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: streamweave
+      POSTGRES_PASSWORD: streamweave
+      POSTGRES_DB: streamweave
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U streamweave"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://streamweave:streamweave@postgres:5432/streamweave
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
+      ARK_NAAN: ${ARK_NAAN:-99999}
+      ARK_SHOULDER: ${ARK_SHOULDER:-fk4}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pgdata:

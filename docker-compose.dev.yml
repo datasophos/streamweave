@@ -1,0 +1,18 @@
+services:
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://streamweave:streamweave@postgres:5432/streamweave
+      SECRET_KEY: dev-secret-key
+      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"

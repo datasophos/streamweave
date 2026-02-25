@@ -81,7 +81,8 @@ class TestGroupMembers:
 
         # List members
         resp = await client.get(
-            f"/api/groups/{group.id}/members", headers=admin_headers,
+            f"/api/groups/{group.id}/members",
+            headers=admin_headers,
         )
         assert resp.status_code == 200
         assert len(resp.json()) == 1

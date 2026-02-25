@@ -52,23 +52,27 @@ class TestIncludePatterns:
 class TestRedirectRules:
     @pytest.mark.asyncio
     async def test_redirect_by_pattern(self):
-        hook = FileFilterHook(config={
-            "redirect_rules": [
-                {"pattern": "*.raw", "destination": "/storage/restricted"},
-            ]
-        })
+        hook = FileFilterHook(
+            config={
+                "redirect_rules": [
+                    {"pattern": "*.raw", "destination": "/storage/restricted"},
+                ]
+            }
+        )
         result = await hook.execute(_ctx("sample.raw"))
         assert result.action == HookAction.redirect
         assert result.redirect_path == "/storage/restricted"
 
     @pytest.mark.asyncio
     async def test_redirect_takes_priority_over_exclude(self):
-        hook = FileFilterHook(config={
-            "redirect_rules": [
-                {"pattern": "*.raw", "destination": "/alt"},
-            ],
-            "exclude_patterns": ["*.raw"],
-        })
+        hook = FileFilterHook(
+            config={
+                "redirect_rules": [
+                    {"pattern": "*.raw", "destination": "/alt"},
+                ],
+                "exclude_patterns": ["*.raw"],
+            }
+        )
         result = await hook.execute(_ctx("sample.raw"))
         assert result.action == HookAction.redirect
 

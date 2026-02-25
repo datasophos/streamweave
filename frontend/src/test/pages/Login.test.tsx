@@ -20,7 +20,7 @@ describe('Login page', () => {
       http.post(`${TEST_BASE}/auth/jwt/login`, async ({ request }) => {
         capturedBody = new URLSearchParams(await request.text())
         return HttpResponse.json({ access_token: 'tok', token_type: 'bearer' })
-      }),
+      })
     )
     // Override /users/me to return a user so auth completes
     server.use(http.get(`${TEST_BASE}/users/me`, () => new HttpResponse(null, { status: 401 })))
@@ -41,7 +41,7 @@ describe('Login page', () => {
       http.post(`${TEST_BASE}/auth/jwt/login`, async () => {
         await new Promise((r) => setTimeout(r, 200))
         return HttpResponse.json({ access_token: 'tok', token_type: 'bearer' })
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Login />)
@@ -57,7 +57,7 @@ describe('Login page', () => {
   it('shows fallback error message on login failure (no detail)', async () => {
     // Return a bare 400 so ErrorMessage uses the fallback "Invalid credentials."
     server.use(
-      http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 })),
+      http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 }))
     )
 
     const { user } = renderWithProviders(<Login />)
@@ -73,8 +73,8 @@ describe('Login page', () => {
   it('shows detail from API response when present', async () => {
     server.use(
       http.post(`${TEST_BASE}/auth/jwt/login`, () =>
-        HttpResponse.json({ detail: 'LOGIN_BAD_CREDENTIALS' }, { status: 400 }),
-      ),
+        HttpResponse.json({ detail: 'LOGIN_BAD_CREDENTIALS' }, { status: 400 })
+      )
     )
 
     const { user } = renderWithProviders(<Login />)
@@ -89,7 +89,7 @@ describe('Login page', () => {
 
   it('button is re-enabled after error', async () => {
     server.use(
-      http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 })),
+      http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 }))
     )
 
     const { user } = renderWithProviders(<Login />)

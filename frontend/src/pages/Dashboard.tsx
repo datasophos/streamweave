@@ -72,11 +72,13 @@ export function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {isAdmin && (
-          <StatCard label="Instruments" value={instruments?.length ?? '—'} />
-        )}
+        {isAdmin && <StatCard label="Instruments" value={instruments?.length ?? '—'} />}
         <StatCard label="Total Files" value={files?.length ?? '—'} />
-        <StatCard label="Transfers" value={transfers?.length ?? '—'} sub={`${completed} completed`} />
+        <StatCard
+          label="Transfers"
+          value={transfers?.length ?? '—'}
+          sub={`${completed} completed`}
+        />
         <StatCard label="In Progress" value={inProgress} />
         <StatCard label="Failed" value={failed} />
       </div>
@@ -92,14 +94,24 @@ export function Dashboard() {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bytes</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  ID
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Bytes
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Started
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
-              {recent.map((t) => <TransferRow key={t.id} t={t} />)}
+              {recent.map((t) => (
+                <TransferRow key={t.id} t={t} />
+              ))}
             </tbody>
           </table>
         )}
@@ -114,10 +126,18 @@ export function Dashboard() {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Host</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adapter</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Host
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Adapter
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">

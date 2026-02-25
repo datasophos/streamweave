@@ -20,11 +20,13 @@ def _ctx(metadata: dict | None = None) -> HookContext:
 class TestAccessAssignment:
     @pytest.mark.asyncio
     async def test_literal_grant(self):
-        hook = AccessAssignmentHook(config={
-            "grants": [
-                {"grantee_type": "user", "match_field": "abc-123", "source": "literal"},
-            ]
-        })
+        hook = AccessAssignmentHook(
+            config={
+                "grants": [
+                    {"grantee_type": "user", "match_field": "abc-123", "source": "literal"},
+                ]
+            }
+        )
         result = await hook.execute(_ctx())
         assert result.action == HookAction.proceed
         assert len(result.access_grants) == 1
@@ -33,11 +35,13 @@ class TestAccessAssignment:
 
     @pytest.mark.asyncio
     async def test_metadata_grant(self):
-        hook = AccessAssignmentHook(config={
-            "grants": [
-                {"grantee_type": "user", "match_field": "username", "source": "metadata"},
-            ]
-        })
+        hook = AccessAssignmentHook(
+            config={
+                "grants": [
+                    {"grantee_type": "user", "match_field": "username", "source": "metadata"},
+                ]
+            }
+        )
         result = await hook.execute(_ctx(metadata={"username": "jdoe"}))
         assert len(result.access_grants) == 1
         assert result.access_grants[0]["grantee_type"] == "user"
@@ -46,11 +50,13 @@ class TestAccessAssignment:
 
     @pytest.mark.asyncio
     async def test_metadata_grant_missing_key(self):
-        hook = AccessAssignmentHook(config={
-            "grants": [
-                {"grantee_type": "user", "match_field": "username", "source": "metadata"},
-            ]
-        })
+        hook = AccessAssignmentHook(
+            config={
+                "grants": [
+                    {"grantee_type": "user", "match_field": "username", "source": "metadata"},
+                ]
+            }
+        )
         result = await hook.execute(_ctx(metadata={}))
         assert len(result.access_grants) == 0
 
@@ -63,11 +69,13 @@ class TestAccessAssignment:
 
     @pytest.mark.asyncio
     async def test_multiple_grants(self):
-        hook = AccessAssignmentHook(config={
-            "grants": [
-                {"grantee_type": "user", "match_field": "user-id-1", "source": "literal"},
-                {"grantee_type": "group", "match_field": "team_name", "source": "metadata"},
-            ]
-        })
+        hook = AccessAssignmentHook(
+            config={
+                "grants": [
+                    {"grantee_type": "user", "match_field": "user-id-1", "source": "literal"},
+                    {"grantee_type": "group", "match_field": "team_name", "source": "metadata"},
+                ]
+            }
+        )
         result = await hook.execute(_ctx(metadata={"team_name": "Lab A"}))
         assert len(result.access_grants) == 2

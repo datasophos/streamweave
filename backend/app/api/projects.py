@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
-from app.models.project import MemberType, Project, ProjectMembership
+from app.models.project import Project, ProjectMembership
 from app.models.user import User
 from app.schemas.project import (
     ProjectCreate,

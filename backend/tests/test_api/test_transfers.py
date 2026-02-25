@@ -1,7 +1,7 @@
 """Tests for the file transfers read API."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import pytest_asyncio
@@ -17,19 +17,25 @@ from app.services.credentials import encrypt_value
 async def transfer_data(db_session):
     """Create instrument, file, storage, and transfer records."""
     sa = ServiceAccount(
-        name="test-sa", domain="WORKGROUP",
-        username="user", password_encrypted=encrypt_value("pass"),
+        name="test-sa",
+        domain="WORKGROUP",
+        username="user",
+        password_encrypted=encrypt_value("pass"),
     )
     storage = StorageLocation(
-        name="Test Storage", type=StorageType.posix,
-        base_path="/tmp/test", connection_config={}, enabled=True,
+        name="Test Storage",
+        type=StorageType.posix,
+        base_path="/tmp/test",
+        connection_config={},
+        enabled=True,
     )
     db_session.add_all([sa, storage])
     await db_session.flush()
 
     instrument = Instrument(
         name="Test Microscope",
-        cifs_host="test-host", cifs_share="test-share",
+        cifs_host="test-host",
+        cifs_share="test-share",
         service_account_id=sa.id,
         transfer_adapter=TransferAdapterType.rclone,
         enabled=True,
@@ -44,7 +50,7 @@ async def transfer_data(db_session):
         source_path="exp/image.tif",
         filename="image.tif",
         size_bytes=2048,
-        first_discovered_at=datetime.now(timezone.utc),
+        first_discovered_at=datetime.now(UTC),
     )
     db_session.add(file_record)
     await db_session.flush()
@@ -58,8 +64,8 @@ async def transfer_data(db_session):
         bytes_transferred=2048,
         dest_checksum="abc123",
         checksum_verified=True,
-        started_at=datetime.now(timezone.utc),
-        completed_at=datetime.now(timezone.utc),
+        started_at=datetime.now(UTC),
+        completed_at=datetime.now(UTC),
     )
     db_session.add(transfer)
     await db_session.flush()
@@ -81,7 +87,11 @@ class TestListTransfers:
 
     @pytest.mark.asyncio
     async def test_user_sees_accessible(
-        self, client, regular_headers, transfer_data, grant_file_access,
+        self,
+        client,
+        regular_headers,
+        transfer_data,
+        grant_file_access,
     ):
         data = transfer_data
         await grant_file_access(data["file"].id)
@@ -91,7 +101,10 @@ class TestListTransfers:
 
     @pytest.mark.asyncio
     async def test_user_sees_nothing_without_access(
-        self, client, regular_headers, transfer_data,
+        self,
+        client,
+        regular_headers,
+        transfer_data,
     ):
         resp = await client.get("/api/transfers", headers=regular_headers)
         assert resp.status_code == 200
@@ -113,29 +126,39 @@ class TestGetTransfer:
     async def test_admin_gets_transfer(self, client, admin_headers, transfer_data):
         data = transfer_data
         resp = await client.get(
-            f"/api/transfers/{data['transfer'].id}", headers=admin_headers,
+            f"/api/transfers/{data['transfer'].id}",
+            headers=admin_headers,
         )
         assert resp.status_code == 200
         assert resp.json()["status"] == "completed"
 
     @pytest.mark.asyncio
     async def test_user_gets_accessible_transfer(
-        self, client, regular_headers, transfer_data, grant_file_access,
+        self,
+        client,
+        regular_headers,
+        transfer_data,
+        grant_file_access,
     ):
         data = transfer_data
         await grant_file_access(data["file"].id)
         resp = await client.get(
-            f"/api/transfers/{data['transfer'].id}", headers=regular_headers,
+            f"/api/transfers/{data['transfer'].id}",
+            headers=regular_headers,
         )
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_user_gets_404_without_access(
-        self, client, regular_headers, transfer_data,
+        self,
+        client,
+        regular_headers,
+        transfer_data,
     ):
         data = transfer_data
         resp = await client.get(
-            f"/api/transfers/{data['transfer'].id}", headers=regular_headers,
+            f"/api/transfers/{data['transfer'].id}",
+            headers=regular_headers,
         )
         assert resp.status_code == 404
 

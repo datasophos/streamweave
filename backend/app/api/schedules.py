@@ -88,9 +88,7 @@ async def update_schedule(
     await db.refresh(schedule)
 
     # Best-effort Prefect deployment update
-    if schedule.prefect_deployment_id and (
-        "cron_expression" in updates or "enabled" in updates
-    ):
+    if schedule.prefect_deployment_id and ("cron_expression" in updates or "enabled" in updates):
         try:
             prefect_svc = PrefectClientService()
             await prefect_svc.update_deployment(

@@ -25,8 +25,7 @@ export function useCreateHookConfig() {
 export function useUpdateHookConfig() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: HookConfigUpdate }) =>
-      hooksApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: HookConfigUpdate }) => hooksApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

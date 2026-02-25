@@ -9,9 +9,7 @@ import { Dashboard } from '@/pages/Dashboard'
 function setupAuth(admin = false) {
   setupAuthToken()
   server.use(
-    http.get(`${TEST_BASE}/users/me`, () =>
-      HttpResponse.json(admin ? makeAdminUser() : makeUser()),
-    ),
+    http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(admin ? makeAdminUser() : makeUser()))
   )
 }
 
@@ -47,8 +45,8 @@ describe('Dashboard', () => {
           makeTransfer({ id: '2', status: 'completed' }),
           makeTransfer({ id: '3', status: 'failed' }),
           makeTransfer({ id: '4', status: 'in_progress' }),
-        ]),
-      ),
+        ])
+      )
     )
 
     renderWithProviders(<Dashboard />)
@@ -77,7 +75,7 @@ describe('Dashboard', () => {
     setupAuth()
     // Use hex-padded UUIDs so id.slice(0,8) produces exactly 8 hex chars
     const transfers = Array.from({ length: 15 }, (_, i) =>
-      makeTransfer({ id: `${i.toString(16).padStart(8, '0')}-0000-0000-0000-000000000000` }),
+      makeTransfer({ id: `${i.toString(16).padStart(8, '0')}-0000-0000-0000-000000000000` })
     )
     server.use(http.get(`${TEST_BASE}/api/transfers`, () => HttpResponse.json(transfers)))
 
@@ -94,8 +92,8 @@ describe('Dashboard', () => {
     setupAuth(true)
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Bruker NMR' })]),
-      ),
+        HttpResponse.json([makeInstrument({ name: 'Bruker NMR' })])
+      )
     )
 
     renderWithProviders(<Dashboard />)

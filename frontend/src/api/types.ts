@@ -245,7 +245,7 @@ export interface GroupCreate {
 
 // Auth types
 export interface LoginCredentials {
-  username: string  // fastapi-users uses "username" for email in OAuth2 form
+  username: string // fastapi-users uses "username" for email in OAuth2 form
   password: string
 }
 

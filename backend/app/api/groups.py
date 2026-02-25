@@ -3,7 +3,6 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.api.deps import get_db, require_admin
 from app.models.group import Group, GroupMembership
@@ -92,9 +91,7 @@ async def list_group_members(
     group = await db.get(Group, group_id)
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
-    result = await db.execute(
-        select(GroupMembership).where(GroupMembership.group_id == group_id)
-    )
+    result = await db.execute(select(GroupMembership).where(GroupMembership.group_id == group_id))
     return result.scalars().all()
 
 

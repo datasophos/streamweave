@@ -9,7 +9,7 @@ from app.models.base import Base, UUIDPrimaryKey
 from app.models.instrument import TransferAdapterType
 
 
-class TransferStatus(str, enum.Enum):
+class TransferStatus(enum.StrEnum):
     pending = "pending"
     in_progress = "in_progress"
     completed = "completed"

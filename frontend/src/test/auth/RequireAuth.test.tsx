@@ -10,10 +10,12 @@ describe('RequireAuth guard', () => {
   it('renders a spinner while auth is loading', () => {
     setupAuthToken()
     // Delay the response so isLoading stays true during the synchronous check
-    server.use(http.get(`${TEST_BASE}/users/me`, async () => {
-      await new Promise((r) => setTimeout(r, 500))
-      return HttpResponse.json(makeUser())
-    }))
+    server.use(
+      http.get(`${TEST_BASE}/users/me`, async () => {
+        await new Promise((r) => setTimeout(r, 500))
+        return HttpResponse.json(makeUser())
+      })
+    )
 
     renderWithProviders(<App />, { routerProps: { initialEntries: ['/'] } })
 

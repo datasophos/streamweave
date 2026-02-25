@@ -27,9 +27,7 @@ async def list_file_access(
     _: User = Depends(require_admin),
 ):
     await _get_file_or_404(file_id, db)
-    result = await db.execute(
-        select(FileAccessGrant).where(FileAccessGrant.file_id == file_id)
-    )
+    result = await db.execute(select(FileAccessGrant).where(FileAccessGrant.file_id == file_id))
     return result.scalars().all()
 
 

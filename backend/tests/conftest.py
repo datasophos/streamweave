@@ -60,9 +60,10 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
 @pytest_asyncio.fixture
 async def admin_user(db_session: AsyncSession) -> User:
+    from fastapi_users.db import SQLAlchemyUserDatabase
+
     from app.auth.setup import UserManager
     from app.schemas.user import UserCreate
-    from fastapi_users.db import SQLAlchemyUserDatabase
 
     user_db = SQLAlchemyUserDatabase(db_session, User)
     user_manager = UserManager(user_db)
@@ -94,9 +95,10 @@ def admin_headers(admin_token: str) -> dict[str, str]:
 
 @pytest_asyncio.fixture
 async def regular_user(db_session: AsyncSession) -> User:
+    from fastapi_users.db import SQLAlchemyUserDatabase
+
     from app.auth.setup import UserManager
     from app.schemas.user import UserCreate
-    from fastapi_users.db import SQLAlchemyUserDatabase
 
     user_db = SQLAlchemyUserDatabase(db_session, User)
     user_manager = UserManager(user_db)

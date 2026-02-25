@@ -35,8 +35,11 @@ class TestRemotePath:
 
     def test_custom_base_path(self):
         a = RcloneAdapter(
-            smb_host="h", smb_share="s", smb_base_path="/export/data",
-            smb_user="u", smb_password="p",
+            smb_host="h",
+            smb_share="s",
+            smb_base_path="/export/data",
+            smb_user="u",
+            smb_password="p",
         )
         assert a._remote_path("file.txt") == ":smb:/export/data/file.txt"
 
@@ -55,28 +58,30 @@ class TestBaseFlags:
 class TestDiscover:
     @pytest.mark.asyncio
     async def test_parses_lsjson_output(self, adapter):
-        lsjson_output = json.dumps([
-            {
-                "Path": "experiment_001/image_001.tif",
-                "Name": "image_001.tif",
-                "Size": 1048576,
-                "ModTime": "2026-02-20T10:30:00Z",
-                "IsDir": False,
-            },
-            {
-                "Path": "experiment_001",
-                "Name": "experiment_001",
-                "Size": 0,
-                "IsDir": True,
-            },
-            {
-                "Path": "experiment_001/notes.txt",
-                "Name": "notes.txt",
-                "Size": 256,
-                "ModTime": "2026-02-20T11:00:00Z",
-                "IsDir": False,
-            },
-        ])
+        lsjson_output = json.dumps(
+            [
+                {
+                    "Path": "experiment_001/image_001.tif",
+                    "Name": "image_001.tif",
+                    "Size": 1048576,
+                    "ModTime": "2026-02-20T10:30:00Z",
+                    "IsDir": False,
+                },
+                {
+                    "Path": "experiment_001",
+                    "Name": "experiment_001",
+                    "Size": 0,
+                    "IsDir": True,
+                },
+                {
+                    "Path": "experiment_001/notes.txt",
+                    "Name": "notes.txt",
+                    "Size": 256,
+                    "ModTime": "2026-02-20T11:00:00Z",
+                    "IsDir": False,
+                },
+            ]
+        )
 
         with patch.object(adapter, "_run", new_callable=AsyncMock) as mock_run:
             mock_run.return_value = (0, lsjson_output, "")

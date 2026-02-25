@@ -100,7 +100,8 @@ class TestProjectMembers:
             headers=admin_headers,
         )
         resp = await client.get(
-            f"/api/projects/{project.id}/members", headers=admin_headers,
+            f"/api/projects/{project.id}/members",
+            headers=admin_headers,
         )
         assert resp.status_code == 200
         assert len(resp.json()) == 1
@@ -109,10 +110,14 @@ class TestProjectMembers:
     async def test_add_duplicate_member(self, client, admin_headers, project, regular_user):
         payload = {"member_type": "user", "member_id": str(regular_user.id)}
         await client.post(
-            f"/api/projects/{project.id}/members", json=payload, headers=admin_headers,
+            f"/api/projects/{project.id}/members",
+            json=payload,
+            headers=admin_headers,
         )
         resp = await client.post(
-            f"/api/projects/{project.id}/members", json=payload, headers=admin_headers,
+            f"/api/projects/{project.id}/members",
+            json=payload,
+            headers=admin_headers,
         )
         assert resp.status_code == 409
 

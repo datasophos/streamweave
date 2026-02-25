@@ -26,7 +26,7 @@ export function makeTestQueryClient() {
 
 export function renderWithProviders(
   ui: ReactNode,
-  { routerProps, ...options }: RenderWithProvidersOptions = {},
+  { routerProps, ...options }: RenderWithProvidersOptions = {}
 ) {
   const queryClient = makeTestQueryClient()
 
@@ -53,5 +53,6 @@ export function setupAuthToken() {
 }
 
 // Re-export everything so tests only import from one place
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react'
 export { userEvent }

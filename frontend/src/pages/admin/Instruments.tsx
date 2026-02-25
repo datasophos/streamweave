@@ -12,7 +12,12 @@ import {
   useCreateServiceAccount,
   useDeleteServiceAccount,
 } from '@/hooks/useInstruments'
-import type { Instrument, ServiceAccount, InstrumentCreate, ServiceAccountCreate } from '@/api/types'
+import type {
+  Instrument,
+  ServiceAccount,
+  InstrumentCreate,
+  ServiceAccountCreate,
+} from '@/api/types'
 
 type ModalState =
   | { kind: 'none' }
@@ -47,54 +52,117 @@ function InstrumentForm({
     enabled: initial?.enabled ?? true,
   })
 
-  const set = (k: keyof InstrumentCreate, v: unknown) =>
-    setForm((f) => ({ ...f, [k]: v }))
+  const set = (k: keyof InstrumentCreate, v: unknown) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
     <form
-      onSubmit={(e) => { e.preventDefault(); onSubmit(form) }}
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSubmit(form)
+      }}
       className="space-y-4"
     >
       {error != null && <ErrorMessage error={error} />}
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <label htmlFor="inst-name" className="label">Name *</label>
-          <input id="inst-name" className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
+          <label htmlFor="inst-name" className="label">
+            Name *
+          </label>
+          <input
+            id="inst-name"
+            className="input"
+            required
+            value={form.name}
+            onChange={(e) => set('name', e.target.value)}
+          />
         </div>
         <div className="col-span-2">
-          <label htmlFor="inst-description" className="label">Description</label>
-          <input id="inst-description" className="input" value={form.description ?? ''} onChange={(e) => set('description', e.target.value)} />
+          <label htmlFor="inst-description" className="label">
+            Description
+          </label>
+          <input
+            id="inst-description"
+            className="input"
+            value={form.description ?? ''}
+            onChange={(e) => set('description', e.target.value)}
+          />
         </div>
         <div>
-          <label htmlFor="inst-location" className="label">Location</label>
-          <input id="inst-location" className="input" value={form.location ?? ''} onChange={(e) => set('location', e.target.value)} />
+          <label htmlFor="inst-location" className="label">
+            Location
+          </label>
+          <input
+            id="inst-location"
+            className="input"
+            value={form.location ?? ''}
+            onChange={(e) => set('location', e.target.value)}
+          />
         </div>
         <div>
-          <label htmlFor="inst-cifs-host" className="label">CIFS Host *</label>
-          <input id="inst-cifs-host" className="input" required value={form.cifs_host} onChange={(e) => set('cifs_host', e.target.value)} />
+          <label htmlFor="inst-cifs-host" className="label">
+            CIFS Host *
+          </label>
+          <input
+            id="inst-cifs-host"
+            className="input"
+            required
+            value={form.cifs_host}
+            onChange={(e) => set('cifs_host', e.target.value)}
+          />
         </div>
         <div>
-          <label htmlFor="inst-cifs-share" className="label">CIFS Share *</label>
-          <input id="inst-cifs-share" className="input" required value={form.cifs_share} onChange={(e) => set('cifs_share', e.target.value)} />
+          <label htmlFor="inst-cifs-share" className="label">
+            CIFS Share *
+          </label>
+          <input
+            id="inst-cifs-share"
+            className="input"
+            required
+            value={form.cifs_share}
+            onChange={(e) => set('cifs_share', e.target.value)}
+          />
         </div>
         <div>
-          <label htmlFor="inst-base-path" className="label">Base Path</label>
-          <input id="inst-base-path" className="input" value={form.cifs_base_path ?? ''} onChange={(e) => set('cifs_base_path', e.target.value)} />
+          <label htmlFor="inst-base-path" className="label">
+            Base Path
+          </label>
+          <input
+            id="inst-base-path"
+            className="input"
+            value={form.cifs_base_path ?? ''}
+            onChange={(e) => set('cifs_base_path', e.target.value)}
+          />
         </div>
         <div>
-          <label htmlFor="inst-adapter" className="label">Transfer Adapter</label>
-          <select id="inst-adapter" className="input" value={form.transfer_adapter} onChange={(e) => set('transfer_adapter', e.target.value)}>
+          <label htmlFor="inst-adapter" className="label">
+            Transfer Adapter
+          </label>
+          <select
+            id="inst-adapter"
+            className="input"
+            value={form.transfer_adapter}
+            onChange={(e) => set('transfer_adapter', e.target.value)}
+          >
             <option value="rclone">rclone</option>
             <option value="globus">Globus</option>
             <option value="rsync">rsync</option>
           </select>
         </div>
         <div>
-          <label htmlFor="inst-sa" className="label">Service Account</label>
-          <select id="inst-sa" className="input" value={form.service_account_id ?? ''} onChange={(e) => set('service_account_id', e.target.value || undefined)}>
+          <label htmlFor="inst-sa" className="label">
+            Service Account
+          </label>
+          <select
+            id="inst-sa"
+            className="input"
+            value={form.service_account_id ?? ''}
+            onChange={(e) => set('service_account_id', e.target.value || undefined)}
+          >
             <option value="">— None —</option>
             {serviceAccounts.map((sa) => (
-              <option key={sa.id} value={sa.id}>{sa.name} ({sa.username})</option>
+              <option key={sa.id} value={sa.id}>
+                {sa.name} ({sa.username})
+              </option>
             ))}
           </select>
         </div>
@@ -106,11 +174,15 @@ function InstrumentForm({
             onChange={(e) => set('enabled', e.target.checked)}
             className="rounded border-gray-300"
           />
-          <label htmlFor="enabled" className="text-sm font-medium text-gray-700">Enabled</label>
+          <label htmlFor="enabled" className="text-sm font-medium text-gray-700">
+            Enabled
+          </label>
         </div>
       </div>
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
+        <button type="button" onClick={onCancel} className="btn-secondary">
+          Cancel
+        </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
           {isLoading ? 'Saving…' : 'Save'}
         </button>
@@ -134,26 +206,66 @@ function ServiceAccountForm({
   const set = (k: keyof ServiceAccountCreate, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form) }} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSubmit(form)
+      }}
+      className="space-y-4"
+    >
       {error != null && <ErrorMessage error={error} />}
       <div>
-        <label htmlFor="sa-name" className="label">Name *</label>
-        <input id="sa-name" className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
+        <label htmlFor="sa-name" className="label">
+          Name *
+        </label>
+        <input
+          id="sa-name"
+          className="input"
+          required
+          value={form.name}
+          onChange={(e) => set('name', e.target.value)}
+        />
       </div>
       <div>
-        <label htmlFor="sa-domain" className="label">Domain</label>
-        <input id="sa-domain" className="input" value={form.domain ?? ''} onChange={(e) => set('domain', e.target.value)} />
+        <label htmlFor="sa-domain" className="label">
+          Domain
+        </label>
+        <input
+          id="sa-domain"
+          className="input"
+          value={form.domain ?? ''}
+          onChange={(e) => set('domain', e.target.value)}
+        />
       </div>
       <div>
-        <label htmlFor="sa-username" className="label">Username *</label>
-        <input id="sa-username" className="input" required value={form.username} onChange={(e) => set('username', e.target.value)} />
+        <label htmlFor="sa-username" className="label">
+          Username *
+        </label>
+        <input
+          id="sa-username"
+          className="input"
+          required
+          value={form.username}
+          onChange={(e) => set('username', e.target.value)}
+        />
       </div>
       <div>
-        <label htmlFor="sa-password" className="label">Password *</label>
-        <input id="sa-password" className="input" type="password" required value={form.password} onChange={(e) => set('password', e.target.value)} />
+        <label htmlFor="sa-password" className="label">
+          Password *
+        </label>
+        <input
+          id="sa-password"
+          className="input"
+          type="password"
+          required
+          value={form.password}
+          onChange={(e) => set('password', e.target.value)}
+        />
       </div>
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
+        <button type="button" onClick={onCancel} className="btn-secondary">
+          Cancel
+        </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
           {isLoading ? 'Saving…' : 'Save'}
         </button>
@@ -184,13 +296,19 @@ export function Instruments() {
     {
       header: 'Service Account',
       render: (row: Instrument) =>
-        row.service_account_id ? saMap[row.service_account_id]?.name ?? row.service_account_id : '—',
+        row.service_account_id
+          ? saMap[row.service_account_id]?.name ?? row.service_account_id
+          : '—',
     },
     { header: 'Adapter', key: 'transfer_adapter' as const },
     {
       header: 'Status',
       render: (row: Instrument) =>
-        row.enabled ? <span className="badge-green">Enabled</span> : <span className="badge-gray">Disabled</span>,
+        row.enabled ? (
+          <span className="badge-green">Enabled</span>
+        ) : (
+          <span className="badge-gray">Disabled</span>
+        ),
     },
     {
       header: 'Actions',
@@ -204,7 +322,9 @@ export function Instruments() {
           </button>
           <button
             className="btn btn-sm btn-danger"
-            onClick={() => { if (confirm(`Delete ${row.name}?`)) deleteInst.mutate(row.id) }}
+            onClick={() => {
+              if (confirm(`Delete ${row.name}?`)) deleteInst.mutate(row.id)
+            }}
           >
             Delete
           </button>
@@ -217,13 +337,18 @@ export function Instruments() {
     { header: 'Name', key: 'name' as const },
     { header: 'Domain', render: (sa: ServiceAccount) => sa.domain ?? '—' },
     { header: 'Username', key: 'username' as const },
-    { header: 'Created', render: (sa: ServiceAccount) => new Date(sa.created_at).toLocaleDateString() },
+    {
+      header: 'Created',
+      render: (sa: ServiceAccount) => new Date(sa.created_at).toLocaleDateString(),
+    },
     {
       header: 'Actions',
       render: (sa: ServiceAccount) => (
         <button
           className="btn btn-sm btn-danger"
-          onClick={() => { if (confirm(`Delete ${sa.name}?`)) deleteSA.mutate(sa.id) }}
+          onClick={() => {
+            if (confirm(`Delete ${sa.name}?`)) deleteSA.mutate(sa.id)
+          }}
         >
           Delete
         </button>
@@ -238,7 +363,10 @@ export function Instruments() {
         description="Manage scientific instruments and CIFS service accounts"
         action={
           <div className="flex gap-2">
-            <button className="btn-secondary" onClick={() => setModal({ kind: 'createServiceAccount' })}>
+            <button
+              className="btn-secondary"
+              onClick={() => setModal({ kind: 'createServiceAccount' })}
+            >
               New Service Account
             </button>
             <button className="btn-primary" onClick={() => setModal({ kind: 'createInstrument' })}>

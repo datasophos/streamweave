@@ -86,9 +86,7 @@ class PrefectClientService:
                 current_active = enabled if enabled is not None else True
 
                 if current_cron is None and deployment.schedules:
-                    current_cron = getattr(
-                        deployment.schedules[0].schedule, "cron", "*/15 * * * *"
-                    )
+                    current_cron = getattr(deployment.schedules[0].schedule, "cron", "*/15 * * * *")
 
                 update = DeploymentUpdate(
                     schedules=[

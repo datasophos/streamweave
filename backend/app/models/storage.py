@@ -1,12 +1,12 @@
 import enum
 
-from sqlalchemy import Boolean, Enum, JSON, String, Text
+from sqlalchemy import JSON, Boolean, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
 
 
-class StorageType(str, enum.Enum):
+class StorageType(enum.StrEnum):
     posix = "posix"
     s3 = "s3"
     cifs = "cifs"

@@ -24,8 +24,10 @@ class FileFilterHook(BaseHook):
         for rule in self.config.get("redirect_rules", []):
             pattern = rule.get("pattern", "")
             dest = rule.get("destination", "")
-            if pattern and dest and (
-                fnmatch.fnmatch(filename, pattern) or fnmatch.fnmatch(source_path, pattern)
+            if (
+                pattern
+                and dest
+                and (fnmatch.fnmatch(filename, pattern) or fnmatch.fnmatch(source_path, pattern))
             ):
                 return HookResult(
                     action=HookAction.redirect,

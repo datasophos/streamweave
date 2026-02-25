@@ -25,8 +25,7 @@ export function useCreateUser() {
 export function useUpdateUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UserUpdate }) =>
-      usersApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UserUpdate }) => usersApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

@@ -21,9 +21,7 @@ async def discover_new_files(
         return []
 
     result = await session.execute(
-        select(FileRecord.source_path).where(
-            FileRecord.instrument_id == instrument_id
-        )
+        select(FileRecord.source_path).where(FileRecord.instrument_id == instrument_id)
     )
     known_paths = set(result.scalars().all())
 

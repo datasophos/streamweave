@@ -31,19 +31,23 @@ class AccessAssignmentHook(BaseHook):
                 continue
 
             if source == "literal":
-                access_grants.append({
-                    "grantee_type": grantee_type,
-                    "grantee_id": match_field,
-                })
+                access_grants.append(
+                    {
+                        "grantee_type": grantee_type,
+                        "grantee_id": match_field,
+                    }
+                )
             elif source == "metadata":
                 # Look up the value from context metadata
                 value = context.metadata.get(match_field)
                 if value:
-                    access_grants.append({
-                        "grantee_type": grantee_type,
-                        "resolve_field": match_field,
-                        "resolve_value": value,
-                    })
+                    access_grants.append(
+                        {
+                            "grantee_type": grantee_type,
+                            "resolve_field": match_field,
+                            "resolve_value": value,
+                        }
+                    )
 
         return HookResult(
             action=HookAction.proceed,

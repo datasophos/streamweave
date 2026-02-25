@@ -37,10 +37,16 @@ export function Login() {
         </div>
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign in</h2>
-          {error != null && <div className="mb-4"><ErrorMessage error={error} fallback="Invalid credentials." /></div>}
+          {error != null && (
+            <div className="mb-4">
+              <ErrorMessage error={error} fallback="Invalid credentials." />
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="label">Email address</label>
+              <label htmlFor="email" className="label">
+                Email address
+              </label>
               <input
                 id="email"
                 type="email"
@@ -53,7 +59,9 @@ export function Login() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="label">Password</label>
+              <label htmlFor="password" className="label">
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
@@ -64,11 +72,7 @@ export function Login() {
                 className="input"
               />
             </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary w-full mt-2"
-            >
+            <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
               {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>

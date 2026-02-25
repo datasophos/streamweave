@@ -25,8 +25,8 @@ describe('useInstruments', () => {
     const qc = makeTestQueryClient()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'SAXS Diffractometer' })]),
-      ),
+        HttpResponse.json([makeInstrument({ name: 'SAXS Diffractometer' })])
+      )
     )
 
     const { result } = renderHook(() => useInstruments(), { wrapper: wrapper(qc) })
@@ -43,7 +43,7 @@ describe('useInstruments', () => {
       http.get(`${TEST_BASE}/api/instruments/:id`, () => {
         requestCount++
         return HttpResponse.json(makeInstrument())
-      }),
+      })
     )
 
     renderHook(() => useInstrument(''), { wrapper: wrapper(qc) })
@@ -63,7 +63,7 @@ describe('useCreateInstrument', () => {
       http.post(`${TEST_BASE}/api/instruments`, async ({ request }) => {
         postedBody = await request.json()
         return HttpResponse.json(makeInstrument(), { status: 201 })
-      }),
+      })
     )
 
     const { result } = renderHook(() => useCreateInstrument(), { wrapper: wrapper(qc) })
@@ -78,7 +78,7 @@ describe('useCreateInstrument', () => {
 
     expect((postedBody as { name: string }).name).toBe('New Microscope')
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ['instruments'] }),
+      expect.objectContaining({ queryKey: ['instruments'] })
     )
   })
 })
@@ -92,7 +92,7 @@ describe('useUpdateInstrument', () => {
       http.patch(`${TEST_BASE}/api/instruments/:id`, ({ request }) => {
         patchedUrl = new URL(request.url).pathname
         return HttpResponse.json(makeInstrument({ name: 'Updated' }))
-      }),
+      })
     )
 
     const { result } = renderHook(() => useUpdateInstrument(), { wrapper: wrapper(qc) })
@@ -114,7 +114,7 @@ describe('useDeleteInstrument', () => {
       http.delete(`${TEST_BASE}/api/instruments/:id`, ({ request }) => {
         deletedUrl = new URL(request.url).pathname
         return new HttpResponse(null, { status: 204 })
-      }),
+      })
     )
 
     const { result } = renderHook(() => useDeleteInstrument(), { wrapper: wrapper(qc) })
@@ -123,7 +123,7 @@ describe('useDeleteInstrument', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(deletedUrl).toBe('/api/instruments/inst-uuid-1')
     expect(invalidateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ['instruments'] }),
+      expect.objectContaining({ queryKey: ['instruments'] })
     )
   })
 })

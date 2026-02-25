@@ -87,7 +87,6 @@ async def test_delete_instrument(client: AsyncClient, admin_headers: dict):
 @pytest.mark.asyncio
 async def test_get_nonexistent_instrument(client: AsyncClient, admin_headers: dict):
     import uuid
-    response = await client.get(
-        f"/api/instruments/{uuid.uuid4()}", headers=admin_headers
-    )
+
+    response = await client.get(f"/api/instruments/{uuid.uuid4()}", headers=admin_headers)
     assert response.status_code == 404

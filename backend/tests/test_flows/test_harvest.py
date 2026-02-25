@@ -1,7 +1,6 @@
 """Tests for the harvest flow and tasks."""
 
-import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -85,8 +84,10 @@ class TestDiscoverFilesTask:
         data = seed_data
         discovered = [
             DiscoveredFile(
-                path="exp/image.tif", filename="image.tif",
-                size_bytes=1024, mod_time=datetime.now(timezone.utc),
+                path="exp/image.tif",
+                filename="image.tif",
+                size_bytes=1024,
+                mod_time=datetime.now(UTC),
             ),
         ]
 
@@ -115,7 +116,7 @@ class TestDiscoverFilesTask:
             instrument_id=data["instrument"].id,
             source_path="exp/known.tif",
             filename="known.tif",
-            first_discovered_at=datetime.now(timezone.utc),
+            first_discovered_at=datetime.now(UTC),
         )
         mock_db_session.add(known)
         await mock_db_session.flush()
@@ -238,9 +239,11 @@ class TestTransferSingleFileTask:
             trigger=HookTrigger.post_transfer,
             implementation=HookImplementation.builtin,
             builtin_name="metadata_enrichment",
-            config={"rules": [
-                {"pattern": r"(?P<experiment>exp_\d+)", "source": "path"},
-            ]},
+            config={
+                "rules": [
+                    {"pattern": r"(?P<experiment>exp_\d+)", "source": "path"},
+                ]
+            },
             instrument_id=data["instrument"].id,
             priority=0,
             enabled=True,

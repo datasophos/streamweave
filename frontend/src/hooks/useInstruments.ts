@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { instrumentsApi, serviceAccountsApi } from '@/api/client'
-import type { Instrument, InstrumentCreate, InstrumentUpdate, ServiceAccount, ServiceAccountCreate, ServiceAccountUpdate } from '@/api/types'
+import type {
+  Instrument,
+  InstrumentCreate,
+  InstrumentUpdate,
+  ServiceAccount,
+  ServiceAccountCreate,
+  ServiceAccountUpdate,
+} from '@/api/types'
 
 const INSTRUMENTS_KEY = ['instruments']
 const SERVICE_ACCOUNTS_KEY = ['service-accounts']

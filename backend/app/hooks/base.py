@@ -7,7 +7,7 @@ import enum
 from dataclasses import dataclass, field
 
 
-class HookAction(str, enum.Enum):
+class HookAction(enum.StrEnum):
     proceed = "proceed"
     skip = "skip"
     redirect = "redirect"

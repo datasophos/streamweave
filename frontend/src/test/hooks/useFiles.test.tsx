@@ -25,7 +25,7 @@ describe('useFiles', () => {
       http.get(`${TEST_BASE}/api/files`, ({ request }) => {
         requestUrl = request.url
         return HttpResponse.json([makeFileRecord()])
-      }),
+      })
     )
 
     const { qc, Wrapper } = makeWrapper()
@@ -43,14 +43,13 @@ describe('useFiles', () => {
       http.get(`${TEST_BASE}/api/files`, ({ request }) => {
         capturedSearch = new URL(request.url).search
         return HttpResponse.json([])
-      }),
+      })
     )
 
     const { Wrapper } = makeWrapper()
-    const { result } = renderHook(
-      () => useFiles({ instrument_id: 'inst-abc', status: 'new' }),
-      { wrapper: Wrapper },
-    )
+    const { result } = renderHook(() => useFiles({ instrument_id: 'inst-abc', status: 'new' }), {
+      wrapper: Wrapper,
+    })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(capturedSearch).toContain('instrument_id=inst-abc')
@@ -63,7 +62,7 @@ describe('useFiles', () => {
       http.get(`${TEST_BASE}/api/files`, () => {
         requestCount++
         return HttpResponse.json([])
-      }),
+      })
     )
 
     const { qc, Wrapper } = makeWrapper()

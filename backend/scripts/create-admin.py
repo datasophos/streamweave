@@ -6,17 +6,15 @@ import asyncio
 import getpass
 import sys
 
-from app.config import settings  # noqa: E402
-from app.database import async_session_factory, engine  # noqa: E402
-from app.models import Base  # noqa: E402
+from app.database import async_session_factory  # noqa: E402
 
 
 async def create_admin(email: str, password: str):
     # Import here to avoid circular imports
-    from app.auth.setup import get_user_db, get_user_manager
+    from fastapi_users.exceptions import UserAlreadyExists
+
     from app.models.user import UserRole
     from app.schemas.user import UserCreate
-    from fastapi_users.exceptions import UserAlreadyExists
 
     async with async_session_factory() as session:
         user_db = SQLAlchemyUserDatabase(session, User)
@@ -63,8 +61,9 @@ if __name__ == "__main__":
 
     # Must be run from backend/ directory
     sys.path.insert(0, ".")
+    from fastapi_users.db import SQLAlchemyUserDatabase
+
     from app.auth.setup import UserManager
     from app.models.user import User
-    from fastapi_users.db import SQLAlchemyUserDatabase
 
     asyncio.run(main(email=args.email, password=args.password))

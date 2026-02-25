@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import os
 import pathlib
-from datetime import datetime, timezone
+from datetime import datetime
 
 import xxhash
 
@@ -47,7 +48,9 @@ class RcloneAdapter(TransferAdapter):
         """
         if self._obscured_password is None:
             proc = await asyncio.create_subprocess_exec(
-                self.rclone_binary, "obscure", self.smb_password,
+                self.rclone_binary,
+                "obscure",
+                self.smb_password,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -64,9 +67,12 @@ class RcloneAdapter(TransferAdapter):
 
     def _base_flags(self) -> list[str]:
         return [
-            "--smb-host", self.smb_host,
-            "--smb-user", self.smb_user,
-            "--smb-domain", self.smb_domain,
+            "--smb-host",
+            self.smb_host,
+            "--smb-user",
+            self.smb_user,
+            "--smb-domain",
+            self.smb_domain,
         ]
 
     async def _env(self) -> dict[str, str]:
@@ -87,7 +93,9 @@ class RcloneAdapter(TransferAdapter):
     async def discover(self) -> list[DiscoveredFile]:
         """List files recursively using rclone lsjson."""
         args = [
-            self.rclone_binary, "lsjson", "--recursive",
+            self.rclone_binary,
+            "lsjson",
+            "--recursive",
             *self._base_flags(),
             self._remote_path(),
         ]
@@ -102,10 +110,8 @@ class RcloneAdapter(TransferAdapter):
                 continue
             mod_time = None
             if mt := entry.get("ModTime"):
-                try:
+                with contextlib.suppress(ValueError):
                     mod_time = datetime.fromisoformat(mt.replace("Z", "+00:00"))
-                except ValueError:
-                    pass
             files.append(
                 DiscoveredFile(
                     path=entry["Path"],
@@ -116,16 +122,15 @@ class RcloneAdapter(TransferAdapter):
             )
         return files
 
-    async def transfer_file(
-        self, source_path: str, destination_path: str
-    ) -> TransferResult:
+    async def transfer_file(self, source_path: str, destination_path: str) -> TransferResult:
         """Transfer a single file using rclone copyto."""
         # Ensure destination directory exists
         dest_dir = pathlib.Path(destination_path).parent
         dest_dir.mkdir(parents=True, exist_ok=True)
 
         args = [
-            self.rclone_binary, "copyto",
+            self.rclone_binary,
+            "copyto",
             *self._base_flags(),
             self._remote_path(source_path),
             destination_path,

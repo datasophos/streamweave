@@ -21,9 +21,7 @@ def accessible_file_ids(user: User):
     4. A grant with grantee_type=project targets a project they belong to
        (directly as user, or via a group)
     """
-    user_groups = select(GroupMembership.group_id).where(
-        GroupMembership.user_id == user.id
-    )
+    user_groups = select(GroupMembership.group_id).where(GroupMembership.user_id == user.id)
 
     user_projects_direct = select(ProjectMembership.project_id).where(
         ProjectMembership.member_type == MemberType.user,

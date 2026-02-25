@@ -19,9 +19,7 @@ const requestNav = { to: '/request', label: 'Request Instrument' }
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `px-2.5 py-1.5 text-sm font-medium rounded transition-colors whitespace-nowrap ${
-    isActive
-      ? 'text-brand-700 bg-brand-50'
-      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+    isActive ? 'text-brand-700 bg-brand-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
   }`
 
 function Divider() {
@@ -47,15 +45,20 @@ function AdminDropdown() {
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
-        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
-        buttonRef.current && !buttonRef.current.contains(e.target as Node)
-      ) setOpen(false)
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      )
+        setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  useEffect(() => { setOpen(false) }, [location.pathname])
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   return (
     <>
@@ -73,9 +76,18 @@ function AdminDropdown() {
         Admin
         <svg
           className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
-          viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          aria-hidden="true"
         >
-          <path d="M4.5 6.5l3.5 3.5 3.5-3.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="M4.5 6.5l3.5 3.5 3.5-3.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
 
@@ -134,7 +146,9 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
       {/* Drawer */}
       <div className="fixed top-14 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-40 md:hidden">
         <nav className="px-4 py-3 space-y-0.5">
-          <NavLink to="/" end className={mobileLinkClass}>Dashboard</NavLink>
+          <NavLink to="/" end className={mobileLinkClass}>
+            Dashboard
+          </NavLink>
 
           {isAdmin && (
             <>
@@ -188,7 +202,9 @@ export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Close mobile menu on navigation
-  useEffect(() => { setMobileOpen(false) }, [location.pathname])
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [location.pathname])
 
   const handleLogout = async () => {
     await logout()
@@ -200,7 +216,6 @@ export function AppLayout() {
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-14 gap-4">
-
             {/* Brand */}
             <Link to="/" className="flex items-center gap-2.5 shrink-0 mr-1">
               <img src="/logo.svg" alt="" className="h-8 w-auto" />
@@ -213,7 +228,9 @@ export function AppLayout() {
             <div className="hidden md:flex items-center gap-0 flex-1">
               <Divider />
               <nav className="flex items-center gap-0.5">
-                <NavLink to="/" end className={linkClass}>Dashboard</NavLink>
+                <NavLink to="/" end className={linkClass}>
+                  Dashboard
+                </NavLink>
 
                 {isAdmin && (
                   <>
@@ -271,11 +288,16 @@ export function AppLayout() {
                 </svg>
               ) : (
                 <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                  <path
+                    d="M3 5h14M3 10h14M3 15h14"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
                 </svg>
               )}
             </button>
-
           </div>
         </div>
       </header>

@@ -1,5 +1,13 @@
 import { http, HttpResponse } from 'msw'
-import type { Instrument, FileRecord, FileTransfer, StorageLocation, HarvestSchedule, ServiceAccount, User } from '@/api/types'
+import type {
+  Instrument,
+  FileRecord,
+  FileTransfer,
+  StorageLocation,
+  HarvestSchedule,
+  ServiceAccount,
+  User,
+} from '@/api/types'
 
 // ---------------------------------------------------------------------------
 // Fixture factories
@@ -119,7 +127,7 @@ export const TEST_BASE = 'http://localhost'
 export const handlers = [
   // Auth
   http.post(`${TEST_BASE}/auth/jwt/login`, () =>
-    HttpResponse.json({ access_token: 'test-token', token_type: 'bearer' }),
+    HttpResponse.json({ access_token: 'test-token', token_type: 'bearer' })
   ),
   http.post(`${TEST_BASE}/auth/jwt/logout`, () => new HttpResponse(null, { status: 204 })),
   http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeUser())),
@@ -130,19 +138,22 @@ export const handlers = [
   // Instruments
   http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json([makeInstrument()])),
   http.post(`${TEST_BASE}/api/instruments`, () =>
-    HttpResponse.json(makeInstrument(), { status: 201 }),
+    HttpResponse.json(makeInstrument(), { status: 201 })
   ),
   http.patch(`${TEST_BASE}/api/instruments/:id`, ({ params }) =>
-    HttpResponse.json(makeInstrument({ id: params.id as string })),
+    HttpResponse.json(makeInstrument({ id: params.id as string }))
   ),
   http.delete(`${TEST_BASE}/api/instruments/:id`, () => new HttpResponse(null, { status: 204 })),
 
   // Service Accounts
   http.get(`${TEST_BASE}/api/service-accounts`, () => HttpResponse.json([makeServiceAccount()])),
   http.post(`${TEST_BASE}/api/service-accounts`, () =>
-    HttpResponse.json(makeServiceAccount(), { status: 201 }),
+    HttpResponse.json(makeServiceAccount(), { status: 201 })
   ),
-  http.delete(`${TEST_BASE}/api/service-accounts/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.delete(
+    `${TEST_BASE}/api/service-accounts/:id`,
+    () => new HttpResponse(null, { status: 204 })
+  ),
 
   // Storage
   http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([makeStorageLocation()])),

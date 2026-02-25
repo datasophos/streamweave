@@ -2,13 +2,13 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Index, JSON, String, Text
+from sqlalchemy import JSON, BigInteger, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDPrimaryKey
 
 
-class PersistentIdType(str, enum.Enum):
+class PersistentIdType(enum.StrEnum):
     ark = "ark"
     doi = "doi"
     handle = "handle"

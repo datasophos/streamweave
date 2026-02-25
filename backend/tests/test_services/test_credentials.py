@@ -1,7 +1,3 @@
-import pytest
-from cryptography.fernet import Fernet
-
-from app.config import settings
 from app.services.credentials import decrypt_value, encrypt_value
 
 

@@ -24,8 +24,19 @@ export function Table<T extends { id: string | number }>({
     return (
       <div className="flex items-center justify-center py-12 text-gray-400">
         <svg className="animate-spin h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
         </svg>
         Loading…
       </div>
@@ -40,7 +51,9 @@ export function Table<T extends { id: string | number }>({
             {columns.map((col) => (
               <th
                 key={col.header}
-                className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${col.className ?? ''}`}
+                className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  col.className ?? ''
+                }`}
               >
                 {col.header}
               </th>
@@ -58,12 +71,15 @@ export function Table<T extends { id: string | number }>({
             data.map((row) => (
               <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                 {columns.map((col) => (
-                  <td key={col.header} className={`px-4 py-3 text-sm text-gray-900 ${col.className ?? ''}`}>
+                  <td
+                    key={col.header}
+                    className={`px-4 py-3 text-sm text-gray-900 ${col.className ?? ''}`}
+                  >
                     {col.render
                       ? col.render(row)
                       : col.key !== undefined
-                      ? String(row[col.key] ?? '')
-                      : null}
+                        ? String(row[col.key] ?? '')
+                        : null}
                   </td>
                 ))}
               </tr>

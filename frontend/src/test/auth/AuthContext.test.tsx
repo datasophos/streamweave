@@ -72,7 +72,9 @@ describe('AuthContext', () => {
 
   it('login() stores token and populates user', async () => {
     server.use(
-      http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeUser({ email: 'user@test.com' }))),
+      http.get(`${TEST_BASE}/users/me`, () =>
+        HttpResponse.json(makeUser({ email: 'user@test.com' }))
+      )
     )
 
     const { user } = renderWithProviders(<AuthDisplay />)
@@ -88,7 +90,7 @@ describe('AuthContext', () => {
 
   it('login() throws on 400 response and does not set token', async () => {
     server.use(
-      http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 })),
+      http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 }))
     )
 
     let caughtError: unknown
@@ -97,8 +99,11 @@ describe('AuthContext', () => {
       return (
         <button
           onClick={async () => {
-            try { await login('bad@test.com', 'wrong') }
-            catch (e) { caughtError = e }
+            try {
+              await login('bad@test.com', 'wrong')
+            } catch (e) {
+              caughtError = e
+            }
           }}
         >
           login
@@ -120,7 +125,7 @@ describe('AuthContext', () => {
       <>
         <AuthDisplay />
         <AuthActions />
-      </>,
+      </>
     )
 
     await waitFor(() => {

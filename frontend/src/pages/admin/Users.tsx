@@ -7,10 +7,7 @@ import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@/hooks/u
 import { useAuth } from '@/contexts/AuthContext'
 import type { User, UserCreate } from '@/api/types'
 
-type ModalState =
-  | { kind: 'none' }
-  | { kind: 'create' }
-  | { kind: 'editRole'; user: User }
+type ModalState = { kind: 'none' } | { kind: 'create' } | { kind: 'editRole'; user: User }
 
 function CreateUserForm({
   onSubmit,
@@ -27,25 +24,49 @@ function CreateUserForm({
   const set = (k: keyof UserCreate, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form) }} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSubmit(form)
+      }}
+      className="space-y-4"
+    >
       {error != null && <ErrorMessage error={error} />}
       <div>
         <label className="label">Email *</label>
-        <input className="input" type="email" required value={form.email} onChange={(e) => set('email', e.target.value)} />
+        <input
+          className="input"
+          type="email"
+          required
+          value={form.email}
+          onChange={(e) => set('email', e.target.value)}
+        />
       </div>
       <div>
         <label className="label">Password *</label>
-        <input className="input" type="password" required value={form.password} onChange={(e) => set('password', e.target.value)} />
+        <input
+          className="input"
+          type="password"
+          required
+          value={form.password}
+          onChange={(e) => set('password', e.target.value)}
+        />
       </div>
       <div>
         <label className="label">Role</label>
-        <select className="input" value={form.role ?? 'user'} onChange={(e) => set('role', e.target.value)}>
+        <select
+          className="input"
+          value={form.role ?? 'user'}
+          onChange={(e) => set('role', e.target.value)}
+        >
           <option value="user">User</option>
           <option value="admin">Admin</option>
         </select>
       </div>
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
+        <button type="button" onClick={onCancel} className="btn-secondary">
+          Cancel
+        </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
           {isLoading ? 'Creating…' : 'Create User'}
         </button>
@@ -76,20 +97,26 @@ export function Users() {
     {
       header: 'Role',
       render: (row: User) => (
-        <span className={row.role === 'admin' ? 'badge-blue' : 'badge-gray'}>
-          {row.role}
-        </span>
+        <span className={row.role === 'admin' ? 'badge-blue' : 'badge-gray'}>{row.role}</span>
       ),
     },
     {
       header: 'Status',
       render: (row: User) =>
-        row.is_active ? <span className="badge-green">Active</span> : <span className="badge-red">Inactive</span>,
+        row.is_active ? (
+          <span className="badge-green">Active</span>
+        ) : (
+          <span className="badge-red">Inactive</span>
+        ),
     },
     {
       header: 'Verified',
       render: (row: User) =>
-        row.is_verified ? <span className="badge-green">Yes</span> : <span className="badge-yellow">No</span>,
+        row.is_verified ? (
+          <span className="badge-green">Yes</span>
+        ) : (
+          <span className="badge-yellow">No</span>
+        ),
     },
     {
       header: 'Actions',
@@ -101,7 +128,9 @@ export function Users() {
           {row.id !== me?.id && (
             <button
               className="btn btn-sm btn-danger"
-              onClick={() => { if (confirm(`Delete user ${row.email}?`)) deleteUser.mutate(row.id) }}
+              onClick={() => {
+                if (confirm(`Delete user ${row.email}?`)) deleteUser.mutate(row.id)
+              }}
             >
               Delete
             </button>
@@ -124,7 +153,12 @@ export function Users() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <Table columns={columns} data={users} isLoading={isLoading} emptyMessage="No users found." />
+        <Table
+          columns={columns}
+          data={users}
+          isLoading={isLoading}
+          emptyMessage="No users found."
+        />
       </div>
 
       {modal.kind === 'create' && (
@@ -143,16 +177,25 @@ export function Users() {
           <div className="space-y-4">
             <div>
               <label className="label">Role</label>
-              <select className="input" value={editRole} onChange={(e) => setEditRole(e.target.value as 'admin' | 'user')}>
+              <select
+                className="input"
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value as 'admin' | 'user')}
+              >
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
             <div className="flex justify-end gap-3">
-              <button onClick={close} className="btn-secondary">Cancel</button>
+              <button onClick={close} className="btn-secondary">
+                Cancel
+              </button>
               <button
                 onClick={() =>
-                  updateUser.mutate({ id: modal.user.id, data: { role: editRole } }, { onSuccess: close })
+                  updateUser.mutate(
+                    { id: modal.user.id, data: { role: editRole } },
+                    { onSuccess: close }
+                  )
                 }
                 disabled={updateUser.isPending}
                 className="btn-primary"

@@ -46,12 +46,14 @@ async def get_file(
 
         can_access = await db.scalar(
             select(
-                exists().where(
+                exists()
+                .where(
                     or_(
                         FileRecord.owner_id == user.id,
                         FileRecord.id.in_(accessible_file_ids(user)),
                     )
-                ).where(FileRecord.id == file_id)
+                )
+                .where(FileRecord.id == file_id)
             )
         )
         if not can_access:

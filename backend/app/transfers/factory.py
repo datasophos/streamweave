@@ -21,9 +21,7 @@ def create_adapter(instrument: Instrument) -> TransferAdapter:
 
     sa = instrument.service_account
     if sa is None:
-        raise ValueError(
-            f"Instrument '{instrument.name}' has no service account configured"
-        )
+        raise ValueError(f"Instrument '{instrument.name}' has no service account configured")
 
     password = decrypt_value(sa.password_encrypted)
 

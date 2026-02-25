@@ -2,7 +2,7 @@
 
 import pytest
 
-from app.hooks.base import HookAction, HookContext, HookResult
+from app.hooks.base import HookAction, HookContext
 from app.hooks.runner import run_hooks
 from app.models.hook import HookConfig, HookImplementation, HookTrigger
 
@@ -40,11 +40,16 @@ class TestPreTransferShortCircuit:
     async def test_skip_short_circuits(self):
         hooks = [
             _make_hook_config(
-                "filter", HookTrigger.pre_transfer, "file_filter",
-                config={"exclude_patterns": ["*.tmp"]}, priority=0,
+                "filter",
+                HookTrigger.pre_transfer,
+                "file_filter",
+                config={"exclude_patterns": ["*.tmp"]},
+                priority=0,
             ),
             _make_hook_config(
-                "enrichment", HookTrigger.pre_transfer, "metadata_enrichment",
+                "enrichment",
+                HookTrigger.pre_transfer,
+                "metadata_enrichment",
                 config={"rules": [{"pattern": r"(?P<x>\w+)", "source": "filename"}]},
                 priority=1,
             ),
@@ -56,8 +61,11 @@ class TestPreTransferShortCircuit:
     async def test_proceed_continues(self):
         hooks = [
             _make_hook_config(
-                "filter", HookTrigger.pre_transfer, "file_filter",
-                config={"exclude_patterns": ["*.xyz"]}, priority=0,
+                "filter",
+                HookTrigger.pre_transfer,
+                "file_filter",
+                config={"exclude_patterns": ["*.xyz"]},
+                priority=0,
             ),
         ]
         result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)
@@ -70,13 +78,19 @@ class TestPriorityOrdering:
         hooks = [
             # Allow hook (priority=10)
             _make_hook_config(
-                "allow", HookTrigger.pre_transfer, "file_filter",
-                config={"include_patterns": ["*.tmp"]}, priority=10,
+                "allow",
+                HookTrigger.pre_transfer,
+                "file_filter",
+                config={"include_patterns": ["*.tmp"]},
+                priority=10,
             ),
             # Exclude hook (priority=0 — runs first)
             _make_hook_config(
-                "deny", HookTrigger.pre_transfer, "file_filter",
-                config={"exclude_patterns": ["*.tmp"]}, priority=0,
+                "deny",
+                HookTrigger.pre_transfer,
+                "file_filter",
+                config={"exclude_patterns": ["*.tmp"]},
+                priority=0,
             ),
         ]
         result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)
@@ -89,12 +103,16 @@ class TestPostTransferMerge:
     async def test_merges_metadata(self):
         hooks = [
             _make_hook_config(
-                "enrich1", HookTrigger.post_transfer, "metadata_enrichment",
+                "enrich1",
+                HookTrigger.post_transfer,
+                "metadata_enrichment",
                 config={"rules": [{"pattern": r"(?P<experiment>exp_\d+)", "source": "path"}]},
                 priority=0,
             ),
             _make_hook_config(
-                "enrich2", HookTrigger.post_transfer, "metadata_enrichment",
+                "enrich2",
+                HookTrigger.post_transfer,
+                "metadata_enrichment",
                 config={"rules": [{"pattern": r"(?P<ext>\.tmp$)", "source": "filename"}]},
                 priority=1,
             ),
@@ -110,14 +128,20 @@ class TestPostTransferAccessGrants:
     async def test_merges_access_grants(self):
         hooks = [
             _make_hook_config(
-                "access", HookTrigger.post_transfer, "access_assignment",
-                config={"grants": [
-                    {"grantee_type": "user", "match_field": "user-id-1", "source": "literal"},
-                ]},
+                "access",
+                HookTrigger.post_transfer,
+                "access_assignment",
+                config={
+                    "grants": [
+                        {"grantee_type": "user", "match_field": "user-id-1", "source": "literal"},
+                    ]
+                },
                 priority=0,
             ),
             _make_hook_config(
-                "enrich", HookTrigger.post_transfer, "metadata_enrichment",
+                "enrich",
+                HookTrigger.post_transfer,
+                "metadata_enrichment",
                 config={"rules": [{"pattern": r"(?P<experiment>exp_\d+)", "source": "path"}]},
                 priority=1,
             ),
@@ -134,8 +158,12 @@ class TestDisabledHooks:
     async def test_disabled_hooks_skipped(self):
         hooks = [
             _make_hook_config(
-                "filter", HookTrigger.pre_transfer, "file_filter",
-                config={"exclude_patterns": ["*.tmp"]}, priority=0, enabled=False,
+                "filter",
+                HookTrigger.pre_transfer,
+                "file_filter",
+                config={"exclude_patterns": ["*.tmp"]},
+                priority=0,
+                enabled=False,
             ),
         ]
         result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)
@@ -147,8 +175,11 @@ class TestTriggerFiltering:
     async def test_ignores_wrong_trigger(self):
         hooks = [
             _make_hook_config(
-                "filter", HookTrigger.post_transfer, "file_filter",
-                config={"exclude_patterns": ["*.tmp"]}, priority=0,
+                "filter",
+                HookTrigger.post_transfer,
+                "file_filter",
+                config={"exclude_patterns": ["*.tmp"]},
+                priority=0,
             ),
         ]
         result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)

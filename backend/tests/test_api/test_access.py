@@ -1,7 +1,7 @@
 """Tests for the file access grant API."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import pytest_asyncio
@@ -16,15 +16,18 @@ from app.services.credentials import encrypt_value
 @pytest_asyncio.fixture
 async def file_record(db_session):
     sa = ServiceAccount(
-        name="test-sa", domain="WORKGROUP",
-        username="user", password_encrypted=encrypt_value("pass"),
+        name="test-sa",
+        domain="WORKGROUP",
+        username="user",
+        password_encrypted=encrypt_value("pass"),
     )
     db_session.add(sa)
     await db_session.flush()
 
     instrument = Instrument(
         name="Test Instrument",
-        cifs_host="test-host", cifs_share="test-share",
+        cifs_host="test-host",
+        cifs_share="test-share",
         service_account_id=sa.id,
         transfer_adapter=TransferAdapterType.rclone,
         enabled=True,
@@ -39,7 +42,7 @@ async def file_record(db_session):
         source_path="exp/image.tif",
         filename="image.tif",
         size_bytes=1024,
-        first_discovered_at=datetime.now(timezone.utc),
+        first_discovered_at=datetime.now(UTC),
     )
     db_session.add(f)
     await db_session.flush()
@@ -96,7 +99,8 @@ class TestFileAccessGrants:
             headers=admin_headers,
         )
         resp = await client.get(
-            f"/api/files/{file_record.id}/access", headers=admin_headers,
+            f"/api/files/{file_record.id}/access",
+            headers=admin_headers,
         )
         assert resp.status_code == 200
         assert len(resp.json()) == 1
@@ -118,7 +122,8 @@ class TestFileAccessGrants:
 
         # Verify grant removed
         resp = await client.get(
-            f"/api/files/{file_record.id}/access", headers=admin_headers,
+            f"/api/files/{file_record.id}/access",
+            headers=admin_headers,
         )
         assert len(resp.json()) == 0
 
@@ -133,14 +138,16 @@ class TestFileAccessGrants:
     @pytest.mark.asyncio
     async def test_nonexistent_file_404(self, client, admin_headers):
         resp = await client.get(
-            f"/api/files/{uuid.uuid4()}/access", headers=admin_headers,
+            f"/api/files/{uuid.uuid4()}/access",
+            headers=admin_headers,
         )
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
     async def test_non_admin_rejected(self, client, regular_headers, file_record):
         resp = await client.get(
-            f"/api/files/{file_record.id}/access", headers=regular_headers,
+            f"/api/files/{file_record.id}/access",
+            headers=regular_headers,
         )
         assert resp.status_code == 403
 
@@ -150,7 +157,12 @@ class TestAccessIntegration:
 
     @pytest.mark.asyncio
     async def test_user_grant_gives_access(
-        self, client, admin_headers, regular_headers, file_record, regular_user,
+        self,
+        client,
+        admin_headers,
+        regular_headers,
+        file_record,
+        regular_user,
     ):
         # No access initially
         resp = await client.get(f"/api/files/{file_record.id}", headers=regular_headers)
@@ -169,7 +181,13 @@ class TestAccessIntegration:
 
     @pytest.mark.asyncio
     async def test_group_grant_gives_access(
-        self, client, admin_headers, regular_headers, file_record, regular_user, db_session,
+        self,
+        client,
+        admin_headers,
+        regular_headers,
+        file_record,
+        regular_user,
+        db_session,
     ):
         # Create group and add user
         group = Group(name="Test Group")
@@ -199,7 +217,13 @@ class TestAccessIntegration:
 
     @pytest.mark.asyncio
     async def test_project_grant_gives_access_via_user(
-        self, client, admin_headers, regular_headers, file_record, regular_user, db_session,
+        self,
+        client,
+        admin_headers,
+        regular_headers,
+        file_record,
+        regular_user,
+        db_session,
     ):
         # Create project with user as direct member
         project = Project(name="Test Project")
@@ -209,7 +233,9 @@ class TestAccessIntegration:
         from app.models.project import MemberType, ProjectMembership
 
         pm = ProjectMembership(
-            project_id=project.id, member_type=MemberType.user, member_id=regular_user.id,
+            project_id=project.id,
+            member_type=MemberType.user,
+            member_id=regular_user.id,
         )
         db_session.add(pm)
         await db_session.flush()
@@ -227,7 +253,13 @@ class TestAccessIntegration:
 
     @pytest.mark.asyncio
     async def test_project_grant_gives_access_via_group(
-        self, client, admin_headers, regular_headers, file_record, regular_user, db_session,
+        self,
+        client,
+        admin_headers,
+        regular_headers,
+        file_record,
+        regular_user,
+        db_session,
     ):
         # Create group, add user to group
         group = Group(name="Team")
@@ -248,7 +280,9 @@ class TestAccessIntegration:
         from app.models.project import MemberType, ProjectMembership
 
         pm = ProjectMembership(
-            project_id=project.id, member_type=MemberType.group, member_id=group.id,
+            project_id=project.id,
+            member_type=MemberType.group,
+            member_id=group.id,
         )
         db_session.add(pm)
         await db_session.flush()

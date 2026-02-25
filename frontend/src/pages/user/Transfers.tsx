@@ -54,8 +54,19 @@ export function Transfers() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12 text-gray-400">
             <svg className="animate-spin h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             Loading…
           </div>
@@ -65,14 +76,30 @@ export function Transfers() {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Destination</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Adapter</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bytes</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Checksum</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Transfer ID
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Destination
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Adapter
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Bytes
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Checksum
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Started
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Completed
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -85,11 +112,15 @@ export function Transfers() {
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {storageMap[t.storage_location_id] ?? t.storage_location_id.slice(0, 8)}
                     {t.destination_path && (
-                      <div className="text-xs text-gray-400 font-mono mt-0.5">{t.destination_path}</div>
+                      <div className="text-xs text-gray-400 font-mono mt-0.5">
+                        {t.destination_path}
+                      </div>
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">{t.transfer_adapter}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{formatBytes(t.bytes_transferred)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {formatBytes(t.bytes_transferred)}
+                  </td>
                   <td className="px-4 py-3 text-sm">
                     {t.checksum_verified === true ? (
                       <span className="badge-green">Verified</span>
@@ -116,11 +147,14 @@ export function Transfers() {
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
           <h3 className="text-sm font-medium text-red-800 mb-2">Failed Transfers</h3>
           <ul className="space-y-1">
-            {transfers.filter((t) => t.status === 'failed').map((t) => (
-              <li key={t.id} className="text-xs text-red-700">
-                <span className="font-mono">{t.id.slice(0, 8)}</span>: {t.error_message ?? 'Unknown error'}
-              </li>
-            ))}
+            {transfers
+              .filter((t) => t.status === 'failed')
+              .map((t) => (
+                <li key={t.id} className="text-xs text-red-700">
+                  <span className="font-mono">{t.id.slice(0, 8)}</span>:{' '}
+                  {t.error_message ?? 'Unknown error'}
+                </li>
+              ))}
           </ul>
         </div>
       )}

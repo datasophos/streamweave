@@ -16,8 +16,8 @@ describe('MyFiles', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/files`, () =>
-        HttpResponse.json([makeFileRecord({ filename: 'spectrum.hdf5' })]),
-      ),
+        HttpResponse.json([makeFileRecord({ filename: 'spectrum.hdf5' })])
+      )
     )
 
     renderWithProviders(<MyFiles />)
@@ -52,11 +52,26 @@ describe('MyFiles', () => {
     server.use(
       http.get(`${TEST_BASE}/api/files`, () =>
         HttpResponse.json([
-          makeFileRecord({ id: 'f1', filename: 'alpha.raw', source_path: '/data/alpha.raw', persistent_id: 'ark:/1/aaa' }),
-          makeFileRecord({ id: 'f2', filename: 'beta.raw', source_path: '/data/beta.raw', persistent_id: 'ark:/1/bbb' }),
-          makeFileRecord({ id: 'f3', filename: 'gamma.raw', source_path: '/data/gamma.raw', persistent_id: 'ark:/1/ggg' }),
-        ]),
-      ),
+          makeFileRecord({
+            id: 'f1',
+            filename: 'alpha.raw',
+            source_path: '/data/alpha.raw',
+            persistent_id: 'ark:/1/aaa',
+          }),
+          makeFileRecord({
+            id: 'f2',
+            filename: 'beta.raw',
+            source_path: '/data/beta.raw',
+            persistent_id: 'ark:/1/bbb',
+          }),
+          makeFileRecord({
+            id: 'f3',
+            filename: 'gamma.raw',
+            source_path: '/data/gamma.raw',
+            persistent_id: 'ark:/1/ggg',
+          }),
+        ])
+      )
     )
 
     const { user } = renderWithProviders(<MyFiles />)
@@ -75,10 +90,20 @@ describe('MyFiles', () => {
     server.use(
       http.get(`${TEST_BASE}/api/files`, () =>
         HttpResponse.json([
-          makeFileRecord({ id: 'f1', filename: 'x.raw', source_path: '/x.raw', persistent_id: 'ark:/99999/fk4unique' }),
-          makeFileRecord({ id: 'f2', filename: 'y.raw', source_path: '/y.raw', persistent_id: 'ark:/99999/fk4other' }),
-        ]),
-      ),
+          makeFileRecord({
+            id: 'f1',
+            filename: 'x.raw',
+            source_path: '/x.raw',
+            persistent_id: 'ark:/99999/fk4unique',
+          }),
+          makeFileRecord({
+            id: 'f2',
+            filename: 'y.raw',
+            source_path: '/y.raw',
+            persistent_id: 'ark:/99999/fk4other',
+          }),
+        ])
+      )
     )
 
     const { user } = renderWithProviders(<MyFiles />)
@@ -94,8 +119,8 @@ describe('MyFiles', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/files`, () =>
-        HttpResponse.json([makeFileRecord({ filename: 'sample.raw' })]),
-      ),
+        HttpResponse.json([makeFileRecord({ filename: 'sample.raw' })])
+      )
     )
 
     const { user } = renderWithProviders(<MyFiles />)
@@ -110,8 +135,8 @@ describe('MyFiles', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-abc', name: 'NMR' })]),
-      ),
+        HttpResponse.json([makeInstrument({ id: 'inst-abc', name: 'NMR' })])
+      )
     )
 
     let capturedSearch: string | undefined
@@ -119,7 +144,7 @@ describe('MyFiles', () => {
       http.get(`${TEST_BASE}/api/files`, ({ request }) => {
         capturedSearch = new URL(request.url).search
         return HttpResponse.json([])
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<MyFiles />)
@@ -129,10 +154,7 @@ describe('MyFiles', () => {
       expect(screen.getByRole('option', { name: 'NMR' })).toBeInTheDocument()
     })
 
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: '' }),
-      'inst-abc',
-    )
+    await user.selectOptions(screen.getByRole('combobox', { name: '' }), 'inst-abc')
 
     await waitFor(() => {
       expect(capturedSearch).toContain('instrument_id=inst-abc')

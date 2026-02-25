@@ -121,10 +121,7 @@ class TestHarvestE2E:
             pytest.skip("API not available")
 
         files = resp.json()
-        enriched = [
-            f for f in files
-            if f.get("metadata_") and f["metadata_"].get("experiment")
-        ]
+        enriched = [f for f in files if f.get("metadata_") and f["metadata_"].get("experiment")]
         # At least some files should have enriched metadata if they match the pattern
         # This is best-effort — depends on simlab file structure
         if enriched:

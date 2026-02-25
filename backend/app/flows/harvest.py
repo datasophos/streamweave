@@ -4,21 +4,11 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from prefect import flow, get_run_logger, task
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-
-_fallback_logger = logging.getLogger(__name__)
-
-
-def _get_logger():
-    """Get Prefect run logger if in a flow/task context, else stdlib fallback."""
-    try:
-        return get_run_logger()
-    except Exception:
-        return _fallback_logger
 
 from app.hooks.base import HookAction, HookContext
 from app.hooks.runner import run_hooks
@@ -31,29 +21,33 @@ from app.models.transfer import FileTransfer, TransferStatus
 from app.services.db import get_db_session
 from app.services.discovery import discover_new_files
 from app.services.identifiers import mint_identifier
-from app.transfers.base import DiscoveredFile
 from app.transfers.factory import create_adapter
 
+_fallback_logger = logging.getLogger(__name__)
 
-async def _resolve_grantee(
-    session, grantee_type: str, name: str
-) -> uuid.UUID | None:
+
+def _get_logger():
+    """Get Prefect run logger if in a flow/task context, else stdlib fallback."""
+    try:
+        return get_run_logger()
+    except Exception:
+        return _fallback_logger
+
+
+async def _resolve_grantee(session, grantee_type: str, name: str) -> uuid.UUID | None:
     """Resolve a grantee name to a UUID."""
     if grantee_type == "user":
         from app.models.user import User
-        result = await session.execute(
-            select(User.id).where(User.email == name)
-        )
+
+        result = await session.execute(select(User.id).where(User.email == name))
     elif grantee_type == "group":
         from app.models.group import Group
-        result = await session.execute(
-            select(Group.id).where(Group.name == name)
-        )
+
+        result = await session.execute(select(Group.id).where(Group.name == name))
     elif grantee_type == "project":
         from app.models.project import Project
-        result = await session.execute(
-            select(Project.id).where(Project.name == name)
-        )
+
+        result = await session.execute(select(Project.id).where(Project.name == name))
     else:
         return None
     return result.scalar_one_or_none()
@@ -76,16 +70,19 @@ async def discover_files_task(instrument_id: str, schedule_id: str) -> dict:
         if not instrument:
             raise ValueError(f"Instrument {instrument_id} not found")
 
-        logger.info("Discovering files on %s (%s:%s)", instrument.name,
-                     instrument.cifs_host, instrument.cifs_share)
+        logger.info(
+            "Discovering files on %s (%s:%s)",
+            instrument.name,
+            instrument.cifs_host,
+            instrument.cifs_share,
+        )
 
         adapter = create_adapter(instrument)
         all_files = await adapter.discover()
         logger.info("Found %d total files on %s", len(all_files), instrument.name)
 
         new_files = await discover_new_files(inst_uuid, all_files, session)
-        logger.info("%d new files to harvest (out of %d total)",
-                     len(new_files), len(all_files))
+        logger.info("%d new files to harvest (out of %d total)", len(new_files), len(all_files))
 
         if new_files:
             for f in new_files:
@@ -169,7 +166,7 @@ async def transfer_single_file_task(
             filename=filename,
             size_bytes=file_info.get("size_bytes", 0),
             source_mtime=mod_time,
-            first_discovered_at=datetime.now(timezone.utc),
+            first_discovered_at=datetime.now(UTC),
             metadata_={},
         )
         session.add(file_record)
@@ -217,7 +214,7 @@ async def transfer_single_file_task(
             destination_path=destination_path,
             transfer_adapter=instrument.transfer_adapter,
             status=TransferStatus.in_progress,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
         )
         session.add(transfer)
         await session.flush()
@@ -230,7 +227,7 @@ async def transfer_single_file_task(
             logger.error("FAILED %s — %s", filename, e)
             transfer.status = TransferStatus.failed
             transfer.error_message = str(e)
-            transfer.completed_at = datetime.now(timezone.utc)
+            transfer.completed_at = datetime.now(UTC)
             return {
                 "file_id": str(file_record.id),
                 "status": "failed",
@@ -241,7 +238,7 @@ async def transfer_single_file_task(
             logger.error("FAILED %s — %s", filename, transfer_result.error_message)
             transfer.status = TransferStatus.failed
             transfer.error_message = transfer_result.error_message
-            transfer.completed_at = datetime.now(timezone.utc)
+            transfer.completed_at = datetime.now(UTC)
             return {
                 "file_id": str(file_record.id),
                 "status": "failed",
@@ -253,15 +250,18 @@ async def transfer_single_file_task(
         transfer.bytes_transferred = transfer_result.bytes_transferred
         transfer.dest_checksum = transfer_result.dest_checksum
         transfer.checksum_verified = transfer_result.checksum_verified
-        transfer.completed_at = datetime.now(timezone.utc)
+        transfer.completed_at = datetime.now(UTC)
 
         # Update file record checksum
         if transfer_result.dest_checksum:
             file_record.xxhash = transfer_result.dest_checksum
 
-        logger.info("COMPLETED %s — %d bytes, checksum %s",
-                     filename, transfer_result.bytes_transferred,
-                     transfer_result.dest_checksum or "n/a")
+        logger.info(
+            "COMPLETED %s — %d bytes, checksum %s",
+            filename,
+            transfer_result.bytes_transferred,
+            transfer_result.dest_checksum or "n/a",
+        )
 
         # Run post-transfer hooks
         hook_ctx.transfer_success = True
@@ -307,8 +307,7 @@ async def transfer_single_file_task(
                             grant_info["grantee_type"],
                             grant_info["resolve_value"],
                         )
-            logger.info("Created %d access grants for %s",
-                        len(post_result.access_grants), filename)
+            logger.info("Created %d access grants for %s", len(post_result.access_grants), filename)
 
         return {
             "file_id": str(file_record.id),
@@ -370,8 +369,13 @@ async def harvest_instrument_flow(instrument_id: str, schedule_id: str) -> dict:
     completed = sum(1 for r in results if r["status"] == "completed")
     skipped = sum(1 for r in results if r["status"] == "skipped")
     failed = sum(1 for r in results if r["status"] == "failed")
-    logger.info("Harvest complete for %s: %d transferred, %d skipped, %d failed",
-                 instrument_name, completed, skipped, failed)
+    logger.info(
+        "Harvest complete for %s: %d transferred, %d skipped, %d failed",
+        instrument_name,
+        completed,
+        skipped,
+        failed,
+    )
 
     return {
         "instrument_id": instrument_id,

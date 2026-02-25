@@ -35,17 +35,39 @@ export function InstrumentRequest() {
         <div className="card max-w-lg mx-auto text-center">
           <div className="flex justify-center mb-4">
             <div className="rounded-full bg-green-100 p-3">
-              <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="h-8 w-8 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Request Submitted</h2>
           <p className="text-gray-500 mb-6">
-            Your request for <strong>{form.instrument_name}</strong> has been submitted.
-            An administrator will review it and contact you at {form.contact_email}.
+            Your request for <strong>{form.instrument_name}</strong> has been submitted. An
+            administrator will review it and contact you at {form.contact_email}.
           </p>
-          <button onClick={() => { setSubmitted(false); setForm({ instrument_name: '', location: '', contact_email: '', description: '', justification: '' }) }} className="btn-secondary">
+          <button
+            onClick={() => {
+              setSubmitted(false)
+              setForm({
+                instrument_name: '',
+                location: '',
+                contact_email: '',
+                description: '',
+                justification: '',
+              })
+            }}
+            className="btn-secondary"
+          >
             Submit Another Request
           </button>
         </div>

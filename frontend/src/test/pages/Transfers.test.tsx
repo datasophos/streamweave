@@ -16,8 +16,8 @@ describe('Transfers page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/transfers`, () =>
-        HttpResponse.json([makeTransfer({ id: 'xfer-aabbccdd-1234-5678-90ab-cdef12345678' })]),
-      ),
+        HttpResponse.json([makeTransfer({ id: 'xfer-aabbccdd-1234-5678-90ab-cdef12345678' })])
+      )
     )
 
     renderWithProviders(<Transfers />)
@@ -47,7 +47,7 @@ describe('Transfers page', () => {
       http.get(`${TEST_BASE}/api/transfers`, ({ request }) => {
         capturedSearch = new URL(request.url).search
         return HttpResponse.json([])
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Transfers />)
@@ -56,10 +56,7 @@ describe('Transfers page', () => {
       expect(screen.getByText(/no transfers found/i)).toBeInTheDocument()
     })
 
-    await user.selectOptions(
-      screen.getByRole('combobox'),
-      'completed',
-    )
+    await user.selectOptions(screen.getByRole('combobox'), 'completed')
 
     await waitFor(() => {
       expect(capturedSearch).toContain('status=completed')
@@ -73,8 +70,8 @@ describe('Transfers page', () => {
         HttpResponse.json([
           makeTransfer({ id: 'xfer-good', status: 'completed', error_message: null }),
           makeTransfer({ id: 'xfer-bad', status: 'failed', error_message: 'Connection refused' }),
-        ]),
-      ),
+        ])
+      )
     )
 
     renderWithProviders(<Transfers />)
@@ -89,8 +86,8 @@ describe('Transfers page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/transfers`, () =>
-        HttpResponse.json([makeTransfer({ status: 'completed' })]),
-      ),
+        HttpResponse.json([makeTransfer({ status: 'completed' })])
+      )
     )
 
     renderWithProviders(<Transfers />)
@@ -104,8 +101,8 @@ describe('Transfers page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/transfers`, () =>
-        HttpResponse.json([makeTransfer({ checksum_verified: true })]),
-      ),
+        HttpResponse.json([makeTransfer({ checksum_verified: true })])
+      )
     )
 
     renderWithProviders(<Transfers />)
@@ -119,8 +116,8 @@ describe('Transfers page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/transfers`, () =>
-        HttpResponse.json([makeTransfer({ checksum_verified: false })]),
-      ),
+        HttpResponse.json([makeTransfer({ checksum_verified: false })])
+      )
     )
 
     renderWithProviders(<Transfers />)

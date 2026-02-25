@@ -25,7 +25,7 @@ apiClient.interceptors.response.use(
       window.location.href = '/login'
     }
     return Promise.reject(error)
-  },
+  }
 )
 
 // Auth endpoints (fastapi-users uses OAuth2 form encoding for login)
@@ -34,11 +34,9 @@ export const authApi = {
     const form = new URLSearchParams()
     form.append('username', email)
     form.append('password', password)
-    return apiClient.post<{ access_token: string; token_type: string }>(
-      '/auth/jwt/login',
-      form,
-      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
-    )
+    return apiClient.post<{ access_token: string; token_type: string }>('/auth/jwt/login', form, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    })
   },
   logout: () => apiClient.post('/auth/jwt/logout'),
   register: (data: { email: string; password: string; role?: string }) =>

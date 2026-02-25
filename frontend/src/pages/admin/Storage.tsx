@@ -38,15 +38,30 @@ function StorageForm({
   const set = (k: keyof StorageLocationCreate, v: unknown) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form) }} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSubmit(form)
+      }}
+      className="space-y-4"
+    >
       {error != null && <ErrorMessage error={error} />}
       <div>
         <label className="label">Name *</label>
-        <input className="input" required value={form.name} onChange={(e) => set('name', e.target.value)} />
+        <input
+          className="input"
+          required
+          value={form.name}
+          onChange={(e) => set('name', e.target.value)}
+        />
       </div>
       <div>
         <label className="label">Type *</label>
-        <select className="input" value={form.type} onChange={(e) => set('type', e.target.value as StorageType)}>
+        <select
+          className="input"
+          value={form.type}
+          onChange={(e) => set('type', e.target.value as StorageType)}
+        >
           <option value="posix">POSIX</option>
           <option value="s3">S3</option>
           <option value="cifs">CIFS/SMB</option>
@@ -55,7 +70,13 @@ function StorageForm({
       </div>
       <div>
         <label className="label">Base Path *</label>
-        <input className="input" required value={form.base_path} onChange={(e) => set('base_path', e.target.value)} placeholder="/storage/archive" />
+        <input
+          className="input"
+          required
+          value={form.base_path}
+          onChange={(e) => set('base_path', e.target.value)}
+          placeholder="/storage/archive"
+        />
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -65,10 +86,14 @@ function StorageForm({
           onChange={(e) => set('enabled', e.target.checked)}
           className="rounded border-gray-300"
         />
-        <label htmlFor="sl-enabled" className="text-sm font-medium text-gray-700">Enabled</label>
+        <label htmlFor="sl-enabled" className="text-sm font-medium text-gray-700">
+          Enabled
+        </label>
       </div>
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
+        <button type="button" onClick={onCancel} className="btn-secondary">
+          Cancel
+        </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
           {isLoading ? 'Saving…' : 'Save'}
         </button>
@@ -93,18 +118,27 @@ export function Storage() {
     {
       header: 'Status',
       render: (row: StorageLocation) =>
-        row.enabled ? <span className="badge-green">Enabled</span> : <span className="badge-gray">Disabled</span>,
+        row.enabled ? (
+          <span className="badge-green">Enabled</span>
+        ) : (
+          <span className="badge-gray">Disabled</span>
+        ),
     },
     {
       header: 'Actions',
       render: (row: StorageLocation) => (
         <div className="flex gap-2">
-          <button className="btn btn-sm btn-secondary" onClick={() => setModal({ kind: 'edit', location: row })}>
+          <button
+            className="btn btn-sm btn-secondary"
+            onClick={() => setModal({ kind: 'edit', location: row })}
+          >
             Edit
           </button>
           <button
             className="btn btn-sm btn-danger"
-            onClick={() => { if (confirm(`Delete ${row.name}?`)) del.mutate(row.id) }}
+            onClick={() => {
+              if (confirm(`Delete ${row.name}?`)) del.mutate(row.id)
+            }}
           >
             Delete
           </button>
@@ -126,7 +160,12 @@ export function Storage() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <Table columns={columns} data={locations} isLoading={isLoading} emptyMessage="No storage locations configured." />
+        <Table
+          columns={columns}
+          data={locations}
+          isLoading={isLoading}
+          emptyMessage="No storage locations configured."
+        />
       </div>
 
       {modal.kind === 'create' && (
@@ -144,7 +183,9 @@ export function Storage() {
         <Modal title="Edit Storage Location" onClose={close}>
           <StorageForm
             initial={modal.location}
-            onSubmit={(data) => update.mutate({ id: modal.location.id, data }, { onSuccess: close })}
+            onSubmit={(data) =>
+              update.mutate({ id: modal.location.id, data }, { onSuccess: close })
+            }
             onCancel={close}
             isLoading={update.isPending}
             error={update.error}

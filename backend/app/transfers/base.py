@@ -41,9 +41,7 @@ class TransferAdapter(abc.ABC):
         """Discover files available on the remote source."""
 
     @abc.abstractmethod
-    async def transfer_file(
-        self, source_path: str, destination_path: str
-    ) -> TransferResult:
+    async def transfer_file(self, source_path: str, destination_path: str) -> TransferResult:
         """Transfer a single file from source to destination."""
 
     @abc.abstractmethod

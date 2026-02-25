@@ -37,7 +37,7 @@ describe('useHealth', () => {
       http.get(`${TEST_BASE}/health`, () => {
         requestCount++
         return HttpResponse.json({ status: 'ok' })
-      }),
+      })
     )
 
     renderHook(() => useHealth(), { wrapper: makeWrapper() })

@@ -9,7 +9,8 @@ export function ErrorMessage({ error, fallback = 'An error occurred.' }: ErrorMe
     typeof error === 'object' &&
     error !== null &&
     'response' in error &&
-    typeof (error as { response?: { data?: { detail?: string } } }).response?.data?.detail === 'string'
+    typeof (error as { response?: { data?: { detail?: string } } }).response?.data?.detail ===
+      'string'
   ) {
     message = (error as { response: { data: { detail: string } } }).response.data.detail
   } else if (error instanceof Error && !('response' in error)) {

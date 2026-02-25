@@ -54,7 +54,9 @@ export function MyFiles() {
         >
           <option value="">All instruments</option>
           {instruments.map((i) => (
-            <option key={i.id} value={i.id}>{i.name}</option>
+            <option key={i.id} value={i.id}>
+              {i.name}
+            </option>
           ))}
         </select>
       </div>
@@ -63,14 +65,27 @@ export function MyFiles() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12 text-gray-400">
             <svg className="animate-spin h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             Loading files…
           </div>
         ) : filtered.length === 0 ? (
           <p className="px-6 py-12 text-center text-sm text-gray-400">
-            {search || instrumentFilter ? 'No files match your filters.' : 'No files discovered yet.'}
+            {search || instrumentFilter
+              ? 'No files match your filters.'
+              : 'No files discovered yet.'}
           </p>
         ) : (
           <>
@@ -80,11 +95,21 @@ export function MyFiles() {
             <table className="min-w-full divide-y divide-gray-100">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Filename</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Instrument</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Persistent ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Discovered</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Filename
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Instrument
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Size
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Persistent ID
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Discovered
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
@@ -92,12 +117,16 @@ export function MyFiles() {
                   <tr key={file.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="text-sm font-medium text-gray-900">{file.filename}</div>
-                      <div className="text-xs text-gray-400 font-mono mt-0.5">{file.source_path}</div>
+                      <div className="text-xs text-gray-400 font-mono mt-0.5">
+                        {file.source_path}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {instMap[file.instrument_id] ?? file.instrument_id.slice(0, 8)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{formatBytes(file.size_bytes)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {formatBytes(file.size_bytes)}
+                    </td>
                     <td className="px-4 py-3">
                       <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">
                         {file.persistent_id}

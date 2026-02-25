@@ -1,7 +1,7 @@
 """Tests for the file records read API."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 import pytest_asyncio
@@ -15,15 +15,18 @@ from app.services.credentials import encrypt_value
 async def instrument_with_files(db_session):
     """Create an instrument with file records."""
     sa = ServiceAccount(
-        name="test-sa", domain="WORKGROUP",
-        username="user", password_encrypted=encrypt_value("pass"),
+        name="test-sa",
+        domain="WORKGROUP",
+        username="user",
+        password_encrypted=encrypt_value("pass"),
     )
     db_session.add(sa)
     await db_session.flush()
 
     instrument = Instrument(
         name="Test Microscope",
-        cifs_host="test-host", cifs_share="test-share",
+        cifs_host="test-host",
+        cifs_share="test-share",
         service_account_id=sa.id,
         transfer_adapter=TransferAdapterType.rclone,
         enabled=True,
@@ -40,7 +43,7 @@ async def instrument_with_files(db_session):
             source_path=f"exp/image_{i}.tif",
             filename=f"image_{i}.tif",
             size_bytes=1024 * (i + 1),
-            first_discovered_at=datetime.now(timezone.utc),
+            first_discovered_at=datetime.now(UTC),
         )
         files.append(f)
     db_session.add_all(files)
@@ -58,7 +61,11 @@ class TestListFiles:
 
     @pytest.mark.asyncio
     async def test_user_sees_only_accessible(
-        self, client, regular_headers, instrument_with_files, grant_file_access,
+        self,
+        client,
+        regular_headers,
+        instrument_with_files,
+        grant_file_access,
     ):
         data = instrument_with_files
         # Grant access to all 3 files
@@ -71,7 +78,10 @@ class TestListFiles:
 
     @pytest.mark.asyncio
     async def test_user_sees_nothing_without_access(
-        self, client, regular_headers, instrument_with_files,
+        self,
+        client,
+        regular_headers,
+        instrument_with_files,
     ):
         resp = await client.get("/api/files", headers=regular_headers)
         assert resp.status_code == 200
@@ -79,7 +89,11 @@ class TestListFiles:
 
     @pytest.mark.asyncio
     async def test_user_sees_owned_files(
-        self, client, regular_headers, regular_user, instrument_with_files,
+        self,
+        client,
+        regular_headers,
+        regular_user,
+        instrument_with_files,
     ):
         data = instrument_with_files
         # Set owner on first file
@@ -116,7 +130,11 @@ class TestGetFile:
 
     @pytest.mark.asyncio
     async def test_user_gets_accessible_file(
-        self, client, regular_headers, instrument_with_files, grant_file_access,
+        self,
+        client,
+        regular_headers,
+        instrument_with_files,
+        grant_file_access,
     ):
         data = instrument_with_files
         file_id = data["files"][0].id
@@ -126,7 +144,10 @@ class TestGetFile:
 
     @pytest.mark.asyncio
     async def test_user_gets_404_without_access(
-        self, client, regular_headers, instrument_with_files,
+        self,
+        client,
+        regular_headers,
+        instrument_with_files,
     ):
         data = instrument_with_files
         file_id = data["files"][0].id

@@ -13,7 +13,7 @@ describe('apiClient request interceptor', () => {
       http.get(`${TEST_BASE}/api/instruments`, ({ request }) => {
         capturedAuth = request.headers.get('Authorization')
         return HttpResponse.json([])
-      }),
+      })
     )
 
     await apiClient.get('/api/instruments')
@@ -26,7 +26,7 @@ describe('apiClient request interceptor', () => {
       http.get(`${TEST_BASE}/api/instruments`, ({ request }) => {
         capturedAuth = request.headers.get('Authorization')
         return HttpResponse.json([])
-      }),
+      })
     )
 
     await apiClient.get('/api/instruments')
@@ -38,7 +38,7 @@ describe('apiClient response interceptor', () => {
   it('clears localStorage and redirects on 401', async () => {
     localStorage.setItem('access_token', 'old-token')
     server.use(
-      http.get(`${TEST_BASE}/api/instruments`, () => new HttpResponse(null, { status: 401 })),
+      http.get(`${TEST_BASE}/api/instruments`, () => new HttpResponse(null, { status: 401 }))
     )
 
     await expect(apiClient.get('/api/instruments')).rejects.toThrow()
@@ -62,7 +62,7 @@ describe('authApi.login', () => {
         contentType = request.headers.get('Content-Type')
         body = await request.text()
         return HttpResponse.json({ access_token: 'tok', token_type: 'bearer' })
-      }),
+      })
     )
 
     await authApi.login('user@test.com', 'secret')

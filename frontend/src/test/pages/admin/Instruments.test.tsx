@@ -16,11 +16,11 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'HPLC Unit 1' })]),
+        HttpResponse.json([makeInstrument({ name: 'HPLC Unit 1' })])
       ),
       http.get(`${TEST_BASE}/api/service-accounts`, () =>
-        HttpResponse.json([makeServiceAccount({ name: 'Lab SA', username: 'labuser' })]),
-      ),
+        HttpResponse.json([makeServiceAccount({ name: 'Lab SA', username: 'labuser' })])
+      )
     )
 
     renderWithProviders(<Instruments />)
@@ -48,7 +48,7 @@ describe('Instruments admin page', () => {
       http.post(`${TEST_BASE}/api/instruments`, async ({ request }) => {
         postedBody = await request.json()
         return HttpResponse.json(makeInstrument(), { status: 201 })
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -56,7 +56,8 @@ describe('Instruments admin page', () => {
     await waitFor(() => screen.getByRole('button', { name: /new instrument/i }))
     await user.click(screen.getByRole('button', { name: /new instrument/i }))
 
-    const modal = screen.getByRole('dialog', { hidden: true }).closest('div[class*="relative"]') ??
+    const modal =
+      screen.getByRole('dialog', { hidden: true }).closest('div[class*="relative"]') ??
       screen.getByRole('heading', { name: /new instrument/i }).closest('div.relative')!
 
     // Fill required fields
@@ -115,8 +116,8 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.post(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json({ detail: 'Instrument already exists' }, { status: 422 }),
-      ),
+        HttpResponse.json({ detail: 'Instrument already exists' }, { status: 422 })
+      )
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -138,8 +139,10 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Prefilled NMR', cifs_host: '10.0.0.5', cifs_share: 'nmr' })]),
-      ),
+        HttpResponse.json([
+          makeInstrument({ name: 'Prefilled NMR', cifs_host: '10.0.0.5', cifs_share: 'nmr' }),
+        ])
+      )
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -160,8 +163,8 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-patch-id', name: 'Old Name' })]),
-      ),
+        HttpResponse.json([makeInstrument({ id: 'inst-patch-id', name: 'Old Name' })])
+      )
     )
 
     let patchedUrl: string | undefined
@@ -169,7 +172,7 @@ describe('Instruments admin page', () => {
       http.patch(`${TEST_BASE}/api/instruments/:id`, ({ request }) => {
         patchedUrl = new URL(request.url).pathname
         return HttpResponse.json(makeInstrument({ name: 'New Name' }))
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -192,8 +195,8 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Confirm Me' })]),
-      ),
+        HttpResponse.json([makeInstrument({ name: 'Confirm Me' })])
+      )
     )
 
     const confirmSpy = vi.mocked(window.confirm)
@@ -215,7 +218,7 @@ describe('Instruments admin page', () => {
       http.delete(`${TEST_BASE}/api/instruments/:id`, ({ request }) => {
         deletedUrl = new URL(request.url).pathname
         return new HttpResponse(null, { status: 204 })
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -237,7 +240,7 @@ describe('Instruments admin page', () => {
       http.delete(`${TEST_BASE}/api/instruments/:id`, () => {
         deleteRequestMade = true
         return new HttpResponse(null, { status: 204 })
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -266,7 +269,7 @@ describe('Instruments admin page', () => {
       http.post(`${TEST_BASE}/api/service-accounts`, async ({ request }) => {
         postedBody = await request.json()
         return HttpResponse.json(makeServiceAccount(), { status: 201 })
-      }),
+      })
     )
 
     const { user } = renderWithProviders(<Instruments />)
@@ -289,4 +292,3 @@ describe('Instruments admin page', () => {
     })
   })
 })
-

@@ -1,18 +1,18 @@
 import enum
 import uuid
 
-from sqlalchemy import Boolean, Enum, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import JSON, Boolean, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDPrimaryKey
 
 
-class HookTrigger(str, enum.Enum):
+class HookTrigger(enum.StrEnum):
     pre_transfer = "pre_transfer"
     post_transfer = "post_transfer"
 
 
-class HookImplementation(str, enum.Enum):
+class HookImplementation(enum.StrEnum):
     builtin = "builtin"
     python_script = "python_script"
     http_webhook = "http_webhook"

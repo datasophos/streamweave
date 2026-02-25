@@ -101,6 +101,14 @@ services:
       - default
       - simlab
 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
 networks:
   simlab:
     name: streamweave-simlab

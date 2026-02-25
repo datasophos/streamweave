@@ -1,8 +1,11 @@
-<div style="text-align:center;padding:2rem 0 2.5rem;">
-  <img src="_static/streamweave_logo.svg" alt="StreamWeave logo" width="180" style="margin-bottom:1.25rem;">
+<div style="text-align:center;padding:2rem 0 0.5rem;">
+  <img src="_static/streamweave_logo.svg" alt="StreamWeave logo" width="180" style="margin-bottom:0.75rem;">
   <h1 style="font-size:2.5rem;margin:0 0 0.5rem;">StreamWeave</h1>
   <p style="font-size:0.7rem;opacity:0.75;margin:0 0 1rem;"><em>Scientific data harvesting, simplified.</em></p>
 </div>
+
+!!! warning "Pre-Alpha Software"
+    StreamWeave is under heavy active development and not yet ready for production use. Prior to version 1.0, APIs, data models, and configuration formats are likely to change without notice.
 
 StreamWeave tames unruly streams of scientific data by automatically pulling files from scientific instruments via service accounts and delivers them to configured storage destinations (POSIX, S3, NFS, CIFS), with persistent file identifiers, configurable destination and access control, full transfer audit trails, and an easily extensible hook system for integration with external APIs.
 
@@ -33,7 +36,7 @@ StreamWeave tames unruly streams of scientific data by automatically pulling fil
 
 ```
 streamweave/
-├── docker-compose.yml          # Full stack (Postgres, Redis, Prefect, API, Worker)
+├── docker-compose.yml          # Full stack (Postgres, Redis, Prefect, API, Worker, Frontend)
 ├── docker-compose.dev.yml      # Dev overrides (hot reload, volume mounts)
 ├── backend/
 │   ├── Dockerfile
@@ -51,6 +54,16 @@ streamweave/
 │       ├── transfers/          # Transfer adapters (rclone, etc.)
 │       ├── hooks/              # Hook system (file filter, metadata enrichment)
 │       └── auth/               # fastapi-users configuration
+├── frontend/
+│   ├── Dockerfile
+│   ├── nginx.conf              # Nginx reverse proxy to API
+│   ├── src/
+│   │   ├── api/                # Axios client + TypeScript types
+│   │   ├── components/         # Shared UI components
+│   │   ├── contexts/           # React contexts (auth)
+│   │   ├── layouts/            # App shell and layout components
+│   │   └── pages/              # Route-level page components
+│   └── package.json
 ├── tests/                      # pytest test suite
 ├── simlab/                     # Simulated laboratory for integration testing
 │   ├── docker-compose.simlab.yml

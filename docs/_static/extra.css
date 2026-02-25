@@ -1,0 +1,18 @@
+/* StreamWeave brand colors derived from the logo gradient:
+   light steel blue (#8aacc8) → mid blue (#5b80aa) → dark blue (#2d4f7c) */
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        #2d4f7c;
+  --md-primary-fg-color--light: #4a6fa5;
+  --md-primary-fg-color--dark:  #1e3a5f;
+  --md-accent-fg-color:         #1a6bbf;
+  --md-typeset-a-color:         #1a6bbf;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #2d4f7c;
+  --md-primary-fg-color--light: #4a6fa5;
+  --md-primary-fg-color--dark:  #1e3a5f;
+  --md-accent-fg-color:         #5da0d8;
+  --md-typeset-a-color:         #5da0d8;
+}

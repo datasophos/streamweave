@@ -151,6 +151,54 @@ class TestFileAccessGrants:
         )
         assert resp.status_code == 403
 
+    @pytest.mark.asyncio
+    async def test_grant_access_nonexistent_file(self, client, admin_headers, regular_user):
+        """POST to /api/files/{nonexistent}/access returns 404."""
+        resp = await client.post(
+            f"/api/files/{uuid.uuid4()}/access",
+            json={"grantee_type": "user", "grantee_id": str(regular_user.id)},
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_revoke_grant_wrong_file(
+        self, client, admin_headers, file_record, regular_user, db_session
+    ):
+        """Revoking a grant that belongs to a different file returns 404."""
+        from datetime import UTC, datetime
+
+        from app.models.access import FileAccessGrant, GranteeType
+
+        # Create a second file
+        f2 = FileRecord(
+            persistent_id="ark:/99999/fk4other1",
+            persistent_id_type=PersistentIdType.ark,
+            instrument_id=file_record.instrument_id,
+            source_path="other/image.tif",
+            filename="other.tif",
+            size_bytes=512,
+            first_discovered_at=datetime.now(UTC),
+        )
+        db_session.add(f2)
+        await db_session.flush()
+
+        # Create grant for file_record
+        grant = FileAccessGrant(
+            file_id=file_record.id,
+            grantee_type=GranteeType.user,
+            grantee_id=regular_user.id,
+        )
+        db_session.add(grant)
+        await db_session.flush()
+
+        # Try to revoke grant using f2's URL — should fail
+        resp = await client.delete(
+            f"/api/files/{f2.id}/access/{grant.id}",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
 
 class TestAccessIntegration:
     """Test that grants actually affect file visibility."""

@@ -121,3 +121,37 @@ class TestGroupMembers:
             headers=admin_headers,
         )
         assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_list_members_for_nonexistent_group(self, client, admin_headers):
+        resp = await client.get(
+            f"/api/groups/{uuid.uuid4()}/members",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_add_member_to_nonexistent_group(self, client, admin_headers, regular_user):
+        resp = await client.post(
+            f"/api/groups/{uuid.uuid4()}/members",
+            json={"user_id": str(regular_user.id)},
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_update_nonexistent_group(self, client, admin_headers):
+        resp = await client.patch(
+            f"/api/groups/{uuid.uuid4()}",
+            json={"name": "X"},
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_delete_nonexistent_group(self, client, admin_headers):
+        resp = await client.delete(
+            f"/api/groups/{uuid.uuid4()}",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404

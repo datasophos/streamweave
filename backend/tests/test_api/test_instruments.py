@@ -90,3 +90,32 @@ async def test_get_nonexistent_instrument(client: AsyncClient, admin_headers: di
 
     response = await client.get(f"/api/instruments/{uuid.uuid4()}", headers=admin_headers)
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_nonexistent_instrument(client: AsyncClient, admin_headers: dict):
+    import uuid
+
+    response = await client.patch(
+        f"/api/instruments/{uuid.uuid4()}",
+        json={"name": "X"},
+        headers=admin_headers,
+    )
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_instrument(client: AsyncClient, admin_headers: dict):
+    import uuid
+
+    response = await client.delete(
+        f"/api/instruments/{uuid.uuid4()}",
+        headers=admin_headers,
+    )
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_non_admin_instruments_rejected(client: AsyncClient, regular_headers: dict):
+    response = await client.get("/api/instruments", headers=regular_headers)
+    assert response.status_code == 403

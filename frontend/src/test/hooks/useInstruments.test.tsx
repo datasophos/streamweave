@@ -11,6 +11,8 @@ import {
   useUpdateInstrument,
   useDeleteInstrument,
   useInstrument,
+  useUpdateServiceAccount,
+  useDeleteServiceAccount,
 } from '@/hooks/useInstruments'
 import { makeTestQueryClient } from '@/test/utils'
 
@@ -50,6 +52,65 @@ describe('useInstruments', () => {
     // Wait a tick to ensure no fetch fires
     await new Promise((r) => setTimeout(r, 50))
     expect(requestCount).toBe(0)
+  })
+
+  it('fetches /api/instruments/:id when id is non-empty', async () => {
+    const qc = makeTestQueryClient()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments/:id`, ({ params }) =>
+        HttpResponse.json(makeInstrument({ id: params.id as string, name: 'Fetched NMR' }))
+      )
+    )
+
+    const { result } = renderHook(() => useInstrument('inst-uuid-1'), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data!.name).toBe('Fetched NMR')
+  })
+})
+
+describe('useUpdateServiceAccount', () => {
+  it('sends PATCH to /api/service-accounts/:id and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let patchedUrl: string | undefined
+    server.use(
+      http.patch(`${TEST_BASE}/api/service-accounts/:id`, ({ request }) => {
+        patchedUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeInstrument())
+      })
+    )
+
+    const { result } = renderHook(() => useUpdateServiceAccount(), { wrapper: wrapper(qc) })
+    result.current.mutate({ id: 'sa-uuid-1', data: { name: 'Updated SA' } })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(patchedUrl).toBe('/api/service-accounts/sa-uuid-1')
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ['service-accounts'] })
+    )
+  })
+})
+
+describe('useDeleteServiceAccount', () => {
+  it('sends DELETE to /api/service-accounts/:id and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let deletedUrl: string | undefined
+    server.use(
+      http.delete(`${TEST_BASE}/api/service-accounts/:id`, ({ request }) => {
+        deletedUrl = new URL(request.url).pathname
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+
+    const { result } = renderHook(() => useDeleteServiceAccount(), { wrapper: wrapper(qc) })
+    result.current.mutate('sa-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(deletedUrl).toBe('/api/service-accounts/sa-uuid-1')
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ['service-accounts'] })
+    )
   })
 })
 

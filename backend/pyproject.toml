@@ -39,6 +39,7 @@ dev = [
     "pre-commit>=4.0,<5",
     "mkdocs-jupyter>=0.25,<1",
     "jupyterlab>=4.5.5",
+    "pytest-cov>=6.0,<7",
 ]
 
 [project.urls]
@@ -53,7 +54,17 @@ testpaths = ["tests"]
 markers = [
     "integration: requires full Docker stack + simlab running",
 ]
-addopts = "-m 'not integration'"
+addopts = "-m 'not integration' --cov=app --cov-report=term-missing --cov-report=lcov:coverage.lcov"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/alembic/*"]
+concurrency = ["greenlet", "thread"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 0
 
 [tool.ruff]
 target-version = "py311"

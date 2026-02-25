@@ -32,4 +32,4 @@ def mint_identifier(
     if id_type == PersistentIdType.handle:
         raise NotImplementedError("Handle minting requires Handle.net credentials (Milestone 4)")
 
-    raise ValueError(f"Unknown identifier type: {id_type}")
+    raise ValueError(f"Unknown identifier type: {id_type}")  # pragma: no cover

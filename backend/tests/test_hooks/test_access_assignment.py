@@ -79,3 +79,33 @@ class TestAccessAssignment:
         )
         result = await hook.execute(_ctx(metadata={"team_name": "Lab A"}))
         assert len(result.access_grants) == 2
+
+    @pytest.mark.asyncio
+    async def test_rule_missing_grantee_type_skipped(self):
+        """Rule with empty grantee_type is skipped (covers the `continue` on line 31)."""
+        hook = AccessAssignmentHook(
+            config={
+                "grants": [
+                    # Missing grantee_type — should be skipped
+                    {"grantee_type": "", "match_field": "some-id", "source": "literal"},
+                    # Valid grant
+                    {"grantee_type": "user", "match_field": "valid-id", "source": "literal"},
+                ]
+            }
+        )
+        result = await hook.execute(_ctx())
+        assert len(result.access_grants) == 1
+
+    @pytest.mark.asyncio
+    async def test_rule_missing_match_field_skipped(self):
+        """Rule with empty match_field is skipped (covers the `continue` on line 31)."""
+        hook = AccessAssignmentHook(
+            config={
+                "grants": [
+                    # Missing match_field — should be skipped
+                    {"grantee_type": "user", "match_field": "", "source": "literal"},
+                ]
+            }
+        )
+        result = await hook.execute(_ctx())
+        assert len(result.access_grants) == 0

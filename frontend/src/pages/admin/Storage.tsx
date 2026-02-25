@@ -82,7 +82,7 @@ function StorageForm({
         <input
           type="checkbox"
           id="sl-enabled"
-          checked={form.enabled ?? true}
+          checked={form.enabled as boolean}
           onChange={(e) => set('enabled', e.target.checked)}
           className="rounded border-gray-300"
         />

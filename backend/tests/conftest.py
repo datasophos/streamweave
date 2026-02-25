@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncGenerator
 
 import pytest
@@ -10,6 +11,57 @@ from app.config import settings
 from app.database import get_async_session
 from app.models import Base
 from app.models.user import User, UserRole
+
+# Suppress Prefect logging warnings during tests
+os.environ["PREFECT_LOGGING_TO_API_WHEN_MISSING_FLOW"] = "ignore"
+
+
+# Suppress Prefect server shutdown logging errors
+def _suppress_prefect_logging_errors():
+    """Configure logging to ignore Prefect's closed file errors during test cleanup."""
+    import logging
+
+    # Create a filter to suppress the specific Prefect logging error
+    class PrefectErrorFilter(logging.Filter):
+        def filter(self, record):
+            # Suppress the specific "I/O operation on closed file" error from Prefect
+            msg = getattr(record, "msg", "")
+            if isinstance(msg, str) and (
+                "I/O operation on closed file" in msg
+                or "ValueError: I/O operation on closed file" in msg
+            ):
+                return False
+            # Also suppress Prefect server shutdown messages
+            return not (
+                "prefect" in record.name.lower() and "stopping temporary server" in msg.lower()
+            )
+
+    # Create a custom handler that silently drops errors
+    class SilentErrorHandler(logging.Handler):
+        def emit(self, record):
+            # Silently drop all records
+            pass
+
+    # Apply the filter to the root logger
+    root_logger = logging.getLogger()
+    root_logger.addFilter(PrefectErrorFilter())
+
+    # Also configure Prefect's specific loggers
+    for logger_name in [
+        "prefect",
+        "prefect.server",
+        "prefect.logging",
+        "prefect.server.api.server",
+    ]:
+        logger = logging.getLogger(logger_name)
+        logger.addFilter(PrefectErrorFilter())
+        # Set level to WARNING to reduce noise
+        logger.setLevel(max(logging.WARNING, logger.level))
+        # Add silent error handler to catch any remaining errors
+        logger.addHandler(SilentErrorHandler())
+
+
+_suppress_prefect_logging_errors()
 
 # Use in-memory SQLite for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

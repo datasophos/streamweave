@@ -2,7 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '@/mocks/server'
 import { TEST_BASE } from '@/mocks/handlers'
-import { apiClient, authApi } from '@/api/client'
+import {
+  apiClient,
+  authApi,
+  instrumentsApi,
+  serviceAccountsApi,
+  storageApi,
+  schedulesApi,
+  hooksApi,
+  transfersApi,
+  usersApi,
+  projectsApi,
+} from '@/api/client'
 
 describe('apiClient request interceptor', () => {
   it('attaches Bearer token from localStorage when present', async () => {
@@ -45,6 +56,164 @@ describe('apiClient response interceptor', () => {
 
     expect(localStorage.getItem('access_token')).toBeNull()
     expect(window.location.href).toBe('/login')
+  })
+})
+
+describe('API resource methods — single-item and mutation endpoints', () => {
+  it('instrumentsApi.get calls /api/instruments/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await instrumentsApi.get('inst-1')
+    expect(url).toBe('/api/instruments/inst-1')
+  })
+
+  it('serviceAccountsApi.get calls /api/service-accounts/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await serviceAccountsApi.get('sa-1')
+    expect(url).toBe('/api/service-accounts/sa-1')
+  })
+
+  it('serviceAccountsApi.update calls PATCH /api/service-accounts/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.patch(`${TEST_BASE}/api/service-accounts/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await serviceAccountsApi.update('sa-1', { name: 'updated' })
+    expect(url).toBe('/api/service-accounts/sa-1')
+  })
+
+  it('storageApi.get calls /api/storage-locations/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await storageApi.get('sl-1')
+    expect(url).toBe('/api/storage-locations/sl-1')
+  })
+
+  it('schedulesApi.get calls /api/schedules/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/schedules/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await schedulesApi.get('sched-1')
+    expect(url).toBe('/api/schedules/sched-1')
+  })
+
+  it('hooksApi.get calls /api/hooks/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await hooksApi.get('hook-1')
+    expect(url).toBe('/api/hooks/hook-1')
+  })
+
+  it('transfersApi.get calls /api/transfers/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/transfers/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await transfersApi.get('xfer-1')
+    expect(url).toBe('/api/transfers/xfer-1')
+  })
+
+  it('usersApi.get calls /users/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/users/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await usersApi.get('user-1')
+    expect(url).toBe('/users/user-1')
+  })
+
+  it('projectsApi.list calls GET /api/projects', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/projects`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json([])
+      })
+    )
+    await projectsApi.list()
+    expect(url).toBe('/api/projects')
+  })
+
+  it('projectsApi.get calls GET /api/projects/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/projects/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await projectsApi.get('proj-1')
+    expect(url).toBe('/api/projects/proj-1')
+  })
+
+  it('projectsApi.create calls POST /api/projects', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/projects`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({}, { status: 201 })
+      })
+    )
+    await projectsApi.create({ name: 'Proj' })
+    expect(url).toBe('/api/projects')
+  })
+
+  it('projectsApi.update calls PATCH /api/projects/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.patch(`${TEST_BASE}/api/projects/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await projectsApi.update('proj-1', { name: 'Updated' })
+    expect(url).toBe('/api/projects/proj-1')
+  })
+
+  it('projectsApi.delete calls DELETE /api/projects/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.delete(`${TEST_BASE}/api/projects/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    await projectsApi.delete('proj-1')
+    expect(url).toBe('/api/projects/proj-1')
   })
 })
 

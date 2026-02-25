@@ -87,6 +87,17 @@ describe('Login page', () => {
     })
   })
 
+  it('reads "from" redirect path from location state (covers the ?? branch)', () => {
+    // Rendering with state.from set covers the non-default branch of line 10
+    renderWithProviders(<Login />, {
+      routerProps: {
+        initialEntries: [{ pathname: '/login', state: { from: '/files' } }],
+      },
+    })
+
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
+  })
+
   it('button is re-enabled after error', async () => {
     server.use(
       http.post(`${TEST_BASE}/auth/jwt/login`, () => new HttpResponse(null, { status: 400 }))

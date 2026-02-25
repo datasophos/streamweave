@@ -47,7 +47,7 @@ function InstrumentForm({
     cifs_host: initial?.cifs_host ?? '',
     cifs_share: initial?.cifs_share ?? '',
     cifs_base_path: initial?.cifs_base_path ?? '',
-    service_account_id: initial?.service_account_id ?? undefined,
+    service_account_id: initial?.service_account_id ?? '',
     transfer_adapter: initial?.transfer_adapter ?? 'rclone',
     enabled: initial?.enabled ?? true,
   })
@@ -58,7 +58,7 @@ function InstrumentForm({
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        onSubmit(form)
+        onSubmit({ ...form, service_account_id: form.service_account_id || undefined })
       }}
       className="space-y-4"
     >
@@ -83,7 +83,7 @@ function InstrumentForm({
           <input
             id="inst-description"
             className="input"
-            value={form.description ?? ''}
+            value={form.description}
             onChange={(e) => set('description', e.target.value)}
           />
         </div>
@@ -94,7 +94,7 @@ function InstrumentForm({
           <input
             id="inst-location"
             className="input"
-            value={form.location ?? ''}
+            value={form.location}
             onChange={(e) => set('location', e.target.value)}
           />
         </div>
@@ -129,7 +129,7 @@ function InstrumentForm({
           <input
             id="inst-base-path"
             className="input"
-            value={form.cifs_base_path ?? ''}
+            value={form.cifs_base_path}
             onChange={(e) => set('cifs_base_path', e.target.value)}
           />
         </div>
@@ -155,8 +155,8 @@ function InstrumentForm({
           <select
             id="inst-sa"
             className="input"
-            value={form.service_account_id ?? ''}
-            onChange={(e) => set('service_account_id', e.target.value || undefined)}
+            value={form.service_account_id}
+            onChange={(e) => set('service_account_id', e.target.value)}
           >
             <option value="">— None —</option>
             {serviceAccounts.map((sa) => (
@@ -170,7 +170,7 @@ function InstrumentForm({
           <input
             type="checkbox"
             id="enabled"
-            checked={form.enabled ?? true}
+            checked={form.enabled as boolean}
             onChange={(e) => set('enabled', e.target.checked)}
             className="rounded border-gray-300"
           />

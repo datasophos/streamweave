@@ -252,6 +252,279 @@ describe('Instruments admin page', () => {
     expect(deleteRequestMade).toBe(false)
   })
 
+  it('shows service account name in table when service_account_id is in saMap', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([makeInstrument({ service_account_id: 'sa-uuid-1' })])
+      ),
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-uuid-1', name: 'Lab Account' })])
+      )
+    )
+
+    renderWithProviders(<Instruments />)
+
+    await waitFor(() => {
+      // Name appears in both the instruments table (SA column) and the SA table (Name column)
+      expect(screen.getAllByText('Lab Account').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('save button shows Saving… while instrument mutation is in progress', async () => {
+    setupAdmin()
+    let resolvePost: () => void
+    server.use(
+      http.post(`${TEST_BASE}/api/instruments`, async () => {
+        await new Promise<void>((res) => {
+          resolvePost = res
+        })
+        return HttpResponse.json(makeInstrument(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getByRole('button', { name: /new instrument/i }))
+    await user.click(screen.getByRole('button', { name: /new instrument/i }))
+
+    await user.type(screen.getByRole('textbox', { name: /^name/i }), 'Test NMR')
+    await user.type(screen.getByRole('textbox', { name: /cifs host/i }), '10.0.0.1')
+    await user.type(screen.getByRole('textbox', { name: /cifs share/i }), 'data')
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /saving/i })).toBeInTheDocument()
+    })
+
+    resolvePost!()
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /saving/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('service account form shows error on API failure', async () => {
+    setupAdmin()
+    server.use(
+      http.post(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json({ detail: 'Name already taken' }, { status: 422 })
+      )
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getByRole('button', { name: /new service account/i }))
+    await user.click(screen.getByRole('button', { name: /new service account/i }))
+
+    await user.type(screen.getByLabelText(/^name/i), 'Dup SA')
+    await user.type(screen.getByLabelText(/^username/i), 'user')
+    await user.type(screen.getByLabelText(/^password/i), 'pass')
+    await user.click(screen.getAllByRole('button', { name: /^save$/i })[0])
+
+    await waitFor(() => {
+      expect(screen.getByText(/name already taken/i)).toBeInTheDocument()
+    })
+  })
+
+  it('service account save button shows Saving… while mutation is in progress', async () => {
+    setupAdmin()
+    let resolvePost: () => void
+    server.use(
+      http.post(`${TEST_BASE}/api/service-accounts`, async () => {
+        await new Promise<void>((res) => {
+          resolvePost = res
+        })
+        return HttpResponse.json(makeServiceAccount(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getByRole('button', { name: /new service account/i }))
+    await user.click(screen.getByRole('button', { name: /new service account/i }))
+
+    await user.type(screen.getByLabelText(/^name/i), 'Pending SA')
+    await user.type(screen.getByLabelText(/^username/i), 'pending_user')
+    await user.type(screen.getByLabelText(/^password/i), 'pass')
+    await user.click(screen.getAllByRole('button', { name: /^save$/i })[0])
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /saving/i })).toBeInTheDocument()
+    })
+
+    resolvePost!()
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /saving/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('create instrument form sends all fields when filled in', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-uuid-1', name: 'Lab SA' })])
+      )
+    )
+
+    let postedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/api/instruments`, async ({ request }) => {
+        postedBody = await request.json()
+        return HttpResponse.json(makeInstrument(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getByRole('button', { name: /new instrument/i }))
+    await user.click(screen.getByRole('button', { name: /new instrument/i }))
+
+    // Fill ALL form fields to exercise every onChange handler
+    await user.type(screen.getByRole('textbox', { name: /^name/i }), 'Full NMR')
+    await user.type(screen.getByRole('textbox', { name: /description/i }), 'A full instrument')
+    await user.type(screen.getByRole('textbox', { name: /location/i }), 'Lab 1')
+    await user.type(screen.getByRole('textbox', { name: /cifs host/i }), '10.0.0.5')
+    await user.type(screen.getByRole('textbox', { name: /cifs share/i }), 'nmr-share')
+    await user.type(screen.getByRole('textbox', { name: /base path/i }), '/data/nmr')
+
+    // Change transfer adapter select
+    await user.selectOptions(screen.getByRole('combobox', { name: /adapter/i }), 'rsync')
+
+    // Wait for SA options, then select one
+    await waitFor(() => screen.getByRole('option', { name: /Lab SA/ }))
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /service account/i }),
+      'sa-uuid-1'
+    )
+
+    // Uncheck enabled
+    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(postedBody).toMatchObject({
+        name: 'Full NMR',
+        description: 'A full instrument',
+        location: 'Lab 1',
+        transfer_adapter: 'rsync',
+        service_account_id: 'sa-uuid-1',
+        enabled: false,
+      })
+    })
+  })
+
+  it('service account form fills domain field', async () => {
+    setupAdmin()
+    let postedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/api/service-accounts`, async ({ request }) => {
+        postedBody = await request.json()
+        return HttpResponse.json(makeServiceAccount(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getByRole('button', { name: /new service account/i }))
+    await user.click(screen.getByRole('button', { name: /new service account/i }))
+
+    await user.type(screen.getByLabelText(/^name/i), 'Domain SA')
+    await user.type(screen.getByLabelText(/domain/i), 'LAB')
+    await user.type(screen.getByLabelText(/^username/i), 'lab_user')
+    await user.type(screen.getByLabelText(/^password/i), 'password123')
+    await user.click(screen.getAllByRole('button', { name: /^save$/i })[0])
+
+    await waitFor(() => {
+      expect(postedBody).toMatchObject({ name: 'Domain SA', domain: 'LAB' })
+    })
+  })
+
+  it('shows Disabled badge for disabled instrument', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([makeInstrument({ name: 'Offline NMR', enabled: false })])
+      )
+    )
+
+    renderWithProviders(<Instruments />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline NMR')).toBeInTheDocument()
+      expect(screen.getByText('Disabled')).toBeInTheDocument()
+    })
+  })
+
+  it('shows raw service_account_id when not in service account map', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([makeInstrument({ service_account_id: 'unknown-sa-uuid-99' })])
+      ),
+      http.get(`${TEST_BASE}/api/service-accounts`, () => HttpResponse.json([]))
+    )
+
+    renderWithProviders(<Instruments />)
+
+    await waitFor(() => {
+      // saMap is empty, so it falls back to the raw service_account_id
+      expect(screen.getByText('unknown-sa-uuid-99')).toBeInTheDocument()
+    })
+  })
+
+  it('delete service account sends DELETE when user confirms', async () => {
+    setupAdmin()
+    vi.mocked(window.confirm).mockReturnValue(true)
+
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-del-id', name: 'SA To Delete' })])
+      )
+    )
+
+    let deletedUrl: string | undefined
+    server.use(
+      http.delete(`${TEST_BASE}/api/service-accounts/:id`, ({ request }) => {
+        deletedUrl = new URL(request.url).pathname
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('SA To Delete')).toBeInTheDocument())
+
+    // The SA table delete button
+    const deleteButtons = screen.getAllByRole('button', { name: /^delete$/i })
+    await user.click(deleteButtons[deleteButtons.length - 1])
+
+    await waitFor(() => {
+      expect(deletedUrl).toContain('/api/service-accounts/')
+    })
+  })
+
+  it('delete service account does not send DELETE when user cancels', async () => {
+    setupAdmin()
+    vi.mocked(window.confirm).mockReturnValueOnce(false)
+
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-del-id', name: 'SA To Delete' })])
+      )
+    )
+
+    let deleteRequestMade = false
+    server.use(
+      http.delete(`${TEST_BASE}/api/service-accounts/:id`, () => {
+        deleteRequestMade = true
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('SA To Delete')).toBeInTheDocument())
+
+    const deleteButtons = screen.getAllByRole('button', { name: /^delete$/i })
+    await user.click(deleteButtons[deleteButtons.length - 1])
+
+    await new Promise((r) => setTimeout(r, 50))
+    expect(deleteRequestMade).toBe(false)
+  })
+
   it('"New Service Account" button opens the service account modal', async () => {
     setupAdmin()
     const { user } = renderWithProviders(<Instruments />)

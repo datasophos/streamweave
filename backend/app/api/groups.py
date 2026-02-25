@@ -24,7 +24,8 @@ async def list_groups(
     _: User = Depends(require_admin),
 ):
     result = await db.execute(select(Group))
-    return result.scalars().all()
+    groups = result.scalars().all()
+    return groups
 
 
 @router.post("", response_model=GroupRead, status_code=status.HTTP_201_CREATED)
@@ -92,7 +93,8 @@ async def list_group_members(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     result = await db.execute(select(GroupMembership).where(GroupMembership.group_id == group_id))
-    return result.scalars().all()
+    members = result.scalars().all()
+    return members
 
 
 @router.post(

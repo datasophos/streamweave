@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
 import { TEST_BASE, makeFileRecord } from '@/mocks/handlers'
-import { useFiles } from '@/hooks/useFiles'
+import { useFiles, useFile } from '@/hooks/useFiles'
 import { makeTestQueryClient } from '@/test/utils'
 
 function makeWrapper() {
@@ -54,6 +54,20 @@ describe('useFiles', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(capturedSearch).toContain('instrument_id=inst-abc')
     expect(capturedSearch).toContain('status=new')
+  })
+
+  it('useFile fetches /api/files/:id when id is non-empty', async () => {
+    server.use(
+      http.get(`${TEST_BASE}/api/files/:id`, ({ params }) =>
+        HttpResponse.json(makeFileRecord({ id: params.id as string }))
+      )
+    )
+
+    const { Wrapper } = makeWrapper()
+    const { result } = renderHook(() => useFile('file-uuid-1'), { wrapper: Wrapper })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data!.id).toBe('file-uuid-1')
   })
 
   it('uses distinct cache entries per params object', async () => {

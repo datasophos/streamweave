@@ -131,6 +131,83 @@ describe('MyFiles', () => {
     expect(screen.getByText(/no files match your filters/i)).toBeInTheDocument()
   })
 
+  it('shows — for null file size', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/files`, () =>
+        HttpResponse.json([makeFileRecord({ size_bytes: null })])
+      )
+    )
+
+    renderWithProviders(<MyFiles />)
+
+    await waitFor(() => {
+      expect(screen.getByText('—')).toBeInTheDocument()
+    })
+  })
+
+  it('shows bytes (B) for files smaller than 1 KB', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/files`, () =>
+        HttpResponse.json([makeFileRecord({ size_bytes: 512 })])
+      )
+    )
+
+    renderWithProviders(<MyFiles />)
+
+    await waitFor(() => {
+      expect(screen.getByText('512 B')).toBeInTheDocument()
+    })
+  })
+
+  it('shows KB for files 1 KB to 1 MB', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/files`, () =>
+        HttpResponse.json([makeFileRecord({ size_bytes: 2048 })])
+      )
+    )
+
+    renderWithProviders(<MyFiles />)
+
+    await waitFor(() => {
+      expect(screen.getByText('2.0 KB')).toBeInTheDocument()
+    })
+  })
+
+  it('shows GB for files >= 1 GB', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/files`, () =>
+        HttpResponse.json([makeFileRecord({ size_bytes: 2 * 1024 * 1024 * 1024 })])
+      )
+    )
+
+    renderWithProviders(<MyFiles />)
+
+    await waitFor(() => {
+      expect(screen.getByText('2.00 GB')).toBeInTheDocument()
+    })
+  })
+
+  it('shows truncated instrument_id when instrument is not in the map', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json([])),
+      http.get(`${TEST_BASE}/api/files`, () =>
+        HttpResponse.json([makeFileRecord({ instrument_id: 'unknown-inst-uuid' })])
+      )
+    )
+
+    renderWithProviders(<MyFiles />)
+
+    await waitFor(() => {
+      // When instrument not found in map, shows first 8 chars of ID
+      expect(screen.getByText('unknown-')).toBeInTheDocument()
+    })
+  })
+
   it('instrument filter sends instrument_id param to API', async () => {
     setupAuth()
     server.use(

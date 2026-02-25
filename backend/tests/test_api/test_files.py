@@ -158,3 +158,18 @@ class TestGetFile:
     async def test_nonexistent_file_404(self, client, admin_headers):
         resp = await client.get(f"/api/files/{uuid.uuid4()}", headers=admin_headers)
         assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_user_gets_owned_file(
+        self,
+        client,
+        regular_headers,
+        regular_user,
+        instrument_with_files,
+    ):
+        """User can access a file they own (owner_id set to their id)."""
+        data = instrument_with_files
+        file_obj = data["files"][0]
+        file_obj.owner_id = regular_user.id
+        resp = await client.get(f"/api/files/{file_obj.id}", headers=regular_headers)
+        assert resp.status_code == 200

@@ -327,7 +327,7 @@ async def harvest_instrument_flow(instrument_id: str, schedule_id: str) -> dict:
     instrument_name = discovery["instrument_name"]
 
     # Rename the flow run so it's human-readable in the Prefect UI
-    try:
+    try:  # pragma: no cover
         import prefect.context
         from prefect.client.orchestration import get_client
 

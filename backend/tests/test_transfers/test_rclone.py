@@ -172,3 +172,115 @@ class TestChecksum:
 
         assert isinstance(result, str)
         assert len(result) == 16  # xxh64 hex digest
+
+    @pytest.mark.asyncio
+    async def test_checksum_large_file(self, adapter):
+        """Covers the while loop reading in 8192-byte chunks."""
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            # Write more than 8192 bytes to exercise chunked reading
+            f.write(b"x" * 20000)
+            path = f.name
+
+        result = await adapter.checksum(path)
+        Path(path).unlink()
+
+        assert isinstance(result, str)
+        assert len(result) == 16
+
+
+class TestGetObscuredPassword:
+    @pytest.mark.asyncio
+    async def test_obscures_password_via_rclone(self):
+        """Covers lines 50-58: calls rclone obscure to obscure the password."""
+        fresh_adapter = RcloneAdapter(
+            smb_host="h",
+            smb_share="s",
+            smb_user="u",
+            smb_password="myplainpassword",
+        )
+        assert fresh_adapter._obscured_password is None
+
+        # Mock asyncio.create_subprocess_exec
+        mock_proc = AsyncMock()
+        mock_proc.communicate.return_value = (b"obscured_pw_value\n", b"")
+
+        with patch(
+            "asyncio.create_subprocess_exec",
+            return_value=mock_proc,
+        ) as mock_exec:
+            result = await fresh_adapter._get_obscured_password()
+
+        assert result == "obscured_pw_value"
+        assert fresh_adapter._obscured_password == "obscured_pw_value"
+        # Second call uses cached value
+        result2 = await fresh_adapter._get_obscured_password()
+        assert result2 == "obscured_pw_value"
+        # create_subprocess_exec called only once
+        assert mock_exec.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_cached_password_not_called_again(self):
+        """When _obscured_password is already set, no subprocess is spawned."""
+        fresh_adapter = RcloneAdapter(
+            smb_host="h",
+            smb_share="s",
+            smb_user="u",
+            smb_password="pass",
+        )
+        fresh_adapter._obscured_password = "already_obscured"
+
+        with patch("asyncio.create_subprocess_exec") as mock_exec:
+            result = await fresh_adapter._get_obscured_password()
+
+        assert result == "already_obscured"
+        mock_exec.assert_not_called()
+
+
+class TestEnv:
+    @pytest.mark.asyncio
+    async def test_env_contains_rclone_smb_pass(self, adapter):
+        """Covers lines 84-91: _env returns env dict with RCLONE_SMB_PASS set."""
+        env = await adapter._env()
+        assert "RCLONE_SMB_PASS" in env
+        assert env["RCLONE_SMB_PASS"] == "obscured-labpass"
+
+    @pytest.mark.asyncio
+    async def test_env_includes_os_environ(self, adapter):
+        """_env includes the current process environment."""
+        env = await adapter._env()
+        # PATH should be present from os.environ
+        assert "PATH" in env or len(env) > 1
+
+
+class TestRun:
+    @pytest.mark.asyncio
+    async def test_run_captures_stdout_stderr(self, adapter):
+        """Covers lines 84-91: _run uses create_subprocess_exec and returns output."""
+        mock_proc = AsyncMock()
+        mock_proc.returncode = 0
+        mock_proc.communicate.return_value = (b"output data\n", b"error msg\n")
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
+            returncode, stdout, stderr = await adapter._run(
+                ["rclone", "version"], {"PATH": "/usr/bin"}
+            )
+
+        assert returncode == 0
+        assert stdout == "output data\n"
+        assert stderr == "error msg\n"
+
+
+class TestTransferFileDestNotFound:
+    @pytest.mark.asyncio
+    async def test_transfer_file_dest_not_found_after_transfer(self, adapter):
+        """Covers the branch where rclone succeeds but dest file doesn't exist."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dest = str(Path(tmpdir) / "subdir" / "file.tif")
+            # Do NOT create the dest file — simulate rclone writing nothing
+
+            with patch.object(adapter, "_run", new_callable=AsyncMock) as mock_run:
+                mock_run.return_value = (0, "", "")
+                result = await adapter.transfer_file("data/file.tif", dest)
+
+        assert result.success is False
+        assert "not found" in result.error_message

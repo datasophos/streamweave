@@ -141,3 +141,45 @@ class TestProjectMembers:
             headers=admin_headers,
         )
         assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_list_members_for_nonexistent_project(self, client, admin_headers):
+        resp = await client.get(
+            f"/api/projects/{uuid.uuid4()}/members",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_add_member_to_nonexistent_project(self, client, admin_headers, regular_user):
+        resp = await client.post(
+            f"/api/projects/{uuid.uuid4()}/members",
+            json={"member_type": "user", "member_id": str(regular_user.id)},
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_update_nonexistent_project(self, client, admin_headers):
+        resp = await client.patch(
+            f"/api/projects/{uuid.uuid4()}",
+            json={"name": "X"},
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_delete_nonexistent_project(self, client, admin_headers):
+        resp = await client.delete(
+            f"/api/projects/{uuid.uuid4()}",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_get_nonexistent_project(self, client, admin_headers):
+        resp = await client.get(
+            f"/api/projects/{uuid.uuid4()}",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404

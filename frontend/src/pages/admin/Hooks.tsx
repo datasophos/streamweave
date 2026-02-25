@@ -65,7 +65,7 @@ function HookForm({
           <label className="label">Description</label>
           <input
             className="input"
-            value={form.description ?? ''}
+            value={form.description}
             onChange={(e) => set('description', e.target.value)}
           />
         </div>
@@ -97,7 +97,7 @@ function HookForm({
             <label className="label">Built-in Name</label>
             <input
               className="input"
-              value={form.builtin_name ?? ''}
+              value={form.builtin_name}
               onChange={(e) => set('builtin_name', e.target.value)}
               placeholder="e.g. nemo_status_check"
             />
@@ -108,7 +108,7 @@ function HookForm({
             <label className="label">Script Path</label>
             <input
               className="input font-mono"
-              value={form.script_path ?? ''}
+              value={form.script_path}
               onChange={(e) => set('script_path', e.target.value)}
               placeholder="/hooks/my_hook.py"
             />
@@ -120,7 +120,7 @@ function HookForm({
             <input
               className="input"
               type="url"
-              value={form.webhook_url ?? ''}
+              value={form.webhook_url}
               onChange={(e) => set('webhook_url', e.target.value)}
               placeholder="https://example.com/webhook"
             />
@@ -146,7 +146,7 @@ function HookForm({
           <input
             className="input"
             type="number"
-            value={form.priority ?? 0}
+            value={form.priority}
             onChange={(e) => set('priority', parseInt(e.target.value))}
           />
         </div>
@@ -154,7 +154,7 @@ function HookForm({
           <input
             type="checkbox"
             id="hook-enabled"
-            checked={form.enabled ?? true}
+            checked={form.enabled as boolean}
             onChange={(e) => set('enabled', e.target.checked)}
             className="rounded border-gray-300"
           />

@@ -33,6 +33,10 @@ htmlcov/
 .coverage.*
 coverage.xml
 *.cover
+*,cover
+coverage.lcov
+coverage/
+*.db
 .tox/
 .nox/
 .hypothesis/
@@ -82,3 +86,4 @@ temp/
 .claude
 .ipynb_checkpoints/
 .playwright-mcp/
+TODO.md

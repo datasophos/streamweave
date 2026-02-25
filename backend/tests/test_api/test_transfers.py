@@ -120,6 +120,24 @@ class TestListTransfers:
         assert resp.status_code == 200
         assert len(resp.json()) == 1
 
+    @pytest.mark.asyncio
+    async def test_user_filter_by_file_id_with_access(
+        self,
+        client,
+        regular_headers,
+        transfer_data,
+        grant_file_access,
+    ):
+        """Regular user can filter by file_id when they have access."""
+        data = transfer_data
+        await grant_file_access(data["file"].id)
+        resp = await client.get(
+            f"/api/transfers?file_id={data['file'].id}",
+            headers=regular_headers,
+        )
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+
 
 class TestGetTransfer:
     @pytest.mark.asyncio

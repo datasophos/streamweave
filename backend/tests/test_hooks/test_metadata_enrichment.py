@@ -71,3 +71,18 @@ class TestRegexExtraction:
         hook = MetadataEnrichmentHook(config={})
         result = await hook.execute(_ctx("file.tif"))
         assert result.metadata_updates == {}
+
+    @pytest.mark.asyncio
+    async def test_rule_with_empty_pattern_skipped(self):
+        """Rule with empty pattern is skipped (covers the `continue` on line 26)."""
+        hook = MetadataEnrichmentHook(
+            config={
+                "rules": [
+                    {"pattern": "", "source": "path"},  # empty pattern — should skip
+                    {"pattern": r"(?P<experiment>exp_\d+)", "source": "path"},
+                ]
+            }
+        )
+        result = await hook.execute(_ctx("exp_001/file.tif"))
+        # Only the second rule should have matched
+        assert result.metadata_updates == {"experiment": "exp_001"}

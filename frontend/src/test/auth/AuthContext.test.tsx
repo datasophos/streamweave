@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { server } from '@/mocks/server'
@@ -160,5 +160,43 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(screen.getByTestId('is-admin')).toHaveTextContent('false')
     })
+  })
+
+  it('useAuth throws when called outside AuthProvider', () => {
+    // This renders a component without an AuthProvider wrapper,
+    // which exercises the error branch at line 78
+    function Bare() {
+      return <div>{useAuth().user?.email}</div>
+    }
+
+    expect(() => {
+      render(<Bare />)
+    }).toThrow('useAuth must be used inside AuthProvider')
+  })
+
+  it('logout() still clears token even when logout API throws', async () => {
+    setupAuthToken()
+    server.use(
+      http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeUser())),
+      http.post(`${TEST_BASE}/auth/jwt/logout`, () => new HttpResponse(null, { status: 500 }))
+    )
+
+    const { user } = renderWithProviders(
+      <>
+        <AuthDisplay />
+        <AuthActions />
+      </>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('true')
+    })
+
+    await user.click(screen.getByRole('button', { name: 'logout' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('false')
+    })
+    expect(localStorage.getItem('access_token')).toBeNull()
   })
 })

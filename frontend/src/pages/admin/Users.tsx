@@ -54,11 +54,7 @@ function CreateUserForm({
       </div>
       <div>
         <label className="label">Role</label>
-        <select
-          className="input"
-          value={form.role ?? 'user'}
-          onChange={(e) => set('role', e.target.value)}
-        >
+        <select className="input" value={form.role} onChange={(e) => set('role', e.target.value)}>
           <option value="user">User</option>
           <option value="admin">Admin</option>
         </select>

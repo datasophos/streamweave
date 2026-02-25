@@ -104,6 +104,69 @@ describe('Dashboard', () => {
     })
   })
 
+  it('shows — for null bytes_transferred in recent transfers row', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/transfers`, () =>
+        HttpResponse.json([makeTransfer({ bytes_transferred: null })])
+      )
+    )
+
+    renderWithProviders(<Dashboard />)
+
+    // The '—' dash appears in the bytes column of the recent transfers table
+    await waitFor(() => {
+      // Multiple '—' may appear (bytes and started_at cols); just check at least one
+      expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('shows — for null started_at in recent transfers row', async () => {
+    setupAuth()
+    server.use(
+      http.get(`${TEST_BASE}/api/transfers`, () =>
+        HttpResponse.json([makeTransfer({ started_at: null })])
+      )
+    )
+
+    renderWithProviders(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('shows Disabled badge for disabled instrument in Instrument Status table', async () => {
+    setupAuth(true)
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([makeInstrument({ name: 'Offline NMR', enabled: false })])
+      )
+    )
+
+    renderWithProviders(<Dashboard />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline NMR')).toBeInTheDocument()
+      expect(screen.getByText('Disabled')).toBeInTheDocument()
+    })
+  })
+
+  it('shows — for Instruments stat while instruments are still loading (admin)', async () => {
+    setupAuth(true)
+    // Instruments endpoint hangs — data stays undefined so instruments?.length ?? '—' gives '—'
+    server.use(http.get(`${TEST_BASE}/api/instruments`, () => new Promise(() => {})))
+
+    renderWithProviders(<Dashboard />)
+
+    // The Instruments stat card is rendered immediately for admins; before data arrives,
+    // instruments is undefined so the value shows '—'
+    await waitFor(() => {
+      expect(screen.getByText('Instruments')).toBeInTheDocument()
+    })
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+  })
+
   it('non-admin does not see Instrument Status table', async () => {
     setupAuth(false)
 

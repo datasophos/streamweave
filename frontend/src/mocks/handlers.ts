@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import type {
+  HookConfig,
   Instrument,
   FileRecord,
   FileTransfer,
@@ -71,6 +72,23 @@ export const makeSchedule = (overrides: Partial<HarvestSchedule> = {}): HarvestS
   default_storage_location_id: 'storage-uuid-1',
   cron_expression: '0 * * * *',
   prefect_deployment_id: null,
+  enabled: true,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+  ...overrides,
+})
+
+export const makeHookConfig = (overrides: Partial<HookConfig> = {}): HookConfig => ({
+  id: 'hook-uuid-1',
+  name: 'Test Hook',
+  description: null,
+  trigger: 'post_transfer',
+  implementation: 'builtin',
+  builtin_name: 'access_assignment',
+  script_path: null,
+  webhook_url: null,
+  instrument_id: null,
+  priority: 0,
   enabled: true,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
@@ -157,12 +175,39 @@ export const handlers = [
 
   // Storage
   http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([makeStorageLocation()])),
+  http.post(`${TEST_BASE}/api/storage-locations`, () =>
+    HttpResponse.json(makeStorageLocation(), { status: 201 })
+  ),
+  http.patch(`${TEST_BASE}/api/storage-locations/:id`, ({ params }) =>
+    HttpResponse.json(makeStorageLocation({ id: params.id as string }))
+  ),
+  http.delete(
+    `${TEST_BASE}/api/storage-locations/:id`,
+    () => new HttpResponse(null, { status: 204 })
+  ),
 
   // Schedules
   http.get(`${TEST_BASE}/api/schedules`, () => HttpResponse.json([makeSchedule()])),
+  http.post(`${TEST_BASE}/api/schedules`, () => HttpResponse.json(makeSchedule(), { status: 201 })),
+  http.patch(`${TEST_BASE}/api/schedules/:id`, ({ params }) =>
+    HttpResponse.json(makeSchedule({ id: params.id as string }))
+  ),
+  http.delete(`${TEST_BASE}/api/schedules/:id`, () => new HttpResponse(null, { status: 204 })),
 
   // Hooks
-  http.get(`${TEST_BASE}/api/hooks`, () => HttpResponse.json([])),
+  http.get(`${TEST_BASE}/api/hooks`, () => HttpResponse.json([makeHookConfig()])),
+  http.post(`${TEST_BASE}/api/hooks`, () => HttpResponse.json(makeHookConfig(), { status: 201 })),
+  http.patch(`${TEST_BASE}/api/hooks/:id`, ({ params }) =>
+    HttpResponse.json(makeHookConfig({ id: params.id as string }))
+  ),
+  http.delete(`${TEST_BASE}/api/hooks/:id`, () => new HttpResponse(null, { status: 204 })),
+
+  // User CRUD (register + fastapi-users /users/:id)
+  http.post(`${TEST_BASE}/auth/register`, () => HttpResponse.json(makeUser(), { status: 201 })),
+  http.patch(`${TEST_BASE}/users/:id`, ({ params }) =>
+    HttpResponse.json(makeUser({ id: params.id as string }))
+  ),
+  http.delete(`${TEST_BASE}/users/:id`, () => new HttpResponse(null, { status: 204 })),
 
   // Files
   http.get(`${TEST_BASE}/api/files`, () => HttpResponse.json([makeFileRecord()])),

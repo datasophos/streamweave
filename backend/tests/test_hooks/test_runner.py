@@ -1,8 +1,10 @@
 """Tests for the hook runner."""
 
+from unittest.mock import patch
+
 import pytest
 
-from app.hooks.base import HookAction, HookContext
+from app.hooks.base import HookAction, HookContext, HookResult
 from app.hooks.runner import run_hooks
 from app.models.hook import HookConfig, HookImplementation, HookTrigger
 
@@ -183,4 +185,86 @@ class TestTriggerFiltering:
             ),
         ]
         result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)
+        assert result.action == HookAction.proceed
+
+
+class TestRedirectAction:
+    @pytest.mark.asyncio
+    async def test_redirect_short_circuits_pre_transfer(self):
+        """A redirect action from a pre-transfer hook short-circuits (covers lines 37-39)."""
+        from app.hooks.base import BaseHook
+
+        class RedirectHook(BaseHook):
+            async def execute(self, context: HookContext) -> HookResult:
+                return HookResult(
+                    action=HookAction.redirect,
+                    redirect_path="/alt/storage",
+                )
+
+        hooks = [
+            _make_hook_config(
+                "redirector",
+                HookTrigger.pre_transfer,
+                "file_filter",  # builtin_name doesn't matter since we patch get_hook
+                priority=0,
+            ),
+        ]
+
+        with patch("app.hooks.runner.get_hook", return_value=RedirectHook(config={})):
+            result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)
+
+        assert result.action == HookAction.redirect
+        assert result.redirect_path == "/alt/storage"
+
+    @pytest.mark.asyncio
+    async def test_pre_transfer_merges_metadata_on_proceed(self):
+        """Pre-transfer hook that proceeds has its metadata_updates merged (covers line 45)."""
+        from app.hooks.base import BaseHook
+
+        class MetadataHook(BaseHook):
+            async def execute(self, context: HookContext) -> HookResult:
+                return HookResult(
+                    action=HookAction.proceed,
+                    metadata_updates={"injected": "value"},
+                )
+
+        hooks = [
+            _make_hook_config(
+                "meta",
+                HookTrigger.pre_transfer,
+                "metadata_enrichment",
+                priority=0,
+            ),
+        ]
+
+        with patch("app.hooks.runner.get_hook", return_value=MetadataHook(config={})):
+            result = await run_hooks(HookTrigger.pre_transfer, _ctx(), hooks)
+
+        assert result.action == HookAction.proceed
+        assert result.metadata_updates.get("injected") == "value"
+
+
+class TestHookExceptionHandling:
+    @pytest.mark.asyncio
+    async def test_hook_exception_is_logged_and_skipped(self):
+        """Hook that raises an exception is caught and execution continues (covers lines 37-39 / continue)."""
+        from app.hooks.base import BaseHook
+
+        class FailingHook(BaseHook):
+            async def execute(self, context: HookContext) -> HookResult:
+                raise RuntimeError("Hook exploded")
+
+        hooks = [
+            _make_hook_config(
+                "failing",
+                HookTrigger.post_transfer,
+                "metadata_enrichment",
+                priority=0,
+            ),
+        ]
+
+        with patch("app.hooks.runner.get_hook", return_value=FailingHook(config={})):
+            result = await run_hooks(HookTrigger.post_transfer, _ctx(), hooks)
+
+        # Should proceed despite hook failure
         assert result.action == HookAction.proceed

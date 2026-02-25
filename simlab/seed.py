@@ -9,6 +9,7 @@ sys.path.insert(0, "../backend")
 from app.config import settings  # noqa: E402
 from app.database import async_session_factory, engine  # noqa: E402
 from app.models import Base  # noqa: E402
+from app.models.hook import HookConfig, HookImplementation, HookTrigger  # noqa: E402
 from app.models.instrument import Instrument, ServiceAccount, TransferAdapterType  # noqa: E402
 from app.models.schedule import HarvestSchedule  # noqa: E402
 from app.models.storage import StorageLocation, StorageType  # noqa: E402
@@ -108,6 +109,41 @@ async def seed():
             ),
         ]
         session.add_all(schedules)
+        await session.flush()
+
+        # Hook configs
+        hooks = [
+            HookConfig(
+                name="Microscope File Filter",
+                description="Exclude temporary files from microscope harvests",
+                trigger=HookTrigger.pre_transfer,
+                implementation=HookImplementation.builtin,
+                builtin_name="file_filter",
+                config={"exclude_patterns": ["*.tmp", "*.lock", "~$*"]},
+                instrument_id=microscope.id,
+                priority=0,
+                enabled=True,
+            ),
+            HookConfig(
+                name="Microscope Metadata Enrichment",
+                description="Extract experiment and run info from file paths",
+                trigger=HookTrigger.post_transfer,
+                implementation=HookImplementation.builtin,
+                builtin_name="metadata_enrichment",
+                config={
+                    "rules": [
+                        {
+                            "pattern": r"/(?P<username>[a-z][a-z0-9_]*)/(?P<experiment>experiment_\d+)",
+                            "source": "path",
+                        },
+                    ]
+                },
+                instrument_id=microscope.id,
+                priority=0,
+                enabled=True,
+            ),
+        ]
+        session.add_all(hooks)
         await session.commit()
 
     print("Simlab seed data created successfully.")
@@ -115,6 +151,7 @@ async def seed():
     print(f"  Instruments: {microscope.name}, {spectrometer.name}, {xrd.name}")
     print(f"  Storage: {archive_storage.name}, {restricted_storage.name}")
     print(f"  Schedules: {len(schedules)} created")
+    print(f"  Hooks: {len(hooks)} created")
 
 
 if __name__ == "__main__":

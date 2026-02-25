@@ -71,9 +71,13 @@ yarn.lock
 .env.*
 !.env.example
 
+# MkDocs
+site/
+
 # Misc
 *.log
 tmp/
 temp/
 
 .claude
+.ipynb_checkpoints/

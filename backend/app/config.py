@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # Encryption
     streamweave_encryption_key: str = "change-me"
 
+    # Prefect
+    prefect_api_url: str = "http://localhost:4200/api"
+    rclone_binary: str = "rclone"
+
     # Persistent Identifiers
     ark_naan: str = "99999"
     ark_shoulder: str = "fk4"

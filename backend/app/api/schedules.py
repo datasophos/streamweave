@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -5,11 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.models.instrument import Instrument
 from app.models.schedule import HarvestSchedule
 from app.models.user import User
 from app.schemas.schedule import HarvestScheduleCreate, HarvestScheduleRead, HarvestScheduleUpdate
+from app.services.prefect_client import PrefectClientService
 
 router = APIRouter(prefix="/schedules", tags=["schedules"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=list[HarvestScheduleRead])
@@ -31,6 +35,26 @@ async def create_schedule(
     db.add(schedule)
     await db.commit()
     await db.refresh(schedule)
+
+    # Best-effort Prefect deployment creation
+    try:
+        instrument = await db.get(Instrument, data.instrument_id)
+        instrument_name = instrument.name if instrument else str(data.instrument_id)
+        prefect_svc = PrefectClientService()
+        deployment_id = await prefect_svc.create_deployment(
+            instrument_id=str(data.instrument_id),
+            instrument_name=instrument_name,
+            schedule_id=str(schedule.id),
+            cron_expression=data.cron_expression,
+            enabled=data.enabled,
+        )
+        if deployment_id:
+            schedule.prefect_deployment_id = deployment_id
+            await db.commit()
+            await db.refresh(schedule)
+    except Exception:
+        logger.warning("Prefect deployment creation failed — schedule saved without it")
+
     return schedule
 
 
@@ -56,10 +80,27 @@ async def update_schedule(
     schedule = await db.get(HarvestSchedule, schedule_id)
     if not schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
-    for key, value in data.model_dump(exclude_unset=True).items():
+
+    updates = data.model_dump(exclude_unset=True)
+    for key, value in updates.items():
         setattr(schedule, key, value)
     await db.commit()
     await db.refresh(schedule)
+
+    # Best-effort Prefect deployment update
+    if schedule.prefect_deployment_id and (
+        "cron_expression" in updates or "enabled" in updates
+    ):
+        try:
+            prefect_svc = PrefectClientService()
+            await prefect_svc.update_deployment(
+                schedule.prefect_deployment_id,
+                cron_expression=updates.get("cron_expression"),
+                enabled=updates.get("enabled"),
+            )
+        except Exception:
+            logger.warning("Prefect deployment update failed")
+
     return schedule
 
 
@@ -72,5 +113,49 @@ async def delete_schedule(
     schedule = await db.get(HarvestSchedule, schedule_id)
     if not schedule:
         raise HTTPException(status_code=404, detail="Schedule not found")
+
+    # Best-effort Prefect deployment deletion
+    if schedule.prefect_deployment_id:
+        try:
+            prefect_svc = PrefectClientService()
+            await prefect_svc.delete_deployment(schedule.prefect_deployment_id)
+        except Exception:
+            logger.warning("Prefect deployment deletion failed")
+
     await db.delete(schedule)
     await db.commit()
+
+
+@router.post("/{schedule_id}/trigger")
+async def trigger_harvest(
+    schedule_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    """Trigger a manual harvest for this schedule."""
+    schedule = await db.get(HarvestSchedule, schedule_id)
+    if not schedule:
+        raise HTTPException(status_code=404, detail="Schedule not found")
+
+    if not schedule.prefect_deployment_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Schedule has no Prefect deployment — cannot trigger harvest",
+        )
+
+    prefect_svc = PrefectClientService()
+    flow_run_id = await prefect_svc.trigger_harvest(
+        schedule.prefect_deployment_id,
+        parameters={
+            "instrument_id": str(schedule.instrument_id),
+            "schedule_id": str(schedule.id),
+        },
+    )
+
+    if not flow_run_id:
+        raise HTTPException(
+            status_code=502,
+            detail="Failed to trigger harvest — Prefect server may be unavailable",
+        )
+
+    return {"flow_run_id": flow_run_id, "schedule_id": str(schedule_id)}

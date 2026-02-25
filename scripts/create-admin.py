@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Create the first admin user for Streamweave."""
 
+import argparse
 import asyncio
 import getpass
 import sys
@@ -31,30 +32,39 @@ async def create_admin(email: str, password: str):
             sys.exit(1)
 
 
-async def main():
-    email = input("Admin email: ").strip()
+async def main(email: str | None = None, password: str | None = None):
+    if email is None:
+        email = input("Admin email: ").strip()
     if not email:
         print("Email is required.")
         sys.exit(1)
 
-    password = getpass.getpass("Admin password: ")
-    if len(password) < 8:
+    if password is None:
+        password = getpass.getpass("Admin password: ")
+        if len(password) < 8:
+            print("Password must be at least 8 characters.")
+            sys.exit(1)
+        confirm = getpass.getpass("Confirm password: ")
+        if password != confirm:
+            print("Passwords do not match.")
+            sys.exit(1)
+    elif len(password) < 8:
         print("Password must be at least 8 characters.")
-        sys.exit(1)
-
-    confirm = getpass.getpass("Confirm password: ")
-    if password != confirm:
-        print("Passwords do not match.")
         sys.exit(1)
 
     await create_admin(email, password)
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Create a Streamweave admin user.")
+    parser.add_argument("--email", help="Admin email address")
+    parser.add_argument("--password", help="Admin password (min 8 characters)")
+    args = parser.parse_args()
+
     # Must be run from backend/ directory
     sys.path.insert(0, ".")
     from app.auth.setup import UserManager
     from app.models.user import User
     from fastapi_users.db import SQLAlchemyUserDatabase
 
-    asyncio.run(main())
+    asyncio.run(main(email=args.email, password=args.password))

@@ -1,7 +1,7 @@
 # StreamWeave
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/datasophos/streamweave/main/_streamweave.png" width="300">
+    <img src="https://raw.githubusercontent.com/datasophos/streamweave/main/assets/streamweave_logo.png" width="300">
 </p>
 
 StreamWeave is a scientific instrument data harvesting and management system. 

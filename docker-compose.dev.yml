@@ -8,11 +8,36 @@ services:
       DATABASE_URL: postgresql+asyncpg://streamweave:streamweave@postgres:5432/streamweave
       SECRET_KEY: dev-secret-key
       STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
+      PREFECT_API_URL: http://prefect-server:4200/api
     depends_on:
       postgres:
         condition: service_healthy
+      prefect-server:
+        condition: service_started
     volumes:
       - ./backend:/app
+      - harvest_data:/storage
     command: >
       sh -c "alembic upgrade head &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://streamweave:streamweave@postgres:5432/streamweave
+      SECRET_KEY: dev-secret-key
+      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
+      PREFECT_API_URL: http://prefect-server:4200/api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      prefect-server:
+        condition: service_started
+    volumes:
+      - ./backend:/app
+      - harvest_data:/storage
+
+volumes:
+  harvest_data:

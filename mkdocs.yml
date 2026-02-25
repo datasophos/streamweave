@@ -1,0 +1,64 @@
+site_name: StreamWeave
+copyright: Copyright &copy; 2026 datasophos, LLC
+site_description: Scientific instrument data harvesting and management system
+site_url: https://datasophos.github.io/streamweave
+repo_url: https://github.com/datasophos/streamweave
+repo_name: datasophos/streamweave
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  logo: _static/streamweave_logo_white.svg
+  favicon: _static/streamweave_logo.svg
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+
+exclude_docs: |
+  README.md
+
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute: false
+      include_source: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quick Start: getting-started/quickstart.md
+      - Simulated Lab: getting-started/simlab.md
+  - Architecture: architecture.md
+  - API Reference: api.md
+  - Backend API Demo: backend-demo.ipynb

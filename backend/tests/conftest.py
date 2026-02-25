@@ -90,3 +90,74 @@ async def admin_token(client: AsyncClient, admin_user: User) -> str:
 @pytest.fixture
 def admin_headers(admin_token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {admin_token}"}
+
+
+@pytest_asyncio.fixture
+async def regular_user(db_session: AsyncSession) -> User:
+    from app.auth.setup import UserManager
+    from app.schemas.user import UserCreate
+    from fastapi_users.db import SQLAlchemyUserDatabase
+
+    user_db = SQLAlchemyUserDatabase(db_session, User)
+    user_manager = UserManager(user_db)
+
+    user = await user_manager.create(
+        UserCreate(
+            email="user@test.com",
+            password="testpassword123",
+            role=UserRole.user,
+            is_superuser=False,
+        )
+    )
+    return user
+
+
+@pytest_asyncio.fixture
+async def regular_token(client: AsyncClient, regular_user: User) -> str:
+    response = await client.post(
+        "/auth/jwt/login",
+        data={"username": "user@test.com", "password": "testpassword123"},
+    )
+    return response.json()["access_token"]
+
+
+@pytest.fixture
+def regular_headers(regular_token: str) -> dict[str, str]:
+    return {"Authorization": f"Bearer {regular_token}"}
+
+
+@pytest_asyncio.fixture
+async def user_instrument_access(db_session: AsyncSession, regular_user: User):
+    """Factory fixture: call with (instrument_id) to grant access.
+    Legacy fixture — kept for backward compat but prefer grant_file_access.
+    """
+    from app.models.user import UserInstrumentAccess
+
+    async def _grant(instrument_id):
+        access = UserInstrumentAccess(
+            user_id=regular_user.id,
+            instrument_id=instrument_id,
+        )
+        db_session.add(access)
+        await db_session.flush()
+        return access
+
+    return _grant
+
+
+@pytest_asyncio.fixture
+async def grant_file_access(db_session: AsyncSession, regular_user: User):
+    """Factory fixture: call with (file_id) to grant user-level file access."""
+    from app.models.access import FileAccessGrant, GranteeType
+
+    async def _grant(file_id):
+        grant = FileAccessGrant(
+            file_id=file_id,
+            grantee_type=GranteeType.user,
+            grantee_id=regular_user.id,
+        )
+        db_session.add(grant)
+        await db_session.flush()
+        return grant
+
+    return _grant

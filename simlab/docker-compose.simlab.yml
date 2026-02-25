@@ -1,6 +1,8 @@
 services:
   microscope-01:
-    image: dperson/samba
+    build:
+      context: .
+      dockerfile: Dockerfile.samba
     environment:
       USER: "labuser;labpass"
       SHARE: "microscope;/data;yes;no;no;labuser"
@@ -8,9 +10,13 @@ services:
       - ./instruments/microscope-01/sample_data:/data
     ports:
       - "4451:445"
+    networks:
+      - simlab
 
   spectrometer-01:
-    image: dperson/samba
+    build:
+      context: .
+      dockerfile: Dockerfile.samba
     environment:
       USER: "labuser;labpass"
       SHARE: "spectrometer;/data;yes;no;no;labuser"
@@ -18,9 +24,13 @@ services:
       - ./instruments/spectrometer-01/sample_data:/data
     ports:
       - "4452:445"
+    networks:
+      - simlab
 
   xray-diffraction-01:
-    image: dperson/samba
+    build:
+      context: .
+      dockerfile: Dockerfile.samba
     environment:
       USER: "labuser;labpass"
       SHARE: "xrd;/data;yes;no;no;labuser"
@@ -28,3 +38,9 @@ services:
       - ./instruments/xray-diffraction-01/sample_data:/data
     ports:
       - "4453:445"
+    networks:
+      - simlab
+
+networks:
+  simlab:
+    name: streamweave-simlab

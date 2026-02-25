@@ -32,8 +32,12 @@ class FileRecord(UUIDPrimaryKey, Base):
     sha256: Mapped[str | None] = mapped_column(String(64))
     first_discovered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON)
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
     instrument: Mapped["Instrument"] = relationship(back_populates="files")  # noqa: F821
     transfers: Mapped[list["FileTransfer"]] = relationship(  # noqa: F821
         back_populates="file"
+    )
+    access_grants: Mapped[list["FileAccessGrant"]] = relationship(  # noqa: F821
+        back_populates="file", cascade="all, delete-orphan"
     )

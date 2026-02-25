@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import enum
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Boolean, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDPrimaryKey
+
+if TYPE_CHECKING:
+    from app.models.instrument import Instrument
 
 
 class HookTrigger(enum.StrEnum):
@@ -33,4 +39,4 @@ class HookConfig(UUIDPrimaryKey, Base):
     priority: Mapped[int] = mapped_column(Integer, default=0)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    instrument: Mapped["Instrument | None"] = relationship(back_populates="hooks")  # noqa: F821
+    instrument: Mapped[Instrument | None] = relationship(back_populates="hooks")

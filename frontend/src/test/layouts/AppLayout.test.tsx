@@ -33,7 +33,7 @@ describe('AppLayout', () => {
   it('renders footer', async () => {
     setupUser()
     renderWithProviders(<AppLayout />)
-    expect(screen.getByText(/Taming your data flows/i)).toBeInTheDocument()
+    expect(screen.getByText(/Data harvesting, simplified/i)).toBeInTheDocument()
   })
 
   it('non-admin sees My Files and Transfers nav links', async () => {

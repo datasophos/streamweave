@@ -202,7 +202,9 @@ export function Hooks() {
     {
       header: 'Scope',
       render: (row: HookConfig) =>
-        row.instrument_id ? instMap[row.instrument_id] ?? row.instrument_id.slice(0, 8) : 'Global',
+        row.instrument_id
+          ? (instMap[row.instrument_id] ?? row.instrument_id.slice(0, 8))
+          : 'Global',
     },
     { header: 'Priority', key: 'priority' as const },
     {

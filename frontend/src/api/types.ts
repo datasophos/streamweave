@@ -150,6 +150,8 @@ export interface HookConfig {
   instrument_id: UUID | null
   priority: number
   enabled: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface HookConfigCreate {

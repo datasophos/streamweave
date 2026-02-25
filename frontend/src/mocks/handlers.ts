@@ -88,6 +88,7 @@ export const makeHookConfig = (overrides: Partial<HookConfig> = {}): HookConfig 
   script_path: null,
   webhook_url: null,
   instrument_id: null,
+  config: null,
   priority: 0,
   enabled: true,
   created_at: '2026-01-01T00:00:00Z',

@@ -312,7 +312,9 @@ export function AppLayout() {
 
       <footer className="bg-white border-t border-gray-200 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <span className="text-xs text-gray-400">StreamWeave — Taming your data flows</span>
+          <span className="text-xs text-gray-400 italic">
+            StreamWeave — Data harvesting, simplified
+          </span>
           <a
             href="https://datasophos.co"
             target="_blank"

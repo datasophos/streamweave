@@ -1,11 +1,19 @@
+from __future__ import annotations
+
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, BigInteger, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDPrimaryKey
+
+if TYPE_CHECKING:
+    from app.models.access import FileAccessGrant
+    from app.models.instrument import Instrument
+    from app.models.transfer import FileTransfer
 
 
 class PersistentIdType(enum.StrEnum):
@@ -34,10 +42,8 @@ class FileRecord(UUIDPrimaryKey, Base):
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON)
     owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
-    instrument: Mapped["Instrument"] = relationship(back_populates="files")  # noqa: F821
-    transfers: Mapped[list["FileTransfer"]] = relationship(  # noqa: F821
-        back_populates="file"
-    )
-    access_grants: Mapped[list["FileAccessGrant"]] = relationship(  # noqa: F821
+    instrument: Mapped[Instrument] = relationship(back_populates="files")
+    transfers: Mapped[list[FileTransfer]] = relationship(back_populates="file")
+    access_grants: Mapped[list[FileAccessGrant]] = relationship(
         back_populates="file", cascade="all, delete-orphan"
     )

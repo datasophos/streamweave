@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 import enum
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import JSON, Boolean, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
+
+if TYPE_CHECKING:
+    from app.models.file import FileRecord
+    from app.models.hook import HookConfig
+    from app.models.schedule import HarvestSchedule
 
 
 class TransferAdapterType(enum.StrEnum):
@@ -21,7 +29,7 @@ class ServiceAccount(UUIDPrimaryKey, TimestampMixin, Base):
     username: Mapped[str] = mapped_column(String(255))
     password_encrypted: Mapped[str] = mapped_column(Text)
 
-    instruments: Mapped[list["Instrument"]] = relationship(back_populates="service_account")
+    instruments: Mapped[list[Instrument]] = relationship(back_populates="service_account")
 
 
 class Instrument(UUIDPrimaryKey, TimestampMixin, Base):
@@ -44,8 +52,6 @@ class Instrument(UUIDPrimaryKey, TimestampMixin, Base):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
 
     service_account: Mapped[ServiceAccount | None] = relationship(back_populates="instruments")
-    schedules: Mapped[list["HarvestSchedule"]] = relationship(  # noqa: F821
-        back_populates="instrument"
-    )
-    files: Mapped[list["FileRecord"]] = relationship(back_populates="instrument")  # noqa: F821
-    hooks: Mapped[list["HookConfig"]] = relationship(back_populates="instrument")  # noqa: F821
+    schedules: Mapped[list[HarvestSchedule]] = relationship(back_populates="instrument")
+    files: Mapped[list[FileRecord]] = relationship(back_populates="instrument")
+    hooks: Mapped[list[HookConfig]] = relationship(back_populates="instrument")

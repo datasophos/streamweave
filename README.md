@@ -1,12 +1,14 @@
 # StreamWeave
 
-<p align="center">
-    <img src="https://raw.githubusercontent.com/datasophos/streamweave/main/assets/streamweave_logo.png" width="300">
-</p>
+> **Pre-Alpha Software**: StreamWeave is under heavy active development and not yet ready for production use. APIs, data models, and configuration formats may change without notice.
 
-StreamWeave is a scientific instrument data harvesting and management system. 
+<div align="center">
+    <img src="https://raw.githubusercontent.com/datasophos/streamweave/refs/heads/main/assets/streamwave_logo.png" width="200">
+    <p style="font-size:0.7rem;opacity:0.75;margin:1rem 0 1rem 0;"><em>Scientific data harvesting, simplified.</em></p>
+</div>
 
-StreamWeave periodically pulls data from CIFS/SMB shares on scientific instruments via service accounts and delivers it to configured storage destinations (POSIX, S3, NFS, CIFS), with persistent file identifiers, full transfer audit trails, and a configurable hook system for integration with external APIs.
+StreamWeave simplifies the process of moving experimental instrument data from a wide network of tools into one or more centralized target locations.
+It provides an easy framework to periodically pulls data from CIFS/SMB shares on scientific instruments via service accounts and delivers it to configured storage destinations (POSIX, S3, NFS, CIFS), with persistent file identifiers, full transfer audit trails, and a configurable hook system for integration with external APIs.
 
 ## Architecture
 

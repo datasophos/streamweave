@@ -14,6 +14,8 @@ from app.models.user import User, UserRole
 
 # Suppress Prefect logging warnings during tests
 os.environ["PREFECT_LOGGING_TO_API_WHEN_MISSING_FLOW"] = "ignore"
+# Use in-memory SQLite for the Prefect ephemeral server so it starts faster in CI
+os.environ.setdefault("PREFECT_SERVER_EPHEMERAL_STARTUP_TIMEOUT_SECONDS", "120")
 
 
 # Suppress Prefect server shutdown logging errors
@@ -68,6 +70,15 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestSessionFactory = async_sessionmaker(engine, expire_on_commit=False)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _prefect_test_harness():
+    """Use Prefect's test harness so the ephemeral server starts with in-memory SQLite."""
+    from prefect.testing.utilities import prefect_test_harness
+
+    with prefect_test_harness():
+        yield
 
 
 @pytest.fixture(scope="session", autouse=True)

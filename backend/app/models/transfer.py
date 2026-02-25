@@ -1,12 +1,19 @@
+from __future__ import annotations
+
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Boolean, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDPrimaryKey
 from app.models.instrument import TransferAdapterType
+
+if TYPE_CHECKING:
+    from app.models.file import FileRecord
+    from app.models.storage import StorageLocation
 
 
 class TransferStatus(enum.StrEnum):
@@ -36,5 +43,5 @@ class FileTransfer(UUIDPrimaryKey, Base):
     error_message: Mapped[str | None] = mapped_column(Text)
     prefect_flow_run_id: Mapped[str | None] = mapped_column(String(255))
 
-    file: Mapped["FileRecord"] = relationship(back_populates="transfers")  # noqa: F821
-    storage_location: Mapped["StorageLocation"] = relationship()  # noqa: F821
+    file: Mapped[FileRecord] = relationship(back_populates="transfers")
+    storage_location: Mapped[StorageLocation] = relationship()

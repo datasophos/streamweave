@@ -297,7 +297,7 @@ export function Instruments() {
       header: 'Service Account',
       render: (row: Instrument) =>
         row.service_account_id
-          ? saMap[row.service_account_id]?.name ?? row.service_account_id
+          ? (saMap[row.service_account_id]?.name ?? row.service_account_id)
           : '—',
     },
     { header: 'Adapter', key: 'transfer_adapter' as const },

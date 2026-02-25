@@ -139,5 +139,5 @@ class PrefectClientService:
         # Import the flow to ensure it's registered
         from app.flows.harvest import harvest_instrument_flow
 
-        flow_id = await client.create_flow(harvest_instrument_flow)  # type: ignore[arg-type]
+        flow_id = await client.create_flow(harvest_instrument_flow)
         return flow_id

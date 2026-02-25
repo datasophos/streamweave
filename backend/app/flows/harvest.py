@@ -39,7 +39,9 @@ async def _resolve_grantee(session, grantee_type: str, name: str) -> uuid.UUID |
     if grantee_type == "user":
         from app.models.user import User
 
-        result = await session.execute(select(User.id).where(User.email == name))
+        result = await session.execute(
+            select(User.id).where(User.email == name)  # ty: ignore[no-matching-overload]
+        )
     elif grantee_type == "group":
         from app.models.group import Group
 
@@ -332,10 +334,11 @@ async def harvest_instrument_flow(instrument_id: str, schedule_id: str) -> dict:
         from prefect.client.orchestration import get_client
 
         ctx = prefect.context.get_run_context()
-        if ctx and ctx.flow_run:
+        flow_run = getattr(ctx, "flow_run", None)
+        if flow_run:
             async with get_client() as client:
                 await client.update_flow_run(
-                    ctx.flow_run.id,
+                    flow_run.id,
                     name=f"harvest-{instrument_name}",
                 )
     except Exception:

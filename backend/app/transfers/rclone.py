@@ -88,6 +88,7 @@ class RcloneAdapter(TransferAdapter):
             env=env,
         )
         stdout, stderr = await proc.communicate()
+        assert proc.returncode is not None
         return proc.returncode, stdout.decode(), stderr.decode()
 
     async def discover(self) -> list[DiscoveredFile]:

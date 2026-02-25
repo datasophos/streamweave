@@ -8,17 +8,32 @@ repos:
       - id: ruff-format
         files: ^backend/
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.0
-    hooks:
-      - id: prettier
-        files: ^frontend/src/.*\.(ts|tsx)$
-
   - repo: local
     hooks:
-      - id: eslint
-        name: eslint
-        entry: bash -c 'cd frontend && npm run lint'
+      - id: prettier
+        name: prettier
+        entry: bash -c 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && cd frontend && node_modules/.bin/prettier --write src'
         language: system
         files: ^frontend/src/.*\.(ts|tsx)$
+        pass_filenames: false
+
+      - id: ty
+        name: ty
+        entry: bash -c 'cd backend && uv run ty check app'
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+
+      - id: eslint
+        name: eslint
+        entry: bash -c 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && cd frontend && node_modules/.bin/eslint src'
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx)$
+        pass_filenames: false
+
+      - id: tsc
+        name: tsc
+        entry: bash -c 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && cd frontend && node_modules/.bin/tsc --noEmit'
+        language: system
+        files: ^frontend/.*\.(ts|tsx)$
         pass_filenames: false

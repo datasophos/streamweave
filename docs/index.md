@@ -1,8 +1,7 @@
 <div style="text-align:center;padding:2rem 0 2.5rem;">
   <img src="_static/streamweave_logo.svg" alt="StreamWeave logo" width="180" style="margin-bottom:1.25rem;">
   <h1 style="font-size:2.5rem;margin:0 0 0.5rem;">StreamWeave</h1>
-  <p style="font-size:1.2rem;opacity:0.75;margin:0 0 1rem;">A scientific instrument data harvesting and management system.</p>
-  <p style="font-size:0.7rem;opacity:0.75;margin:0 0 1rem;"><em>Built by scientists for scientists...</em></p>
+  <p style="font-size:0.7rem;opacity:0.75;margin:0 0 1rem;"><em>Scientific data harvesting, simplified.</em></p>
 </div>
 
 StreamWeave tames unruly streams of scientific data by automatically pulling files from scientific instruments via service accounts and delivers them to configured storage destinations (POSIX, S3, NFS, CIFS), with persistent file identifiers, configurable destination and access control, full transfer audit trails, and an easily extensible hook system for integration with external APIs.

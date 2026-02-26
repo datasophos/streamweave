@@ -349,7 +349,16 @@ export function AppLayout() {
             <span>Built for</span>
             <span className="text-lg leading-none">👩‍🔬</span>
             <span>by</span>
-            <img src="/datasophos_wordmark.svg" alt="Datasophos" className="h-7 w-auto" />
+            <img
+              src="/datasophos_wordmark.svg"
+              alt="Datasophos"
+              className="h-7 w-auto dark:hidden"
+            />
+            <img
+              src="/datasophos_wordmark_light.svg"
+              alt="Datasophos"
+              className="h-7 w-auto hidden dark:block"
+            />
           </a>
         </div>
       </footer>

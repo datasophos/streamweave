@@ -5,5 +5,6 @@
   "email": "Dirección de correo electrónico",
   "password": "Contraseña",
   "signing_in": "Iniciando sesión…",
-  "invalid_credentials": "Credenciales inválidas."
+  "invalid_credentials": "Credenciales inválidas.",
+  "bad_credentials": "Correo electrónico o contraseña incorrectos. Por favor, contacte a su administrador del sistema para obtener ayuda."
 }

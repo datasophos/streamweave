@@ -40,6 +40,19 @@ import files_fr from './locales/fr/files.json'
 import transfers_fr from './locales/fr/transfers.json'
 import request_fr from './locales/fr/request.json'
 import settings_fr from './locales/fr/settings.json'
+import common_fr_ca from './locales/fr-CA/common.json'
+import nav_fr_ca from './locales/fr-CA/nav.json'
+import dashboard_fr_ca from './locales/fr-CA/dashboard.json'
+import login_fr_ca from './locales/fr-CA/login.json'
+import instruments_fr_ca from './locales/fr-CA/instruments.json'
+import storage_fr_ca from './locales/fr-CA/storage.json'
+import schedules_fr_ca from './locales/fr-CA/schedules.json'
+import hooks_fr_ca from './locales/fr-CA/hooks.json'
+import users_fr_ca from './locales/fr-CA/users.json'
+import files_fr_ca from './locales/fr-CA/files.json'
+import transfers_fr_ca from './locales/fr-CA/transfers.json'
+import request_fr_ca from './locales/fr-CA/request.json'
+import settings_fr_ca from './locales/fr-CA/settings.json'
 import common_zh from './locales/zh/common.json'
 import nav_zh from './locales/zh/nav.json'
 import dashboard_zh from './locales/zh/dashboard.json'
@@ -63,7 +76,10 @@ i18n
       lookupLocalStorage: 'sw_preferences_lang',
       caches: ['localStorage'],
     },
-    fallbackLng: 'en',
+    fallbackLng: {
+      'fr-CA': ['fr', 'en'],
+      default: ['en'],
+    },
     defaultNS: 'common',
     ns: [
       'common',
@@ -125,6 +141,21 @@ i18n
         transfers: transfers_fr,
         request: request_fr,
         settings: settings_fr,
+      },
+      'fr-CA': {
+        common: common_fr_ca,
+        nav: nav_fr_ca,
+        dashboard: dashboard_fr_ca,
+        login: login_fr_ca,
+        instruments: instruments_fr_ca,
+        storage: storage_fr_ca,
+        schedules: schedules_fr_ca,
+        hooks: hooks_fr_ca,
+        users: users_fr_ca,
+        files: files_fr_ca,
+        transfers: transfers_fr_ca,
+        request: request_fr_ca,
+        settings: settings_fr_ca,
       },
       zh: {
         common: common_zh,

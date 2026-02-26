@@ -5,5 +5,6 @@
   "email": "电子邮件地址",
   "password": "密码",
   "signing_in": "登录中…",
-  "invalid_credentials": "凭据无效。"
+  "invalid_credentials": "凭据无效。",
+  "bad_credentials": "电子邮件或密码不正确。如需帮助，请联系系统管理员。"
 }

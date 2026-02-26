@@ -457,19 +457,20 @@ describe('Settings page', () => {
     await user.click(screen.getByRole('button', { name: 'Preferences' }))
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /English/ })).toBeInTheDocument()
     })
   })
 
-  it('renders Spanish, French, and Chinese language option buttons', async () => {
+  it('renders Spanish, French, French Canadian, and Chinese language option buttons', async () => {
     setupUser()
     const { user } = renderWithProviders(<Settings />)
     await user.click(screen.getByRole('button', { name: 'Preferences' }))
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Español' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Français' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: '中文' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Español/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^🇫🇷/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /🇨🇦/ })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /中文/ })).toBeInTheDocument()
     })
   })
 
@@ -477,9 +478,9 @@ describe('Settings page', () => {
     setupUser()
     const { user } = renderWithProviders(<Settings />)
     await user.click(screen.getByRole('button', { name: 'Preferences' }))
-    await waitFor(() => screen.getByRole('button', { name: 'English' }))
+    await waitFor(() => screen.getByRole('button', { name: /English/ }))
 
-    await user.click(screen.getByRole('button', { name: 'English' }))
+    await user.click(screen.getByRole('button', { name: /English/ }))
 
     const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
     expect(stored.language).toBe('en')
@@ -489,33 +490,45 @@ describe('Settings page', () => {
     setupUser()
     const { user } = renderWithProviders(<Settings />)
     await user.click(screen.getByRole('button', { name: 'Preferences' }))
-    await waitFor(() => screen.getByRole('button', { name: 'Español' }))
+    await waitFor(() => screen.getByRole('button', { name: /Español/ }))
 
-    await user.click(screen.getByRole('button', { name: 'Español' }))
+    await user.click(screen.getByRole('button', { name: /Español/ }))
 
     const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
     expect(stored.language).toBe('es')
   })
 
-  it('clicking Français saves fr to localStorage', async () => {
+  it('clicking Français (France) saves fr to localStorage', async () => {
     setupUser()
     const { user } = renderWithProviders(<Settings />)
     await user.click(screen.getByRole('button', { name: 'Preferences' }))
-    await waitFor(() => screen.getByRole('button', { name: 'Français' }))
+    await waitFor(() => screen.getByRole('button', { name: /^🇫🇷/ }))
 
-    await user.click(screen.getByRole('button', { name: 'Français' }))
+    await user.click(screen.getByRole('button', { name: /^🇫🇷/ }))
 
     const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
     expect(stored.language).toBe('fr')
+  })
+
+  it('clicking Français (CA) saves fr-CA to localStorage', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+    await waitFor(() => screen.getByRole('button', { name: /🇨🇦/ }))
+
+    await user.click(screen.getByRole('button', { name: /🇨🇦/ }))
+
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('fr-CA')
   })
 
   it('clicking 中文 saves zh to localStorage', async () => {
     setupUser()
     const { user } = renderWithProviders(<Settings />)
     await user.click(screen.getByRole('button', { name: 'Preferences' }))
-    await waitFor(() => screen.getByRole('button', { name: '中文' }))
+    await waitFor(() => screen.getByRole('button', { name: /中文/ }))
 
-    await user.click(screen.getByRole('button', { name: '中文' }))
+    await user.click(screen.getByRole('button', { name: /中文/ }))
 
     const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
     expect(stored.language).toBe('zh')

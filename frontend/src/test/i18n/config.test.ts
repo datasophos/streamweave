@@ -4,10 +4,21 @@ import i18n from '@/i18n/config'
 
 describe('i18n config', () => {
   it('initializes with English as the fallback language', () => {
-    // i18next normalizes fallbackLng to an array internally
     const fallback = i18n.options.fallbackLng
-    const langs = Array.isArray(fallback) ? fallback : [fallback]
-    expect(langs).toContain('en')
+    // fallbackLng may be a string, array, or object map
+    if (Array.isArray(fallback)) {
+      expect(fallback).toContain('en')
+    } else if (fallback && typeof fallback === 'object') {
+      const map = fallback as Record<string, string[]>
+      expect(map['default']).toContain('en')
+    } else {
+      expect(fallback).toBe('en')
+    }
+  })
+
+  it('fr-CA falls back through fr then en', () => {
+    const fallback = i18n.options.fallbackLng as Record<string, string[]>
+    expect(fallback['fr-CA']).toEqual(['fr', 'en'])
   })
 
   it('has common as the default namespace', () => {
@@ -84,6 +95,20 @@ describe('i18n config', () => {
     expect(i18n.hasResourceBundle('zh', 'settings')).toBe(true)
   })
 
+  it('has French Canadian (fr-CA) resources registered', () => {
+    expect(i18n.hasResourceBundle('fr-CA', 'common')).toBe(true)
+    expect(i18n.hasResourceBundle('fr-CA', 'settings')).toBe(true)
+  })
+
+  it('translates common keys in French Canadian using courriel vocabulary', () => {
+    expect(i18n.t('save', { ns: 'common', lng: 'fr-CA' })).toBe('Enregistrer')
+    expect(i18n.t('cancel', { ns: 'common', lng: 'fr-CA' })).toBe('Annuler')
+  })
+
+  it('fr-CA login uses courriel instead of e-mail', () => {
+    expect(i18n.t('email', { ns: 'login', lng: 'fr-CA' })).toBe('Adresse courriel')
+  })
+
   it('translates common keys in Spanish', () => {
     expect(i18n.t('save', { ns: 'common', lng: 'es' })).toBe('Guardar')
     expect(i18n.t('cancel', { ns: 'common', lng: 'es' })).toBe('Cancelar')
@@ -103,11 +128,17 @@ describe('i18n config', () => {
   })
 
   it('language selector labels use native names in all locales', () => {
-    for (const lng of ['en', 'es', 'fr', 'zh']) {
+    for (const lng of ['en', 'es', 'fr', 'fr-CA', 'zh']) {
       expect(i18n.t('lang_es', { ns: 'settings', lng })).toBe('Español')
       expect(i18n.t('lang_fr', { ns: 'settings', lng })).toBe('Français')
       expect(i18n.t('lang_zh', { ns: 'settings', lng })).toBe('中文')
     }
+  })
+
+  it('lang_fr_ca key is present in all locales', () => {
+    expect(i18n.t('lang_fr_ca', { ns: 'settings', lng: 'en' })).toBe('Français (CA)')
+    expect(i18n.t('lang_fr_ca', { ns: 'settings', lng: 'fr' })).toBe('Français (Canada)')
+    expect(i18n.t('lang_fr_ca', { ns: 'settings', lng: 'fr-CA' })).toBe('Français (Canada)')
   })
 
   it('AI warning key is present in all locales', () => {

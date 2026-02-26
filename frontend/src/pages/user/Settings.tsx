@@ -228,10 +228,11 @@ function PreferencesSection() {
   const { preferences, setPreference } = usePreferences()
 
   const languageOptions: { label: string; value: Language }[] = [
-    { label: t('lang_en'), value: 'en' },
-    { label: t('lang_es'), value: 'es' },
-    { label: t('lang_fr'), value: 'fr' },
-    { label: t('lang_zh'), value: 'zh' },
+    { label: `🇺🇸 ${t('lang_en')}`, value: 'en' },
+    { label: `🇪🇸 ${t('lang_es')}`, value: 'es' },
+    { label: `🇫🇷 ${t('lang_fr')}`, value: 'fr' },
+    { label: `🇨🇦 ${t('lang_fr_ca')}`, value: 'fr-CA' },
+    { label: `🇨🇳 ${t('lang_zh')}`, value: 'zh' },
   ]
 
   return (

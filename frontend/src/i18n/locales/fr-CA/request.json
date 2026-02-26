@@ -1,0 +1,18 @@
+{
+  "title": "Demande de Collecte d'Instrument",
+  "description": "Demander qu'un nouvel instrument soit ajouté au système de collecte",
+  "form_instrument_name": "Nom de l'Instrument *",
+  "form_location": "Emplacement Physique *",
+  "form_contact_email": "Courriel de Contact *",
+  "form_description": "Description de l'Instrument",
+  "form_justification": "Justification *",
+  "placeholder_instrument_name": "ex. Microscope TEM Lab 3",
+  "placeholder_location": "ex. Bâtiment A, Salle 204",
+  "placeholder_contact_email": "votre@courriel.edu",
+  "placeholder_description": "Décrivez l'instrument et le type de données qu'il génère…",
+  "placeholder_justification": "Pourquoi cet instrument a-t-il besoin d'une collecte de données automatisée ? Pour quel projet ou subvention ?",
+  "submit": "Soumettre la Demande",
+  "success_title": "Demande Soumise",
+  "success_message": "Votre demande pour <bold>{{instrument_name}}</bold> a été soumise. Un administrateur l'examinera et vous contactera à {{contact_email}}.",
+  "submit_another": "Soumettre une Autre Demande"
+}

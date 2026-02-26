@@ -70,7 +70,7 @@ describe('Login page', () => {
     })
   })
 
-  it('shows detail from API response when present', async () => {
+  it('shows friendly translated message for LOGIN_BAD_CREDENTIALS', async () => {
     server.use(
       http.post(`${TEST_BASE}/auth/jwt/login`, () =>
         HttpResponse.json({ detail: 'LOGIN_BAD_CREDENTIALS' }, { status: 400 })
@@ -83,8 +83,24 @@ describe('Login page', () => {
     await user.click(screen.getByRole('button', { name: /sign in/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('LOGIN_BAD_CREDENTIALS')).toBeInTheDocument()
+      expect(screen.getByText(/contact your system administrator/i)).toBeInTheDocument()
     })
+  })
+
+  it('renders language chooser with all 5 language buttons', () => {
+    renderWithProviders(<Login />)
+    expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Español' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Français' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Français (CA)' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '中文' })).toBeInTheDocument()
+  })
+
+  it('clicking a language button updates the stored language preference', async () => {
+    const { user } = renderWithProviders(<Login />)
+    await user.click(screen.getByRole('button', { name: 'Français' }))
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('fr')
   })
 
   it('reads "from" redirect path from location state (covers the ?? branch)', () => {

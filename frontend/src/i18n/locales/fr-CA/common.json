@@ -1,0 +1,16 @@
+{
+  "save": "Enregistrer",
+  "saving": "Enregistrement…",
+  "cancel": "Annuler",
+  "edit": "Modifier",
+  "delete": "Supprimer",
+  "loading": "Chargement…",
+  "error_default": "Une erreur s'est produite.",
+  "no_records": "Aucun enregistrement trouvé.",
+  "close": "Fermer",
+  "enabled": "Activé",
+  "disabled": "Désactivé",
+  "name": "Nom",
+  "status": "Statut",
+  "actions": "Actions"
+}

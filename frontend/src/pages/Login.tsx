@@ -2,7 +2,16 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
-import { ErrorMessage } from '@/components/ErrorMessage'
+import { usePreferences } from '@/contexts/PreferencesContext'
+import type { Language } from '@/contexts/PreferencesContext'
+
+const LANGUAGE_OPTIONS: { value: Language; flag: string; label: string }[] = [
+  { value: 'en', flag: '🇺🇸', label: 'English' },
+  { value: 'es', flag: '🇪🇸', label: 'Español' },
+  { value: 'fr', flag: '🇫🇷', label: 'Français' },
+  { value: 'fr-CA', flag: '🇨🇦', label: 'Français (CA)' },
+  { value: 'zh', flag: '🇨🇳', label: '中文' },
+]
 
 export function Login() {
   const { t } = useTranslation('login')
@@ -10,10 +19,11 @@ export function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: string })?.from ?? '/'
+  const { preferences, setPreference } = usePreferences()
 
   const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL ?? '')
   const [password, setPassword] = useState(import.meta.env.VITE_ADMIN_PASSWORD ?? '')
-  const [error, setError] = useState<unknown>(null)
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
@@ -24,7 +34,8 @@ export function Login() {
       await login(email, password)
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err)
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      setError(detail === 'LOGIN_BAD_CREDENTIALS' ? t('bad_credentials') : t('invalid_credentials'))
     } finally {
       setLoading(false)
     }
@@ -40,8 +51,8 @@ export function Login() {
         <div className="card">
           <h2 className="text-xl font-semibold text-sw-fg mb-6">{t('sign_in')}</h2>
           {error != null && (
-            <div className="mb-4">
-              <ErrorMessage error={error} fallback={t('invalid_credentials')} />
+            <div className="mb-4 rounded-md bg-sw-err-bg border border-sw-err-bd p-4 text-sm text-sw-err-fg">
+              {error}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,6 +89,26 @@ export function Login() {
               {loading ? t('signing_in') : t('sign_in')}
             </button>
           </form>
+        </div>
+
+        {/* Language chooser */}
+        <div className="mt-6 flex justify-center gap-1" role="group" aria-label="Language">
+          {LANGUAGE_OPTIONS.map(({ value, flag, label }) => (
+            <button
+              key={value}
+              onClick={() => setPreference('language', value)}
+              title={label}
+              aria-label={label}
+              aria-pressed={preferences.language === value}
+              className={`px-2.5 py-1.5 rounded-md text-base leading-none transition-colors ${
+                preferences.language === value
+                  ? 'bg-brand-600 text-white'
+                  : 'text-sw-fg-faint hover:text-sw-fg hover:bg-sw-hover'
+              }`}
+            >
+              {flag}
+            </button>
+          ))}
         </div>
       </div>
     </div>

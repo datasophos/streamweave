@@ -3,7 +3,7 @@ import i18next from 'i18next'
 
 type DateFormat = 'relative' | 'absolute'
 type Theme = 'light' | 'dark' | 'system'
-export type Language = 'en' | 'es' | 'fr' | 'zh'
+export type Language = 'en' | 'es' | 'fr' | 'fr-CA' | 'zh'
 
 export interface Preferences {
   theme: Theme

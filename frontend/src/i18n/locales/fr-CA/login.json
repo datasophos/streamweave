@@ -2,9 +2,9 @@
   "title": "StreamWeave",
   "subtitle": "Gestion des données d'instruments scientifiques",
   "sign_in": "Se connecter",
-  "email": "Adresse e-mail",
+  "email": "Adresse courriel",
   "password": "Mot de passe",
   "signing_in": "Connexion en cours…",
   "invalid_credentials": "Identifiants invalides.",
-  "bad_credentials": "Adresse e-mail ou mot de passe incorrect. Veuillez contacter votre administrateur système pour obtenir de l'aide."
+  "bad_credentials": "Adresse courriel ou mot de passe incorrect. Veuillez contacter votre administrateur système pour obtenir de l'aide."
 }

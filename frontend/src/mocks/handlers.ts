@@ -205,6 +205,9 @@ export const handlers = [
 
   // User CRUD (register + fastapi-users /users/:id)
   http.post(`${TEST_BASE}/auth/register`, () => HttpResponse.json(makeUser(), { status: 201 })),
+  http.patch(`${TEST_BASE}/users/me`, ({ request }) =>
+    request.json().then((body) => HttpResponse.json(makeUser(body as Partial<User>)))
+  ),
   http.patch(`${TEST_BASE}/users/:id`, ({ params }) =>
     HttpResponse.json(makeUser({ id: params.id as string }))
   ),

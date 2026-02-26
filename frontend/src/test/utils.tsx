@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { PreferencesProvider } from '@/contexts/PreferencesContext'
 import type { ReactNode } from 'react'
 
 export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -33,9 +34,11 @@ export function renderWithProviders(
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter {...routerProps}>
-          <AuthProvider>{children}</AuthProvider>
-        </MemoryRouter>
+        <PreferencesProvider>
+          <MemoryRouter {...routerProps}>
+            <AuthProvider>{children}</AuthProvider>
+          </MemoryRouter>
+        </PreferencesProvider>
       </QueryClientProvider>
     )
   }

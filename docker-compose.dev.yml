@@ -9,6 +9,8 @@ services:
       SECRET_KEY: dev-secret-key
       STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
       PREFECT_API_URL: http://prefect-server:4200/api
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpassword}
     depends_on:
       postgres:
         condition: service_healthy
@@ -19,6 +21,7 @@ services:
       - harvest_data:/storage
     command: >
       sh -c "alembic upgrade head &&
+             python ensure_admin.py &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   worker:
@@ -57,6 +60,8 @@ services:
     environment:
       VITE_API_URL: ""
       VITE_PROXY_TARGET: "http://api:8000"
+      VITE_ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      VITE_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpassword}
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     depends_on:
       - api

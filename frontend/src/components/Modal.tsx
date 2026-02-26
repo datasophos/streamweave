@@ -26,16 +26,16 @@ export function Modal({ title, onClose, children, size = 'md' }: ModalProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          className={`relative w-full ${widthClass} bg-white rounded-lg shadow-xl`}
+          className={`relative w-full ${widthClass} bg-sw-surface rounded-lg shadow-xl`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between p-6 border-b border-sw-border">
+            <h2 id="modal-title" className="text-lg font-semibold text-sw-fg">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-sw-fg-faint hover:text-sw-fg-muted transition-colors"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

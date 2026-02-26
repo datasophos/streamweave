@@ -41,6 +41,18 @@ docker compose up
 
 The API will be available at `http://localhost:8000` with Swagger docs at `http://localhost:8000/docs`.
 
+### Dev Deployment (hot reload)
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+A default admin user (`admin@example.com` / `adminpassword`) is created automatically on first boot.
+Override with `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your `.env`.
+
+The frontend dev server will be available at `http://localhost:3000` and the API at `http://localhost:8000`.
+
 ### Local Development
 
 ```bash

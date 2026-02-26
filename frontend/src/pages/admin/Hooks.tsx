@@ -158,7 +158,7 @@ function HookForm({
             onChange={(e) => set('enabled', e.target.checked)}
             className="rounded border-gray-300"
           />
-          <label htmlFor="hook-enabled" className="text-sm font-medium text-gray-700">
+          <label htmlFor="hook-enabled" className="text-sm font-medium text-sw-fg-2">
             Enabled
           </label>
         </div>

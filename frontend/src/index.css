@@ -2,9 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --sw-bg: theme('colors.gray.50');
+  --sw-surface: theme('colors.white');
+  --sw-subtle: theme('colors.gray.50');
+  --sw-hover: theme('colors.gray.100');
+  --sw-fg: theme('colors.gray.900');
+  --sw-fg-2: theme('colors.gray.700');
+  --sw-fg-muted: theme('colors.gray.500');
+  --sw-fg-faint: theme('colors.gray.400');
+  --sw-brand: theme('colors.brand.700');
+  --sw-brand-bg: theme('colors.brand.50');
+  --sw-brand-bd: theme('colors.brand.100');
+  --sw-border: theme('colors.gray.200');
+  --sw-border-in: theme('colors.gray.300');
+  --sw-border-sub: theme('colors.gray.100');
+  --sw-ok-bg: theme('colors.green.100');
+  --sw-ok-fg: theme('colors.green.800');
+  --sw-err-bg: theme('colors.red.50');
+  --sw-err-fg: theme('colors.red.700');
+  --sw-err-bd: theme('colors.red.200');
+  --sw-warn-bg: theme('colors.yellow.100');
+  --sw-warn-fg: theme('colors.yellow.800');
+  --sw-info-bg: theme('colors.blue.100');
+  --sw-info-fg: theme('colors.blue.800');
+  --sw-neut-bg: theme('colors.gray.100');
+  --sw-neut-fg: theme('colors.gray.800');
+}
+html.dark {
+  --sw-bg: theme('colors.gray.950');
+  --sw-surface: theme('colors.gray.900');
+  --sw-subtle: theme('colors.gray.800');
+  --sw-hover: theme('colors.gray.800');
+  --sw-fg: theme('colors.gray.100');
+  --sw-fg-2: theme('colors.gray.300');
+  --sw-fg-muted: theme('colors.gray.400');
+  --sw-fg-faint: theme('colors.gray.500');
+  --sw-brand: theme('colors.brand.400');
+  --sw-brand-bg: theme('colors.brand.950');
+  --sw-brand-bd: theme('colors.brand.900');
+  --sw-border: theme('colors.gray.700');
+  --sw-border-in: theme('colors.gray.600');
+  --sw-border-sub: theme('colors.gray.800');
+  --sw-ok-bg: theme('colors.green.900');
+  --sw-ok-fg: theme('colors.green.400');
+  --sw-err-bg: theme('colors.red.950');
+  --sw-err-fg: theme('colors.red.400');
+  --sw-err-bd: theme('colors.red.900');
+  --sw-warn-bg: theme('colors.yellow.900');
+  --sw-warn-fg: theme('colors.yellow.400');
+  --sw-info-bg: theme('colors.blue.900');
+  --sw-info-fg: theme('colors.blue.400');
+  --sw-neut-bg: theme('colors.gray.800');
+  --sw-neut-fg: theme('colors.gray.400');
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 font-sans;
+    @apply bg-sw-bg text-sw-fg font-sans;
   }
 }
 
@@ -16,7 +71,7 @@
     @apply btn bg-brand-600 text-white hover:bg-brand-700 focus:ring-brand-500;
   }
   .btn-secondary {
-    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-brand-500;
+    @apply btn bg-sw-surface text-sw-fg-2 border border-sw-border-in hover:bg-sw-hover focus:ring-brand-500;
   }
   .btn-danger {
     @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
@@ -25,30 +80,30 @@
     @apply px-3 py-1.5 text-xs;
   }
   .input {
-    @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
+    @apply block w-full rounded-md border border-sw-border-in px-3 py-2 text-sm shadow-sm bg-sw-surface text-sw-fg placeholder:text-sw-fg-faint focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
   }
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply block text-sm font-medium text-sw-fg-2 mb-1;
   }
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+    @apply bg-sw-surface rounded-lg shadow-sm border border-sw-border p-6;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
   .badge-green {
-    @apply badge bg-green-100 text-green-800;
+    @apply badge bg-sw-ok-bg text-sw-ok-fg;
   }
   .badge-red {
-    @apply badge bg-red-100 text-red-800;
+    @apply badge bg-sw-err-bg text-sw-err-fg;
   }
   .badge-yellow {
-    @apply badge bg-yellow-100 text-yellow-800;
+    @apply badge bg-sw-warn-bg text-sw-warn-fg;
   }
   .badge-blue {
-    @apply badge bg-blue-100 text-blue-800;
+    @apply badge bg-sw-info-bg text-sw-info-fg;
   }
   .badge-gray {
-    @apply badge bg-gray-100 text-gray-800;
+    @apply badge bg-sw-neut-bg text-sw-neut-fg;
   }
 }

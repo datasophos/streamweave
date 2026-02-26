@@ -174,7 +174,7 @@ function InstrumentForm({
             onChange={(e) => set('enabled', e.target.checked)}
             className="rounded border-gray-300"
           />
-          <label htmlFor="enabled" className="text-sm font-medium text-gray-700">
+          <label htmlFor="enabled" className="text-sm font-medium text-sw-fg-2">
             Enabled
           </label>
         </div>
@@ -377,15 +377,15 @@ export function Instruments() {
       />
 
       <div className="card p-0 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-900">Instruments</h2>
+        <div className="px-6 py-4 border-b border-sw-border">
+          <h2 className="text-base font-semibold text-sw-fg">Instruments</h2>
         </div>
         <Table columns={instrumentColumns} data={instruments} isLoading={loadingInstruments} />
       </div>
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-900">Service Accounts</h2>
+        <div className="px-6 py-4 border-b border-sw-border">
+          <h2 className="text-base font-semibold text-sw-fg">Service Accounts</h2>
         </div>
         <Table columns={saColumns} data={serviceAccounts} />
       </div>

@@ -11,6 +11,7 @@ import { Users } from '@/pages/admin/Users'
 import { MyFiles } from '@/pages/user/MyFiles'
 import { Transfers } from '@/pages/user/Transfers'
 import { InstrumentRequest } from '@/pages/user/InstrumentRequest'
+import { Settings } from '@/pages/user/Settings'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -109,6 +110,7 @@ export function App() {
         <Route path="/files" element={<MyFiles />} />
         <Route path="/transfers" element={<Transfers />} />
         <Route path="/request" element={<InstrumentRequest />} />
+        <Route path="/settings" element={<Settings />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -263,4 +263,36 @@ describe('AppLayout', () => {
       expect(screen.getByText('user@test.com')).toBeInTheDocument()
     })
   })
+
+  it('desktop nav has Settings link', async () => {
+    setupUser()
+    renderWithProviders(<AppLayout />)
+
+    await waitFor(() => {
+      const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
+      expect(settingsLinks.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('Settings link points to /settings', async () => {
+    setupUser()
+    renderWithProviders(<AppLayout />)
+
+    await waitFor(() => {
+      const settingsLink = screen.getAllByRole('link', { name: /settings/i })[0]
+      expect(settingsLink).toHaveAttribute('href', '/settings')
+    })
+  })
+
+  it('mobile menu has Settings link', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await user.click(screen.getByRole('button', { name: /toggle menu/i }))
+
+    await waitFor(() => {
+      const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
+      expect(settingsLinks.length).toBeGreaterThanOrEqual(2) // desktop + mobile
+    })
+  })
 })

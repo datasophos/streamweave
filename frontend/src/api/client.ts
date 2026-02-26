@@ -110,6 +110,10 @@ export const projectsApi = {
   delete: (id: string) => apiClient.delete(`/api/projects/${id}`),
 }
 
+export const meApi = {
+  update: (data: { email?: string; password?: string }) => apiClient.patch('/users/me', data),
+}
+
 export const healthApi = {
   check: () => apiClient.get('/health'),
 }

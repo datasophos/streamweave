@@ -63,7 +63,7 @@ export function MyFiles() {
 
       <div className="card p-0 overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12 text-gray-400">
+          <div className="flex items-center justify-center py-12 text-sw-fg-faint">
             <svg className="animate-spin h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none">
               <circle
                 className="opacity-25"
@@ -82,57 +82,57 @@ export function MyFiles() {
             Loading files…
           </div>
         ) : filtered.length === 0 ? (
-          <p className="px-6 py-12 text-center text-sm text-gray-400">
+          <p className="px-6 py-12 text-center text-sm text-sw-fg-faint">
             {search || instrumentFilter
               ? 'No files match your filters.'
               : 'No files discovered yet.'}
           </p>
         ) : (
           <>
-            <div className="px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs text-gray-500">
+            <div className="px-6 py-3 bg-sw-subtle border-b border-sw-border text-xs text-sw-fg-muted">
               {filtered.length} file{filtered.length !== 1 ? 's' : ''}
             </div>
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-sw-border-sub">
+              <thead className="bg-sw-subtle">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                     Filename
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                     Instrument
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                     Size
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                     Persistent ID
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                     Discovered
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
                 {filtered.map((file: FileRecord) => (
-                  <tr key={file.id} className="hover:bg-gray-50">
+                  <tr key={file.id} className="hover:bg-sw-hover">
                     <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-gray-900">{file.filename}</div>
-                      <div className="text-xs text-gray-400 font-mono mt-0.5">
+                      <div className="text-sm font-medium text-sw-fg">{file.filename}</div>
+                      <div className="text-xs text-sw-fg-faint font-mono mt-0.5">
                         {file.source_path}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-sw-fg-muted">
                       {instMap[file.instrument_id] ?? file.instrument_id.slice(0, 8)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-sw-fg-muted">
                       {formatBytes(file.size_bytes)}
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">
+                      <code className="text-xs bg-sw-subtle px-1.5 py-0.5 rounded text-sw-fg-2">
                         {file.persistent_id}
                       </code>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-400">
+                    <td className="px-4 py-3 text-sm text-sw-fg-faint">
                       {new Date(file.first_discovered_at).toLocaleDateString()}
                     </td>
                   </tr>

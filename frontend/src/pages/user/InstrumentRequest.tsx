@@ -34,9 +34,9 @@ export function InstrumentRequest() {
         <PageHeader title="Request Instrument Harvest" />
         <div className="card max-w-lg mx-auto text-center">
           <div className="flex justify-center mb-4">
-            <div className="rounded-full bg-green-100 p-3">
+            <div className="rounded-full bg-sw-ok-bg p-3">
               <svg
-                className="h-8 w-8 text-green-600"
+                className="h-8 w-8 text-sw-ok-fg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -50,8 +50,8 @@ export function InstrumentRequest() {
               </svg>
             </div>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Request Submitted</h2>
-          <p className="text-gray-500 mb-6">
+          <h2 className="text-xl font-semibold text-sw-fg mb-2">Request Submitted</h2>
+          <p className="text-sw-fg-muted mb-6">
             Your request for <strong>{form.instrument_name}</strong> has been submitted. An
             administrator will review it and contact you at {form.contact_email}.
           </p>

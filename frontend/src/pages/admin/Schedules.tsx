@@ -92,7 +92,7 @@ function ScheduleForm({
           onChange={(e) => set('cron_expression', e.target.value)}
           placeholder="0 * * * *"
         />
-        <p className="mt-1 text-xs text-gray-400">
+        <p className="mt-1 text-xs text-sw-fg-faint">
           Standard 5-field cron: minute hour day month weekday
         </p>
       </div>
@@ -104,7 +104,7 @@ function ScheduleForm({
           onChange={(e) => set('enabled', e.target.checked)}
           className="rounded border-gray-300"
         />
-        <label htmlFor="sched-enabled" className="text-sm font-medium text-gray-700">
+        <label htmlFor="sched-enabled" className="text-sm font-medium text-sw-fg-2">
           Enabled
         </label>
       </div>
@@ -148,7 +148,9 @@ export function Schedules() {
     {
       header: 'Cron',
       render: (row: HarvestSchedule) => (
-        <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">{row.cron_expression}</code>
+        <code className="text-xs bg-sw-subtle px-1 py-0.5 rounded text-sw-fg-2">
+          {row.cron_expression}
+        </code>
       ),
     },
     {

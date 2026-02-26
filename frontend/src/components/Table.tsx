@@ -22,7 +22,7 @@ export function Table<T extends { id: string | number }>({
 }: TableProps<T>) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-gray-400">
+      <div className="flex items-center justify-center py-12 text-sw-fg-faint">
         <svg className="animate-spin h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none">
           <circle
             className="opacity-25"
@@ -45,13 +45,13 @@ export function Table<T extends { id: string | number }>({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-sw-border">
+        <thead className="bg-sw-subtle">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.header}
-                className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                className={`px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase tracking-wider ${
                   col.className ?? ''
                 }`}
               >
@@ -60,20 +60,23 @@ export function Table<T extends { id: string | number }>({
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-100">
+        <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
           {data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-400 text-sm">
+              <td
+                colSpan={columns.length}
+                className="px-4 py-8 text-center text-sw-fg-faint text-sm"
+              >
                 {emptyMessage}
               </td>
             </tr>
           ) : (
             data.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+              <tr key={row.id} className="hover:bg-sw-hover transition-colors">
                 {columns.map((col) => (
                   <td
                     key={col.header}
-                    className={`px-4 py-3 text-sm text-gray-900 ${col.className ?? ''}`}
+                    className={`px-4 py-3 text-sm text-sw-fg ${col.className ?? ''}`}
                   >
                     {col.render
                       ? col.render(row)

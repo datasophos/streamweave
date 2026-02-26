@@ -52,7 +52,7 @@ export function Transfers() {
 
       <div className="card p-0 overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12 text-gray-400">
+          <div className="flex items-center justify-center py-12 text-sw-fg-faint">
             <svg className="animate-spin h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none">
               <circle
                 className="opacity-25"
@@ -71,54 +71,56 @@ export function Transfers() {
             Loading…
           </div>
         ) : transfers.length === 0 ? (
-          <p className="px-6 py-12 text-center text-sm text-gray-400">No transfers found.</p>
+          <p className="px-6 py-12 text-center text-sm text-sw-fg-faint">No transfers found.</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-sw-border-sub">
+            <thead className="bg-sw-subtle">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Transfer ID
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Destination
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Adapter
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Bytes
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Checksum
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Started
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Completed
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
               {transfers.map((t: FileTransfer) => (
-                <tr key={t.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-xs font-mono text-gray-500">{t.id.slice(0, 8)}…</td>
+                <tr key={t.id} className="hover:bg-sw-hover">
+                  <td className="px-4 py-3 text-xs font-mono text-sw-fg-muted">
+                    {t.id.slice(0, 8)}…
+                  </td>
                   <td className="px-4 py-3">
                     <span className={STATUS_BADGE[t.status]}>{t.status}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-sw-fg-muted">
                     {storageMap[t.storage_location_id] ?? t.storage_location_id.slice(0, 8)}
                     {t.destination_path && (
-                      <div className="text-xs text-gray-400 font-mono mt-0.5">
+                      <div className="text-xs text-sw-fg-faint font-mono mt-0.5">
                         {t.destination_path}
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{t.transfer_adapter}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-sw-fg-muted">{t.transfer_adapter}</td>
+                  <td className="px-4 py-3 text-sm text-sw-fg-muted">
                     {formatBytes(t.bytes_transferred)}
                   </td>
                   <td className="px-4 py-3 text-sm">
@@ -127,13 +129,13 @@ export function Transfers() {
                     ) : t.checksum_verified === false ? (
                       <span className="badge-red">Failed</span>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-sw-fg-faint">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-400">
+                  <td className="px-4 py-3 text-sm text-sw-fg-faint">
                     {t.started_at ? new Date(t.started_at).toLocaleString() : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-400">
+                  <td className="px-4 py-3 text-sm text-sw-fg-faint">
                     {t.completed_at ? new Date(t.completed_at).toLocaleString() : '—'}
                   </td>
                 </tr>
@@ -144,13 +146,13 @@ export function Transfers() {
       </div>
 
       {transfers.some((t) => t.status === 'failed') && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <h3 className="text-sm font-medium text-red-800 mb-2">Failed Transfers</h3>
+        <div className="mt-4 p-4 bg-sw-err-bg border border-sw-err-bd rounded-md">
+          <h3 className="text-sm font-medium text-sw-err-fg mb-2">Failed Transfers</h3>
           <ul className="space-y-1">
             {transfers
               .filter((t) => t.status === 'failed')
               .map((t) => (
-                <li key={t.id} className="text-xs text-red-700">
+                <li key={t.id} className="text-xs text-sw-err-fg">
                   <span className="font-mono">{t.id.slice(0, 8)}</span>:{' '}
                   {t.error_message ?? 'Unknown error'}
                 </li>

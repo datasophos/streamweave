@@ -9,9 +9,9 @@ import type { FileTransfer, TransferStatus } from '@/api/types'
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="card">
-      <p className="text-sm font-medium text-gray-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-      {sub && <p className="mt-1 text-sm text-gray-400">{sub}</p>}
+      <p className="text-sm font-medium text-sw-fg-muted">{label}</p>
+      <p className="mt-2 text-3xl font-bold text-sw-fg">{value}</p>
+      {sub && <p className="mt-1 text-sm text-sw-fg-faint">{sub}</p>}
     </div>
   )
 }
@@ -26,15 +26,15 @@ const STATUS_BADGE: Record<TransferStatus, string> = {
 
 function TransferRow({ t }: { t: FileTransfer }) {
   return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-4 py-3 text-sm text-gray-900 font-mono">{t.id.slice(0, 8)}…</td>
+    <tr className="hover:bg-sw-hover">
+      <td className="px-4 py-3 text-sm text-sw-fg font-mono">{t.id.slice(0, 8)}…</td>
       <td className="px-4 py-3 text-sm">
         <span className={STATUS_BADGE[t.status]}>{t.status}</span>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-500">
+      <td className="px-4 py-3 text-sm text-sw-fg-muted">
         {t.bytes_transferred != null ? `${(t.bytes_transferred / 1024).toFixed(1)} KB` : '—'}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-400">
+      <td className="px-4 py-3 text-sm text-sw-fg-faint">
         {t.started_at ? new Date(t.started_at).toLocaleString() : '—'}
       </td>
     </tr>
@@ -62,7 +62,7 @@ export function Dashboard() {
 
       {/* System health */}
       <div className="mb-6 flex items-center gap-2">
-        <span className="text-sm text-gray-500">System status:</span>
+        <span className="text-sm text-sw-fg-muted">System status:</span>
         {health?.status === 'ok' ? (
           <span className="badge-green">Healthy</span>
         ) : (
@@ -85,30 +85,30 @@ export function Dashboard() {
 
       {/* Recent transfers */}
       <div className="card p-0 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-900">Recent Transfers</h2>
+        <div className="px-6 py-4 border-b border-sw-border">
+          <h2 className="text-base font-semibold text-sw-fg">Recent Transfers</h2>
         </div>
         {recent.length === 0 ? (
-          <p className="px-6 py-8 text-center text-sm text-gray-400">No transfers yet.</p>
+          <p className="px-6 py-8 text-center text-sm text-sw-fg-faint">No transfers yet.</p>
         ) : (
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-sw-border-sub">
+            <thead className="bg-sw-subtle">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   ID
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Bytes
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Started
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
               {recent.map((t) => (
                 <TransferRow key={t.id} t={t} />
               ))}
@@ -120,32 +120,32 @@ export function Dashboard() {
       {/* Instrument status (admin only) */}
       {isAdmin && instruments && instruments.length > 0 && (
         <div className="card mt-6 p-0 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-base font-semibold text-gray-900">Instrument Status</h2>
+          <div className="px-6 py-4 border-b border-sw-border">
+            <h2 className="text-base font-semibold text-sw-fg">Instrument Status</h2>
           </div>
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-sw-border-sub">
+            <thead className="bg-sw-subtle">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Host
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Adapter
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
               {instruments.map((inst) => (
-                <tr key={inst.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{inst.name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{inst.cifs_host}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{inst.transfer_adapter}</td>
+                <tr key={inst.id} className="hover:bg-sw-hover">
+                  <td className="px-4 py-3 text-sm font-medium text-sw-fg">{inst.name}</td>
+                  <td className="px-4 py-3 text-sm text-sw-fg-muted">{inst.cifs_host}</td>
+                  <td className="px-4 py-3 text-sm text-sw-fg-muted">{inst.transfer_adapter}</td>
                   <td className="px-4 py-3 text-sm">
                     {inst.enabled ? (
                       <span className="badge-green">Enabled</span>

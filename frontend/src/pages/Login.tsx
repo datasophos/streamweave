@@ -9,8 +9,8 @@ export function Login() {
   const location = useLocation()
   const from = (location.state as { from?: string })?.from ?? '/'
 
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL ?? '')
+  const [password, setPassword] = useState(import.meta.env.VITE_ADMIN_PASSWORD ?? '')
   const [error, setError] = useState<unknown>(null)
   const [loading, setLoading] = useState(false)
 
@@ -29,14 +29,14 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-sw-bg">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-brand-700">StreamWeave</h1>
-          <p className="mt-2 text-sm text-gray-500">Scientific instrument data management</p>
+          <h1 className="text-3xl font-bold text-sw-brand">StreamWeave</h1>
+          <p className="mt-2 text-sm text-sw-fg-muted">Scientific instrument data management</p>
         </div>
         <div className="card">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign in</h2>
+          <h2 className="text-xl font-semibold text-sw-fg mb-6">Sign in</h2>
           {error != null && (
             <div className="mb-4">
               <ErrorMessage error={error} fallback="Invalid credentials." />

@@ -7,7 +7,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://streamweave:streamweave@postgres:5432/streamweave
       SECRET_KEY: dev-secret-key
-      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
+      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-0ZSeboblFSmXLvCew5ToiQJSUcmmbMKKXG1OISVmeU0=}
       PREFECT_API_URL: http://prefect-server:4200/api
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpassword}
@@ -31,7 +31,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://streamweave:streamweave@postgres:5432/streamweave
       SECRET_KEY: dev-secret-key
-      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-change-me-generate-with-fernet}
+      STREAMWEAVE_ENCRYPTION_KEY: ${STREAMWEAVE_ENCRYPTION_KEY:-0ZSeboblFSmXLvCew5ToiQJSUcmmbMKKXG1OISVmeU0=}
       PREFECT_API_URL: http://prefect-server:4200/api
     depends_on:
       postgres:

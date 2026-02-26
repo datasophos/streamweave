@@ -24,7 +24,60 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     verification_token_secret = settings.secret_key
 
     async def on_after_register(self, user: User, request: Request | None = None):
-        pass
+        from fastapi_users.jwt import generate_jwt
+
+        from app.services.email import send_email
+
+        # Generate a verification token directly so we can send welcome + verify in one email.
+        token_data = {
+            "sub": str(user.id),
+            "email": user.email,
+            "aud": self.verification_token_audience,
+        }
+        token = generate_jwt(
+            token_data,
+            self.verification_token_secret,
+            self.verification_token_lifetime_seconds,
+        )
+        frontend_url = "http://localhost:3000"
+        verify_url = f"{frontend_url}/verify-email?token={token}"
+        await send_email(
+            user.email,
+            "Welcome to StreamWeave — verify your email",
+            f"<p>Welcome to StreamWeave!</p>"
+            f"<p>Click the link below to verify your email address:</p>"
+            f'<p><a href="{verify_url}">{verify_url}</a></p>'
+            f"<p>This link expires in 24 hours.</p>",
+        )
+
+    async def on_after_request_verify(self, user: User, token: str, request: Request | None = None):
+        """Standalone re-verification flow (user requests a new link)."""
+        from app.services.email import send_email
+
+        frontend_url = "http://localhost:3000"
+        verify_url = f"{frontend_url}/verify-email?token={token}"
+        await send_email(
+            user.email,
+            "Verify your StreamWeave account",
+            f"<p>Click the link below to verify your email address:</p>"
+            f'<p><a href="{verify_url}">{verify_url}</a></p>'
+            f"<p>This link expires in 24 hours.</p>",
+        )
+
+    async def on_after_forgot_password(
+        self, user: User, token: str, request: Request | None = None
+    ):
+        from app.services.email import send_email
+
+        frontend_url = "http://localhost:3000"
+        reset_url = f"{frontend_url}/reset-password?token={token}"
+        await send_email(
+            user.email,
+            "Reset your StreamWeave password",
+            f"<p>Click the link below to reset your password:</p>"
+            f'<p><a href="{reset_url}">{reset_url}</a></p>'
+            f"<p>This link expires in 1 hour. If you didn't request a reset, ignore this email.</p>",
+        )
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):

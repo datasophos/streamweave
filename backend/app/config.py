@@ -43,6 +43,15 @@ class Settings(BaseSettings):
     prefect_api_url: str = "http://localhost:4200/api"
     rclone_binary: str = "rclone"
 
+    # SMTP / Email
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "noreply@streamweave.local"
+    smtp_tls: bool = True
+    smtp_enabled: bool = False
+
     # Persistent Identifiers
     ark_naan: str = "99999"
     ark_shoulder: str = "fk4"

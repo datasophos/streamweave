@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import JSON, Boolean, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
+from app.models.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKey
 
 if TYPE_CHECKING:
     from app.models.file import FileRecord
@@ -21,7 +21,7 @@ class TransferAdapterType(enum.StrEnum):
     rsync = "rsync"
 
 
-class ServiceAccount(UUIDPrimaryKey, TimestampMixin, Base):
+class ServiceAccount(UUIDPrimaryKey, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "service_accounts"
 
     name: Mapped[str] = mapped_column(String(255))
@@ -32,7 +32,7 @@ class ServiceAccount(UUIDPrimaryKey, TimestampMixin, Base):
     instruments: Mapped[list[Instrument]] = relationship(back_populates="service_account")
 
 
-class Instrument(UUIDPrimaryKey, TimestampMixin, Base):
+class Instrument(UUIDPrimaryKey, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "instruments"
 
     name: Mapped[str] = mapped_column(String(255))

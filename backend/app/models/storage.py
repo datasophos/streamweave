@@ -3,7 +3,7 @@ import enum
 from sqlalchemy import JSON, Boolean, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
+from app.models.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKey
 
 
 class StorageType(enum.StrEnum):
@@ -13,7 +13,7 @@ class StorageType(enum.StrEnum):
     nfs = "nfs"
 
 
-class StorageLocation(UUIDPrimaryKey, TimestampMixin, Base):
+class StorageLocation(UUIDPrimaryKey, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "storage_locations"
 
     name: Mapped[str] = mapped_column(String(255))

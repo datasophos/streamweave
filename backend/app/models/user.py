@@ -5,7 +5,7 @@ from fastapi_users.db import SQLAlchemyBaseUserTableUUID
 from sqlalchemy import Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.models.base import Base
+from app.models.base import Base, SoftDeleteMixin
 
 
 class UserRole(enum.StrEnum):
@@ -13,7 +13,7 @@ class UserRole(enum.StrEnum):
     user = "user"
 
 
-class User(SQLAlchemyBaseUserTableUUID, Base):
+class User(SQLAlchemyBaseUserTableUUID, SoftDeleteMixin, Base):
     __tablename__ = "users"
 
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.user)

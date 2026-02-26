@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams, Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePreferences } from '@/contexts/PreferencesContext'
@@ -15,7 +15,7 @@ const LANGUAGE_OPTIONS: { value: Language; flag: string; label: string }[] = [
 
 export function Login() {
   const { t } = useTranslation('login')
-  const { login } = useAuth()
+  const { login, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -26,6 +26,11 @@ export function Login() {
   const [password, setPassword] = useState(import.meta.env.VITE_ADMIN_PASSWORD ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Redirect already-authenticated users — after all hooks
+  if (!isLoading && isAuthenticated) {
+    return <Navigate to={from} replace />
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -90,6 +95,11 @@ export function Login() {
               {loading ? t('signing_in') : t('sign_in')}
             </button>
           </form>
+          <p className="mt-4 text-sm text-center text-sw-fg-muted">
+            <Link to="/forgot-password" className="text-brand-600 hover:underline">
+              Forgot password?
+            </Link>
+          </p>
         </div>
 
         {/* Language chooser */}

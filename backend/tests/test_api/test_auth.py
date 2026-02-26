@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from httpx import AsyncClient
 
@@ -62,3 +64,31 @@ async def test_non_admin_cannot_access_admin_routes(client: AsyncClient):
         headers=headers,
     )
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_request_verify_token_endpoint(client: AsyncClient):
+    """The request-verify-token endpoint exists and accepts an email."""
+    # Register a user first
+    await client.post(
+        "/auth/register",
+        json={"email": "verify@test.com", "password": "securepassword123"},
+    )
+    with patch("app.services.email.aiosmtplib.send", new_callable=AsyncMock):
+        response = await client.post(
+            "/auth/request-verify-token",
+            json={"email": "verify@test.com"},
+        )
+    # fastapi-users returns 202 for this endpoint
+    assert response.status_code == 202
+
+
+@pytest.mark.asyncio
+async def test_forgot_password_endpoint(client: AsyncClient, admin_user):
+    """The forgot-password endpoint exists and does not reveal user existence."""
+    with patch("app.services.email.aiosmtplib.send", new_callable=AsyncMock):
+        response = await client.post(
+            "/auth/forgot-password",
+            json={"email": "admin@test.com"},
+        )
+    assert response.status_code == 202

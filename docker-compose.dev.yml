@@ -1,4 +1,10 @@
 services:
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"   # Web UI
+      - "1025:1025"   # SMTP
+
   api:
     build:
       context: ./backend
@@ -11,10 +17,17 @@ services:
       PREFECT_API_URL: http://prefect-server:4200/api
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpassword}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_TLS: "false"
+      SMTP_ENABLED: "true"
+      SMTP_FROM: noreply@streamweave.local
     depends_on:
       postgres:
         condition: service_healthy
       prefect-server:
+        condition: service_started
+      mailpit:
         condition: service_started
     volumes:
       - ./backend:/app

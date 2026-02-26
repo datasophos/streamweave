@@ -2,6 +2,9 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { AppLayout } from '@/layouts/AppLayout'
 import { Login } from '@/pages/Login'
+import { ForgotPassword } from '@/pages/ForgotPassword'
+import { ResetPassword } from '@/pages/ResetPassword'
+import { VerifyEmail } from '@/pages/VerifyEmail'
 import { Dashboard } from '@/pages/Dashboard'
 import { Instruments } from '@/pages/admin/Instruments'
 import { Storage } from '@/pages/admin/Storage'
@@ -56,6 +59,9 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route
         element={
           <RequireAuth>

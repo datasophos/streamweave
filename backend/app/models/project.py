@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import Enum, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
+from app.models.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKey
 
 
 class MemberType(enum.StrEnum):
@@ -12,7 +12,7 @@ class MemberType(enum.StrEnum):
     group = "group"
 
 
-class Project(UUIDPrimaryKey, TimestampMixin, Base):
+class Project(UUIDPrimaryKey, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "projects"
 
     name: Mapped[str] = mapped_column(String(255), unique=True)

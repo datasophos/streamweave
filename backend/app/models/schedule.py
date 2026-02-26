@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
+from app.models.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKey
 
 if TYPE_CHECKING:
     from app.models.instrument import Instrument
     from app.models.storage import StorageLocation
 
 
-class HarvestSchedule(UUIDPrimaryKey, TimestampMixin, Base):
+class HarvestSchedule(UUIDPrimaryKey, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "harvest_schedules"
 
     instrument_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("instruments.id"))

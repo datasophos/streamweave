@@ -3,13 +3,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
-from app.auth.setup import auth_backend, fastapi_users
+from app.auth.setup import auth_backend, fastapi_users  # noqa: F401 (re-exported)
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 
 auth_router = fastapi_users.get_auth_router(auth_backend)
 register_router = fastapi_users.get_register_router(UserRead, UserCreate)
 users_router = fastapi_users.get_users_router(UserRead, UserUpdate)
+verify_router = fastapi_users.get_verify_router(UserRead)
+reset_password_router = fastapi_users.get_reset_password_router()
 
 # Admin-only endpoint: list all users (fastapi-users doesn't include this)
 admin_users_router = APIRouter(prefix="/admin/users", tags=["users"])

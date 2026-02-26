@@ -44,6 +44,11 @@ export const authApi = {
   register: (data: { email: string; password: string; role?: string }) =>
     apiClient.post('/auth/register', data),
   me: () => apiClient.get('/users/me'),
+  requestVerification: (email: string) => apiClient.post('/auth/request-verify-token', { email }),
+  verifyEmail: (token: string) => apiClient.post('/auth/verify', { token }),
+  forgotPassword: (email: string) => apiClient.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) =>
+    apiClient.post('/auth/reset-password', { token, password }),
 }
 
 // Resource endpoints

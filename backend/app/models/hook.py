@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import JSON, Boolean, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base, UUIDPrimaryKey
+from app.models.base import Base, SoftDeleteMixin, UUIDPrimaryKey
 
 if TYPE_CHECKING:
     from app.models.instrument import Instrument
@@ -24,7 +24,7 @@ class HookImplementation(enum.StrEnum):
     http_webhook = "http_webhook"
 
 
-class HookConfig(UUIDPrimaryKey, Base):
+class HookConfig(UUIDPrimaryKey, SoftDeleteMixin, Base):
     __tablename__ = "hook_configs"
 
     name: Mapped[str] = mapped_column(String(255))

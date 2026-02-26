@@ -12,7 +12,14 @@ from app.api.schedules import router as schedules_router
 from app.api.service_accounts import router as service_accounts_router
 from app.api.storage import router as storage_router
 from app.api.transfers import router as transfers_router
-from app.api.users import admin_users_router, auth_router, register_router, users_router
+from app.api.users import (
+    admin_users_router,
+    auth_router,
+    register_router,
+    reset_password_router,
+    users_router,
+    verify_router,
+)
 
 
 @asynccontextmanager
@@ -31,6 +38,8 @@ def create_app() -> FastAPI:
     # Auth routes
     app.include_router(auth_router, prefix="/auth/jwt", tags=["auth"])
     app.include_router(register_router, prefix="/auth", tags=["auth"])
+    app.include_router(verify_router, prefix="/auth", tags=["auth"])
+    app.include_router(reset_password_router, prefix="/auth", tags=["auth"])
     app.include_router(users_router, prefix="/users", tags=["users"])
     app.include_router(admin_users_router, prefix="/api", tags=["users"])
 

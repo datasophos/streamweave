@@ -12,5 +12,6 @@
   "disabled": "Deshabilitado",
   "name": "Nombre",
   "status": "Estado",
-  "actions": "Acciones"
+  "actions": "Acciones",
+  "delete_warning": "Esta acción no se puede deshacer."
 }

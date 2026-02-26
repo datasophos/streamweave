@@ -82,6 +82,10 @@ html.dark {
   .input {
     @apply block w-full rounded-md border border-sw-border-in px-3 py-2 text-sm shadow-sm bg-sw-surface text-sw-fg placeholder:text-sw-fg-faint focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500;
   }
+  .input:user-invalid,
+  .input[aria-invalid='true'] {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500;
+  }
   .label {
     @apply block text-sm font-medium text-sw-fg-2 mb-1;
   }

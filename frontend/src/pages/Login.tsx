@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePreferences } from '@/contexts/PreferencesContext'
@@ -18,7 +18,8 @@ export function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string })?.from ?? '/'
+  const [searchParams] = useSearchParams()
+  const from = (location.state as { from?: string })?.from ?? searchParams.get('next') ?? '/'
   const { preferences, setPreference } = usePreferences()
 
   const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL ?? '')

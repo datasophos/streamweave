@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import {
   useInstruments,
@@ -24,7 +25,9 @@ type ModalState =
   | { kind: 'none' }
   | { kind: 'createInstrument' }
   | { kind: 'editInstrument'; instrument: Instrument }
+  | { kind: 'confirmDeleteInstrument'; instrument: Instrument }
   | { kind: 'createServiceAccount' }
+  | { kind: 'confirmDeleteServiceAccount'; sa: ServiceAccount }
 
 function InstrumentForm({
   initial,
@@ -46,6 +49,7 @@ function InstrumentForm({
     name: initial?.name ?? '',
     description: initial?.description ?? '',
     location: initial?.location ?? '',
+    pid: initial?.pid ?? '',
     cifs_host: initial?.cifs_host ?? '',
     cifs_share: initial?.cifs_share ?? '',
     cifs_base_path: initial?.cifs_base_path ?? '',
@@ -53,8 +57,16 @@ function InstrumentForm({
     transfer_adapter: initial?.transfer_adapter ?? 'rclone',
     enabled: initial?.enabled ?? true,
   })
+  const [invalid, setInvalid] = useState(new Set<string>())
 
   const set = (k: keyof InstrumentCreate, v: unknown) => setForm((f) => ({ ...f, [k]: v }))
+  const markInvalid = (field: string) => () => setInvalid((prev) => new Set(prev).add(field))
+  const clearInvalid = (field: string) => () =>
+    setInvalid((prev) => {
+      const n = new Set(prev)
+      n.delete(field)
+      return n
+    })
 
   return (
     <form
@@ -75,7 +87,12 @@ function InstrumentForm({
             className="input"
             required
             value={form.name}
-            onChange={(e) => set('name', e.target.value)}
+            aria-invalid={invalid.has('name') || undefined}
+            onChange={(e) => {
+              clearInvalid('name')()
+              set('name', e.target.value)
+            }}
+            onInvalid={markInvalid('name')}
           />
         </div>
         <div className="col-span-2">
@@ -101,6 +118,17 @@ function InstrumentForm({
           />
         </div>
         <div>
+          <label htmlFor="inst-pid" className="label">
+            {t('form_pid')}
+          </label>
+          <input
+            id="inst-pid"
+            className="input"
+            value={form.pid}
+            onChange={(e) => set('pid', e.target.value)}
+          />
+        </div>
+        <div>
           <label htmlFor="inst-cifs-host" className="label">
             {t('form_cifs_host')}
           </label>
@@ -109,7 +137,12 @@ function InstrumentForm({
             className="input"
             required
             value={form.cifs_host}
-            onChange={(e) => set('cifs_host', e.target.value)}
+            aria-invalid={invalid.has('cifs_host') || undefined}
+            onChange={(e) => {
+              clearInvalid('cifs_host')()
+              set('cifs_host', e.target.value)
+            }}
+            onInvalid={markInvalid('cifs_host')}
           />
         </div>
         <div>
@@ -121,7 +154,12 @@ function InstrumentForm({
             className="input"
             required
             value={form.cifs_share}
-            onChange={(e) => set('cifs_share', e.target.value)}
+            aria-invalid={invalid.has('cifs_share') || undefined}
+            onChange={(e) => {
+              clearInvalid('cifs_share')()
+              set('cifs_share', e.target.value)
+            }}
+            onInvalid={markInvalid('cifs_share')}
           />
         </div>
         <div>
@@ -206,7 +244,15 @@ function ServiceAccountForm({
 }) {
   const { t } = useTranslation('instruments')
   const [form, setForm] = useState<ServiceAccountCreate>({ name: '', username: '', password: '' })
+  const [invalid, setInvalid] = useState(new Set<string>())
   const set = (k: keyof ServiceAccountCreate, v: string) => setForm((f) => ({ ...f, [k]: v }))
+  const markInvalid = (field: string) => () => setInvalid((prev) => new Set(prev).add(field))
+  const clearInvalid = (field: string) => () =>
+    setInvalid((prev) => {
+      const n = new Set(prev)
+      n.delete(field)
+      return n
+    })
 
   return (
     <form
@@ -226,7 +272,12 @@ function ServiceAccountForm({
           className="input"
           required
           value={form.name}
-          onChange={(e) => set('name', e.target.value)}
+          aria-invalid={invalid.has('name') || undefined}
+          onChange={(e) => {
+            clearInvalid('name')()
+            set('name', e.target.value)
+          }}
+          onInvalid={markInvalid('name')}
         />
       </div>
       <div>
@@ -249,7 +300,12 @@ function ServiceAccountForm({
           className="input"
           required
           value={form.username}
-          onChange={(e) => set('username', e.target.value)}
+          aria-invalid={invalid.has('username') || undefined}
+          onChange={(e) => {
+            clearInvalid('username')()
+            set('username', e.target.value)
+          }}
+          onInvalid={markInvalid('username')}
         />
       </div>
       <div>
@@ -262,7 +318,12 @@ function ServiceAccountForm({
           type="password"
           required
           value={form.password}
-          onChange={(e) => set('password', e.target.value)}
+          aria-invalid={invalid.has('password') || undefined}
+          onChange={(e) => {
+            clearInvalid('password')()
+            set('password', e.target.value)
+          }}
+          onInvalid={markInvalid('password')}
         />
       </div>
       <div className="flex justify-end gap-3 pt-2">
@@ -327,10 +388,7 @@ export function Instruments() {
           </button>
           <button
             className="btn btn-sm btn-danger"
-            onClick={() => {
-              if (confirm(t('confirm_delete_instrument', { name: row.name })))
-                deleteInst.mutate(row.id)
-            }}
+            onClick={() => setModal({ kind: 'confirmDeleteInstrument', instrument: row })}
           >
             {tc('delete')}
           </button>
@@ -352,9 +410,7 @@ export function Instruments() {
       render: (sa: ServiceAccount) => (
         <button
           className="btn btn-sm btn-danger"
-          onClick={() => {
-            if (confirm(t('confirm_delete_sa', { name: sa.name }))) deleteSA.mutate(sa.id)
-          }}
+          onClick={() => setModal({ kind: 'confirmDeleteServiceAccount', sa })}
         >
           {tc('delete')}
         </button>
@@ -383,15 +439,21 @@ export function Instruments() {
       />
 
       <div className="card p-0 overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-sw-border">
-          <h2 className="text-base font-semibold text-sw-fg">{t('instruments_section')}</h2>
+        <div className="px-4 py-4 border-b border-sw-border">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
+            <span>🔬</span>
+            {t('instruments_section')}
+          </h2>
         </div>
         <Table columns={instrumentColumns} data={instruments} isLoading={loadingInstruments} />
       </div>
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-6 py-4 border-b border-sw-border">
-          <h2 className="text-base font-semibold text-sw-fg">{t('service_accounts_section')}</h2>
+        <div className="px-4 py-4 border-b border-sw-border">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
+            <span>🔑</span>
+            {t('service_accounts_section')}
+          </h2>
         </div>
         <Table columns={saColumns} data={serviceAccounts} />
       </div>
@@ -432,6 +494,28 @@ export function Instruments() {
             error={createSA.error}
           />
         </Modal>
+      )}
+
+      {modal.kind === 'confirmDeleteInstrument' && (
+        <ConfirmDialog
+          title={t('confirm_delete_instrument', { name: modal.instrument.name })}
+          message={tc('delete_warning')}
+          confirmLabel={tc('delete')}
+          onConfirm={() => deleteInst.mutate(modal.instrument.id, { onSuccess: close })}
+          onCancel={close}
+          isPending={deleteInst.isPending}
+        />
+      )}
+
+      {modal.kind === 'confirmDeleteServiceAccount' && (
+        <ConfirmDialog
+          title={t('confirm_delete_sa', { name: modal.sa.name })}
+          message={tc('delete_warning')}
+          confirmLabel={tc('delete')}
+          onConfirm={() => deleteSA.mutate(modal.sa.id, { onSuccess: close })}
+          onCancel={close}
+          isPending={deleteSA.isPending}
+        />
       )}
     </div>
   )

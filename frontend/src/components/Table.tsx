@@ -49,7 +49,7 @@ export function Table<T extends { id: string | number }>({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-sw-border">
+      <table className="w-full min-w-max divide-y divide-sw-border">
         <thead className="bg-sw-subtle">
           <tr>
             {columns.map((col) => (

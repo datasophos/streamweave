@@ -12,5 +12,6 @@
   "disabled": "Désactivé",
   "name": "Nom",
   "status": "Statut",
-  "actions": "Actions"
+  "actions": "Actions",
+  "delete_warning": "Cette action est irréversible."
 }

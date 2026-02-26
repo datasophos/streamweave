@@ -12,5 +12,6 @@
   "disabled": "Disabled",
   "name": "Name",
   "status": "Status",
-  "actions": "Actions"
+  "actions": "Actions",
+  "delete_warning": "This action cannot be undone."
 }

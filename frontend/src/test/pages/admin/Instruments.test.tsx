@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
 import { TEST_BASE, makeAdminUser, makeInstrument, makeServiceAccount } from '@/mocks/handlers'
@@ -191,7 +191,7 @@ describe('Instruments admin page', () => {
     })
   })
 
-  it('delete instrument calls window.confirm with instrument name', async () => {
+  it('delete instrument opens confirm dialog with instrument name', async () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
@@ -199,19 +199,20 @@ describe('Instruments admin page', () => {
       )
     )
 
-    const confirmSpy = vi.mocked(window.confirm)
     const { user } = renderWithProviders(<Instruments />)
 
     await waitFor(() => expect(screen.getByText('Confirm Me')).toBeInTheDocument())
 
     await user.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
 
-    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('Confirm Me'))
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /confirm me/i })).toBeInTheDocument()
+      expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument()
+    })
   })
 
-  it('delete instrument sends DELETE when user confirms', async () => {
+  it('delete instrument sends DELETE when user confirms in dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValue(true)
 
     let deletedUrl: string | undefined
     server.use(
@@ -222,18 +223,20 @@ describe('Instruments admin page', () => {
     )
 
     const { user } = renderWithProviders(<Instruments />)
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /^delete$/i })).toBeTruthy())
+    await waitFor(() => screen.getAllByRole('button', { name: /^delete$/i }))
 
     await user.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
+
+    const dialog = await screen.findByRole('dialog', { hidden: true })
+    await user.click(within(dialog).getByRole('button', { name: /^delete$/i }))
 
     await waitFor(() => {
       expect(deletedUrl).toContain('/api/instruments/')
     })
   })
 
-  it('delete instrument does not send DELETE when user cancels confirm', async () => {
+  it('delete instrument does not send DELETE when user cancels dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValueOnce(false)
 
     let deleteRequestMade = false
     server.use(
@@ -244,11 +247,16 @@ describe('Instruments admin page', () => {
     )
 
     const { user } = renderWithProviders(<Instruments />)
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /^delete$/i })).toBeTruthy())
+    await waitFor(() => screen.getAllByRole('button', { name: /^delete$/i }))
 
     await user.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
 
-    await new Promise((r) => setTimeout(r, 50))
+    const dialog = await screen.findByRole('dialog', { hidden: true })
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { hidden: true })).not.toBeInTheDocument()
+    })
     expect(deleteRequestMade).toBe(false)
   })
 
@@ -379,6 +387,7 @@ describe('Instruments admin page', () => {
     await user.type(screen.getByRole('textbox', { name: /^name/i }), 'Full NMR')
     await user.type(screen.getByRole('textbox', { name: /description/i }), 'A full instrument')
     await user.type(screen.getByRole('textbox', { name: /location/i }), 'Lab 1')
+    await user.type(screen.getByRole('textbox', { name: /^pid$/i }), 'ark:/12345/abc')
     await user.type(screen.getByRole('textbox', { name: /cifs host/i }), '10.0.0.5')
     await user.type(screen.getByRole('textbox', { name: /cifs share/i }), 'nmr-share')
     await user.type(screen.getByRole('textbox', { name: /base path/i }), '/data/nmr')
@@ -402,10 +411,55 @@ describe('Instruments admin page', () => {
         name: 'Full NMR',
         description: 'A full instrument',
         location: 'Lab 1',
+        pid: 'ark:/12345/abc',
         transfer_adapter: 'rsync',
         service_account_id: 'sa-uuid-1',
         enabled: false,
       })
+    })
+  })
+
+  it('create instrument form includes pid in POST body when filled', async () => {
+    setupAdmin()
+    let postedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/api/instruments`, async ({ request }) => {
+        postedBody = await request.json()
+        return HttpResponse.json(makeInstrument(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getByRole('button', { name: /new instrument/i }))
+    await user.click(screen.getByRole('button', { name: /new instrument/i }))
+
+    await user.type(screen.getByRole('textbox', { name: /^name/i }), 'PID Instrument')
+    await user.type(screen.getByRole('textbox', { name: /^pid$/i }), 'doi:10.1234/test')
+    await user.type(screen.getByRole('textbox', { name: /cifs host/i }), '10.0.0.1')
+    await user.type(screen.getByRole('textbox', { name: /cifs share/i }), 'data')
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(postedBody).toMatchObject({ pid: 'doi:10.1234/test' })
+    })
+  })
+
+  it('edit instrument modal pre-populates pid field', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([makeInstrument({ name: 'PID NMR', pid: 'ark:/99999/xyz' })])
+      )
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('PID NMR')).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('button', { name: /^edit$/i })[0])
+
+    await waitFor(() => {
+      const pidInput = screen.getByRole('textbox', { name: /^pid$/i }) as HTMLInputElement
+      expect(pidInput.value).toBe('ark:/99999/xyz')
     })
   })
 
@@ -467,9 +521,8 @@ describe('Instruments admin page', () => {
     })
   })
 
-  it('delete service account sends DELETE when user confirms', async () => {
+  it('delete service account sends DELETE when user confirms in dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValue(true)
 
     server.use(
       http.get(`${TEST_BASE}/api/service-accounts`, () =>
@@ -488,18 +541,19 @@ describe('Instruments admin page', () => {
     const { user } = renderWithProviders(<Instruments />)
     await waitFor(() => expect(screen.getByText('SA To Delete')).toBeInTheDocument())
 
-    // The SA table delete button
     const deleteButtons = screen.getAllByRole('button', { name: /^delete$/i })
     await user.click(deleteButtons[deleteButtons.length - 1])
+
+    const dialog = await screen.findByRole('dialog', { hidden: true })
+    await user.click(within(dialog).getByRole('button', { name: /^delete$/i }))
 
     await waitFor(() => {
       expect(deletedUrl).toContain('/api/service-accounts/')
     })
   })
 
-  it('delete service account does not send DELETE when user cancels', async () => {
+  it('delete service account does not send DELETE when user cancels dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValueOnce(false)
 
     server.use(
       http.get(`${TEST_BASE}/api/service-accounts`, () =>
@@ -521,8 +575,72 @@ describe('Instruments admin page', () => {
     const deleteButtons = screen.getAllByRole('button', { name: /^delete$/i })
     await user.click(deleteButtons[deleteButtons.length - 1])
 
-    await new Promise((r) => setTimeout(r, 50))
+    const dialog = await screen.findByRole('dialog', { hidden: true })
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { hidden: true })).not.toBeInTheDocument()
+    })
     expect(deleteRequestMade).toBe(false)
+  })
+
+  it('required instrument fields get aria-invalid after failed submit attempt', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Instruments />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new instrument/i }))
+    await user.click(screen.getByRole('button', { name: /new instrument/i }))
+
+    // Attempt to submit without filling required fields
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      const nameInput = screen.getByRole('textbox', { name: /^name/i })
+      const hostInput = screen.getByRole('textbox', { name: /cifs host/i })
+      const shareInput = screen.getByRole('textbox', { name: /cifs share/i })
+      expect(nameInput).toHaveAttribute('aria-invalid', 'true')
+      expect(hostInput).toHaveAttribute('aria-invalid', 'true')
+      expect(shareInput).toHaveAttribute('aria-invalid', 'true')
+    })
+  })
+
+  it('aria-invalid clears on required instrument field when value is entered', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Instruments />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new instrument/i }))
+    await user.click(screen.getByRole('button', { name: /new instrument/i }))
+
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: /^name/i })).toHaveAttribute(
+        'aria-invalid',
+        'true'
+      )
+    })
+
+    await user.type(screen.getByRole('textbox', { name: /^name/i }), 'NMR Unit')
+
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: /^name/i })).not.toHaveAttribute('aria-invalid')
+    })
+  })
+
+  it('required service account fields get aria-invalid after failed submit attempt', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Instruments />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new service account/i }))
+    await user.click(screen.getByRole('button', { name: /new service account/i }))
+
+    await user.click(screen.getAllByRole('button', { name: /^save$/i })[0])
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^name/i)).toHaveAttribute('aria-invalid', 'true')
+      expect(screen.getByLabelText(/^username/i)).toHaveAttribute('aria-invalid', 'true')
+      expect(screen.getByLabelText(/^password/i)).toHaveAttribute('aria-invalid', 'true')
+    })
   })
 
   it('"New Service Account" button opens the service account modal', async () => {

@@ -46,7 +46,7 @@ describe('apiClient request interceptor', () => {
 })
 
 describe('apiClient response interceptor', () => {
-  it('clears localStorage and redirects on 401', async () => {
+  it('clears localStorage and redirects to /login when 401 fires on the login page', async () => {
     localStorage.setItem('access_token', 'old-token')
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () => new HttpResponse(null, { status: 401 }))
@@ -56,6 +56,22 @@ describe('apiClient response interceptor', () => {
 
     expect(localStorage.getItem('access_token')).toBeNull()
     expect(window.location.href).toBe('/login')
+  })
+
+  it('includes ?next param when 401 fires on a non-login page', async () => {
+    localStorage.setItem('access_token', 'old-token')
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () => new HttpResponse(null, { status: 401 }))
+    )
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, pathname: '/dashboard', search: '', href: '' },
+      writable: true,
+    })
+
+    await expect(apiClient.get('/api/instruments')).rejects.toThrow()
+
+    expect(localStorage.getItem('access_token')).toBeNull()
+    expect(window.location.href).toBe('/login?next=%2Fdashboard')
   })
 })
 

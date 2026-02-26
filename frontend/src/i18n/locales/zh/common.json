@@ -12,5 +12,6 @@
   "disabled": "已禁用",
   "name": "名称",
   "status": "状态",
-  "actions": "操作"
+  "actions": "操作",
+  "delete_warning": "此操作无法撤销。"
 }

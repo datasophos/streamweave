@@ -22,7 +22,9 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token')
-      window.location.href = '/login'
+      const next = window.location.pathname + (window.location.search ?? '')
+      window.location.href =
+        next && !next.startsWith('/login') ? `/login?next=${encodeURIComponent(next)}` : '/login'
     }
     return Promise.reject(error)
   }

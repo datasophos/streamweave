@@ -62,6 +62,8 @@ Expected output:
 Admin user created: admin@example.com (id=<uuid>)
 ```
 
+- [x] Dev stack auto creates admin user
+
 ---
 
 ## 4. Authentication
@@ -77,6 +79,9 @@ Admin user created: admin@example.com (id=<uuid>)
 
 **Expected:** Redirected to the Dashboard. The nav bar shows all admin links: Dashboard, Instruments, Storage, Schedules, Hooks, Users. The header shows "Streamweave".
 
+- [x] Dev stack auto creates admin user
+- [x] Admin and user links present
+
 ### 4.2 Bad credentials
 
 1. Sign out (if needed) and go back to `/login`.
@@ -85,6 +90,8 @@ Admin user created: admin@example.com (id=<uuid>)
 
 **Expected:** An inline red error box appears. It should show `LOGIN_BAD_CREDENTIALS` (the raw string from the API) or "Invalid credentials." — not a generic browser error.
 
+- [x] Shows translated login failure message
+
 ### 4.3 Unauthenticated redirect
 
 1. Sign out (clear localStorage or use an incognito window).
@@ -92,11 +99,15 @@ Admin user created: admin@example.com (id=<uuid>)
 
 **Expected:** Redirected to `/login` immediately (no flash of content).
 
+- [x] works as expected
+
 ### 4.4 Session persistence
 
 1. Sign in, then hard-refresh the page (Cmd+Shift+R / Ctrl+Shift+R).
 
 **Expected:** Still logged in; no redirect to `/login`.
+
+- [x] Works 
 
 ---
 
@@ -108,19 +119,23 @@ Navigate to `/` (Dashboard).
 
 **Expected:** A "Healthy" green badge next to "System status:". The badge polls every 30 seconds — confirm by watching it stay green.
 
+- [x] works; confirmed health endpoint poll
+
 ### 5.2 Stats cards
 
 With no data yet, the stat cards show `—` or `0` for files/transfers. **Expected:** No crash; placeholders render gracefully.
 
+- [x] correct for empty data
+
 ### 5.3 No-transfers state
 
-**Expected:** The "Recent Transfers" section shows "No transfers yet." in muted text.
+- [x] **Expected:** The "Recent Transfers" section shows "No transfers yet." in muted text.
 
 ---
 
 ## 6. Admin — Instruments
 
-Navigate to **Instruments** (`/admin/instruments`).
+- [x] Navigate to **Instruments** (`/admin/instruments`).
 
 ### 6.1 Create a service account
 
@@ -133,7 +148,13 @@ Before creating an instrument you need a CIFS service account (optional but real
    - **Password:** `labpassword`
 3. Click **Save**.
 
-**Expected:** Modal closes; the Service Accounts table shows the new row with name, username, and a creation date.
+- [x] **Expected:** Modal closes; the Service Accounts table shows the new row with name, username, and a creation date.
+- [x] SA exists with encrypted password in database
+
+```csv
+"name","domain","username","password_encrypted","id","created_at","updated_at"
+Lab SA,,labuser,gAAAAABpn1kGItS4ztsf0qzWk5xN6VBCqd3wQ3moK4CEwJMypHvxF7Vo7EWYzCO8FZ8Efxvcqb1FbOkjkdqAlXAsWz2nr5YHyA==,"3668abf9-041b-46f4-ab62-90c484f68b43",2026-02-25 13:18:14.619 -0700,2026-02-25 13:18:14.619 -0700
+```
 
 ### 6.2 Create an instrument
 
@@ -145,7 +166,14 @@ Before creating an instrument you need a CIFS service account (optional but real
    - **Service Account:** select "Lab SA" from the dropdown
 3. Click **Save**.
 
-**Expected:** Modal closes; the Instruments table shows a row with name, host, share, service account name, and an "Enabled" badge.
+- [x] **Expected:** Modal closes; the Instruments table shows a row with name, host, share, service account name, and an "Enabled" badge.
+- [x] We need to have a PID field in the form
+- [x] Database:
+
+```csv
+"name","description","location","pid","cifs_host","cifs_share","cifs_base_path","service_account_id","transfer_adapter","transfer_config","enabled","id","created_at","updated_at"
+Bruker NMR,A test NMR tool,Somewhere!,,"192.168.1.100",nmr-data,"","3668abf9-041b-46f4-ab62-90c484f68b43",rclone,"null",true,"7574a84c-961a-4bc2-a3df-7feb785f9071",2026-02-25 13:31:25.299 -0700,2026-02-25 13:31:25.299 -0700
+```
 
 ### 6.3 Edit an instrument
 
@@ -153,7 +181,7 @@ Before creating an instrument you need a CIFS service account (optional but real
 2. Change **Name** to `Bruker NMR 500`.
 3. Click **Save**.
 
-**Expected:** Modal closes; the table row updates to "Bruker NMR 500".
+- [x] **Expected:** Modal closes; the table row updates to "Bruker NMR 500".
 
 ### 6.4 Validation — missing required fields
 
@@ -161,22 +189,24 @@ Before creating an instrument you need a CIFS service account (optional but real
 2. Leave **Name**, **CIFS Host**, and **CIFS Share** blank.
 3. Click **Save**.
 
-**Expected:** Browser native validation prevents submission (the fields are `required`); no API call is made.
+- [x] **Expected:** Browser native validation prevents submission (the fields are `required`); no API call is made. Each invalid field shows a red border.
 
 ### 6.5 Cancel / Escape closes modal
 
 1. Click **New Instrument**, then click **Cancel**.
-   **Expected:** Modal disappears.
+   - [x] **Expected:** Modal disappears.
 2. Click **New Instrument** again, then press **Escape**.
-   **Expected:** Modal disappears.
+   - [x] **Expected:** Modal disappears.
 
 ### 6.6 Delete an instrument
 
 1. Click **Delete** on any instrument row.
 
-**Expected:** A browser `confirm()` dialog appears with the instrument name in the message. Clicking **Cancel** closes it with no change. Clicking **OK** removes the row.
+- [x] **Expected:** A styled confirmation dialog appears with the instrument name in the title and "This action cannot be undone." in the body. Clicking **Cancel** (or pressing **Escape**) closes it with no change. Clicking **Delete** removes the row.
 
 ---
+
+<!--RESUME HERE-->
 
 ## 7. Admin — Storage Locations
 

@@ -1,0 +1,19 @@
+{
+  "dashboard": "Panel",
+  "my_files": "Mis Archivos",
+  "transfers": "Transferencias",
+  "request_instrument": "Solicitar Instrumento",
+  "settings": "Configuración",
+  "sign_out": "Cerrar sesión",
+  "admin": "Administración",
+  "admin_instruments": "Instrumentos",
+  "admin_storage": "Almacenamiento",
+  "admin_schedules": "Horarios",
+  "admin_hooks": "Hooks",
+  "admin_users": "Usuarios",
+  "section_browse": "Explorar",
+  "section_my_work": "Mi Trabajo",
+  "footer": "StreamWeave — Recolección científica de datos, simplificada",
+  "toggle_menu": "Alternar menú",
+  "administrator": "Administrador"
+}

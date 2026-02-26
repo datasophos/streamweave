@@ -1,0 +1,16 @@
+{
+  "title": "Mes Fichiers",
+  "description": "Parcourir et rechercher des fichiers collectés",
+  "search_placeholder": "Rechercher par nom de fichier, chemin ou ID persistant…",
+  "all_instruments": "Tous les instruments",
+  "loading_files": "Chargement des fichiers…",
+  "no_files_filtered": "Aucun fichier ne correspond à vos filtres.",
+  "no_files": "Aucun fichier découvert pour l'instant.",
+  "file_count_one": "{{count}} fichier",
+  "file_count_other": "{{count}} fichiers",
+  "col_filename": "Nom de Fichier",
+  "col_instrument": "Instrument",
+  "col_size": "Taille",
+  "col_persistent_id": "ID Persistant",
+  "col_discovered": "Découvert"
+}

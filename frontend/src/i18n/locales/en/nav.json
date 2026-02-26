@@ -1,0 +1,19 @@
+{
+  "dashboard": "Dashboard",
+  "my_files": "My Files",
+  "transfers": "Transfers",
+  "request_instrument": "Request Instrument",
+  "settings": "Settings",
+  "sign_out": "Sign out",
+  "admin": "Admin",
+  "admin_instruments": "Instruments",
+  "admin_storage": "Storage",
+  "admin_schedules": "Schedules",
+  "admin_hooks": "Hooks",
+  "admin_users": "Users",
+  "section_browse": "Browse",
+  "section_my_work": "My Work",
+  "footer": "StreamWeave — Scientific data harvesting, simplified",
+  "toggle_menu": "Toggle menu",
+  "administrator": "Administrator"
+}

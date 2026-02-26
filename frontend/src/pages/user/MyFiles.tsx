@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFiles } from '@/hooks/useFiles'
 import { useInstruments } from '@/hooks/useInstruments'
 import { PageHeader } from '@/components/PageHeader'
@@ -13,6 +14,7 @@ function formatBytes(bytes: number | null) {
 }
 
 export function MyFiles() {
+  const { t } = useTranslation('files')
   const [search, setSearch] = useState('')
   const [instrumentFilter, setInstrumentFilter] = useState('')
 
@@ -36,13 +38,13 @@ export function MyFiles() {
 
   return (
     <div>
-      <PageHeader title="My Files" description="Browse and search harvested files" />
+      <PageHeader title={t('title')} description={t('description')} />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <input
           type="search"
-          placeholder="Search by filename, path, or persistent ID…"
+          placeholder={t('search_placeholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="input flex-1"
@@ -52,7 +54,7 @@ export function MyFiles() {
           onChange={(e) => setInstrumentFilter(e.target.value)}
           className="input sm:w-56"
         >
-          <option value="">All instruments</option>
+          <option value="">{t('all_instruments')}</option>
           {instruments.map((i) => (
             <option key={i.id} value={i.id}>
               {i.name}
@@ -79,36 +81,34 @@ export function MyFiles() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            Loading files…
+            {t('loading_files')}
           </div>
         ) : filtered.length === 0 ? (
           <p className="px-6 py-12 text-center text-sm text-sw-fg-faint">
-            {search || instrumentFilter
-              ? 'No files match your filters.'
-              : 'No files discovered yet.'}
+            {search || instrumentFilter ? t('no_files_filtered') : t('no_files')}
           </p>
         ) : (
           <>
             <div className="px-6 py-3 bg-sw-subtle border-b border-sw-border text-xs text-sw-fg-muted">
-              {filtered.length} file{filtered.length !== 1 ? 's' : ''}
+              {t('file_count', { count: filtered.length })}
             </div>
             <table className="min-w-full divide-y divide-sw-border-sub">
               <thead className="bg-sw-subtle">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                    Filename
+                    {t('col_filename')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                    Instrument
+                    {t('col_instrument')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                    Size
+                    {t('col_size')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                    Persistent ID
+                    {t('col_persistent_id')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                    Discovered
+                    {t('col_discovered')}
                   </th>
                 </tr>
               </thead>

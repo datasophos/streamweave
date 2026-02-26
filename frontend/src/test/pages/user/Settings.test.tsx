@@ -438,4 +438,110 @@ describe('Settings page', () => {
       expect(screen.getByText(/Example:/)).toBeInTheDocument()
     })
   })
+
+  // --- Language section ---
+
+  it('renders Language section heading in Preferences tab', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Language')).toBeInTheDocument()
+    })
+  })
+
+  it('renders English language option button', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'English' })).toBeInTheDocument()
+    })
+  })
+
+  it('renders Spanish, French, and Chinese language option buttons', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Español' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Français' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '中文' })).toBeInTheDocument()
+    })
+  })
+
+  it('clicking English language option saves to localStorage', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+    await waitFor(() => screen.getByRole('button', { name: 'English' }))
+
+    await user.click(screen.getByRole('button', { name: 'English' }))
+
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('en')
+  })
+
+  it('clicking Español saves es to localStorage', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+    await waitFor(() => screen.getByRole('button', { name: 'Español' }))
+
+    await user.click(screen.getByRole('button', { name: 'Español' }))
+
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('es')
+  })
+
+  it('clicking Français saves fr to localStorage', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+    await waitFor(() => screen.getByRole('button', { name: 'Français' }))
+
+    await user.click(screen.getByRole('button', { name: 'Français' }))
+
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('fr')
+  })
+
+  it('clicking 中文 saves zh to localStorage', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+    await waitFor(() => screen.getByRole('button', { name: '中文' }))
+
+    await user.click(screen.getByRole('button', { name: '中文' }))
+
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('zh')
+  })
+
+  it('shows AI translation warning in language section', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Translations are AI-generated and may contain errors.')
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('shows report translation issue link pointing to GitHub issues', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<Settings />)
+    await user.click(screen.getByRole('button', { name: 'Preferences' }))
+
+    await waitFor(() => {
+      const link = screen.getByRole('link', { name: 'Report a translation issue' })
+      expect(link).toBeInTheDocument()
+      expect(link).toHaveAttribute('href', 'https://github.com/datasophos/streamweave/issues')
+    })
+  })
 })

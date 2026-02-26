@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Trans } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 
 interface RequestForm {
@@ -10,6 +12,7 @@ interface RequestForm {
 }
 
 export function InstrumentRequest() {
+  const { t } = useTranslation('request')
   const [form, setForm] = useState<RequestForm>({
     instrument_name: '',
     location: '',
@@ -31,7 +34,7 @@ export function InstrumentRequest() {
   if (submitted) {
     return (
       <div>
-        <PageHeader title="Request Instrument Harvest" />
+        <PageHeader title={t('title')} />
         <div className="card max-w-lg mx-auto text-center">
           <div className="flex justify-center mb-4">
             <div className="rounded-full bg-sw-ok-bg p-3">
@@ -50,10 +53,17 @@ export function InstrumentRequest() {
               </svg>
             </div>
           </div>
-          <h2 className="text-xl font-semibold text-sw-fg mb-2">Request Submitted</h2>
+          <h2 className="text-xl font-semibold text-sw-fg mb-2">{t('success_title')}</h2>
           <p className="text-sw-fg-muted mb-6">
-            Your request for <strong>{form.instrument_name}</strong> has been submitted. An
-            administrator will review it and contact you at {form.contact_email}.
+            <Trans
+              i18nKey="success_message"
+              ns="request"
+              values={{
+                instrument_name: form.instrument_name,
+                contact_email: form.contact_email,
+              }}
+              components={{ bold: <strong /> }}
+            />
           </p>
           <button
             onClick={() => {
@@ -68,7 +78,7 @@ export function InstrumentRequest() {
             }}
             className="btn-secondary"
           >
-            Submit Another Request
+            {t('submit_another')}
           </button>
         </div>
       </div>
@@ -77,68 +87,65 @@ export function InstrumentRequest() {
 
   return (
     <div>
-      <PageHeader
-        title="Request Instrument Harvest"
-        description="Request that a new instrument be added to the harvest system"
-      />
+      <PageHeader title={t('title')} description={t('description')} />
 
       <div className="card max-w-lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="label">Instrument Name *</label>
+            <label className="label">{t('form_instrument_name')}</label>
             <input
               className="input"
               required
               value={form.instrument_name}
               onChange={(e) => set('instrument_name', e.target.value)}
-              placeholder="e.g. TEM Microscope Lab 3"
+              placeholder={t('placeholder_instrument_name')}
             />
           </div>
           <div>
-            <label className="label">Physical Location *</label>
+            <label className="label">{t('form_location')}</label>
             <input
               className="input"
               required
               value={form.location}
               onChange={(e) => set('location', e.target.value)}
-              placeholder="e.g. Building A, Room 204"
+              placeholder={t('placeholder_location')}
             />
           </div>
           <div>
-            <label className="label">Contact Email *</label>
+            <label className="label">{t('form_contact_email')}</label>
             <input
               className="input"
               type="email"
               required
               value={form.contact_email}
               onChange={(e) => set('contact_email', e.target.value)}
-              placeholder="your@email.edu"
+              placeholder={t('placeholder_contact_email')}
             />
           </div>
           <div>
-            <label className="label">Instrument Description</label>
+            <label className="label">{t('form_description')}</label>
             <textarea
               className="input"
               rows={3}
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
-              placeholder="Describe the instrument and the type of data it generates…"
+              placeholder={t('placeholder_description')}
             />
           </div>
           <div>
-            <label className="label">Justification *</label>
+            <label className="label">{t('form_justification')}</label>
             <textarea
               className="input"
               rows={4}
               required
               value={form.justification}
               onChange={(e) => set('justification', e.target.value)}
-              placeholder="Why does this instrument need automated data harvesting? What project/grant is this for?"
+              placeholder={t('placeholder_justification')}
             />
           </div>
           <div className="flex justify-end pt-2">
             <button type="submit" className="btn-primary">
-              Submit Request
+              {t('submit')}
             </button>
           </div>
         </form>

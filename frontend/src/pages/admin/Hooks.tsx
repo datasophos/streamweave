@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
@@ -27,6 +28,7 @@ function HookForm({
   isLoading: boolean
   error: unknown
 }) {
+  const { t } = useTranslation('hooks')
   const { data: instruments = [] } = useInstruments()
   const [form, setForm] = useState<HookConfigCreate>({
     name: initial?.name ?? '',
@@ -53,7 +55,7 @@ function HookForm({
       {error != null && <ErrorMessage error={error} />}
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <label className="label">Name *</label>
+          <label className="label">{t('form_name')}</label>
           <input
             className="input"
             required
@@ -62,7 +64,7 @@ function HookForm({
           />
         </div>
         <div className="col-span-2">
-          <label className="label">Description</label>
+          <label className="label">{t('form_description')}</label>
           <input
             className="input"
             value={form.description}
@@ -70,31 +72,31 @@ function HookForm({
           />
         </div>
         <div>
-          <label className="label">Trigger *</label>
+          <label className="label">{t('form_trigger')}</label>
           <select
             className="input"
             value={form.trigger}
             onChange={(e) => set('trigger', e.target.value as HookTrigger)}
           >
-            <option value="pre_transfer">Pre-transfer</option>
-            <option value="post_transfer">Post-transfer</option>
+            <option value="pre_transfer">{t('trigger_pre')}</option>
+            <option value="post_transfer">{t('trigger_post')}</option>
           </select>
         </div>
         <div>
-          <label className="label">Implementation *</label>
+          <label className="label">{t('form_implementation')}</label>
           <select
             className="input"
             value={form.implementation}
             onChange={(e) => set('implementation', e.target.value as HookImplementation)}
           >
-            <option value="builtin">Built-in</option>
-            <option value="python_script">Python Script</option>
-            <option value="http_webhook">HTTP Webhook</option>
+            <option value="builtin">{t('impl_builtin')}</option>
+            <option value="python_script">{t('impl_python')}</option>
+            <option value="http_webhook">{t('impl_webhook')}</option>
           </select>
         </div>
         {form.implementation === 'builtin' && (
           <div className="col-span-2">
-            <label className="label">Built-in Name</label>
+            <label className="label">{t('form_builtin_name')}</label>
             <input
               className="input"
               value={form.builtin_name}
@@ -105,7 +107,7 @@ function HookForm({
         )}
         {form.implementation === 'python_script' && (
           <div className="col-span-2">
-            <label className="label">Script Path</label>
+            <label className="label">{t('form_script_path')}</label>
             <input
               className="input font-mono"
               value={form.script_path}
@@ -116,7 +118,7 @@ function HookForm({
         )}
         {form.implementation === 'http_webhook' && (
           <div className="col-span-2">
-            <label className="label">Webhook URL</label>
+            <label className="label">{t('form_webhook_url')}</label>
             <input
               className="input"
               type="url"
@@ -127,13 +129,13 @@ function HookForm({
           </div>
         )}
         <div>
-          <label className="label">Instrument (blank = global)</label>
+          <label className="label">{t('form_instrument')}</label>
           <select
             className="input"
             value={form.instrument_id ?? ''}
             onChange={(e) => set('instrument_id', e.target.value || undefined)}
           >
-            <option value="">— Global —</option>
+            <option value="">{t('global_instrument')}</option>
             {instruments.map((i) => (
               <option key={i.id} value={i.id}>
                 {i.name}
@@ -142,7 +144,7 @@ function HookForm({
           </select>
         </div>
         <div>
-          <label className="label">Priority</label>
+          <label className="label">{t('form_priority')}</label>
           <input
             className="input"
             type="number"
@@ -159,16 +161,16 @@ function HookForm({
             className="rounded border-gray-300"
           />
           <label htmlFor="hook-enabled" className="text-sm font-medium text-sw-fg-2">
-            Enabled
+            {t('form_enabled')}
           </label>
         </div>
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t('cancel')}
         </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
-          {isLoading ? 'Saving…' : 'Save'}
+          {isLoading ? t('saving') : t('save')}
         </button>
       </div>
     </form>
@@ -176,6 +178,8 @@ function HookForm({
 }
 
 export function Hooks() {
+  const { t } = useTranslation('hooks')
+  const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
 
@@ -189,50 +193,50 @@ export function Hooks() {
   const instMap = Object.fromEntries(instruments.map((i) => [i.id, i.name]))
 
   const columns = [
-    { header: 'Name', key: 'name' as const },
+    { header: tc('name'), key: 'name' as const },
     {
-      header: 'Trigger',
+      header: t('col_trigger'),
       render: (row: HookConfig) => (
         <span className={row.trigger === 'pre_transfer' ? 'badge-yellow' : 'badge-blue'}>
-          {row.trigger === 'pre_transfer' ? 'Pre-transfer' : 'Post-transfer'}
+          {row.trigger === 'pre_transfer' ? t('trigger_pre') : t('trigger_post')}
         </span>
       ),
     },
-    { header: 'Implementation', key: 'implementation' as const },
+    { header: t('col_implementation'), key: 'implementation' as const },
     {
-      header: 'Scope',
+      header: t('col_scope'),
       render: (row: HookConfig) =>
         row.instrument_id
           ? (instMap[row.instrument_id] ?? row.instrument_id.slice(0, 8))
-          : 'Global',
+          : t('scope_global'),
     },
-    { header: 'Priority', key: 'priority' as const },
+    { header: t('col_priority'), key: 'priority' as const },
     {
-      header: 'Status',
+      header: tc('status'),
       render: (row: HookConfig) =>
         row.enabled ? (
-          <span className="badge-green">Enabled</span>
+          <span className="badge-green">{tc('enabled')}</span>
         ) : (
-          <span className="badge-gray">Disabled</span>
+          <span className="badge-gray">{tc('disabled')}</span>
         ),
     },
     {
-      header: 'Actions',
+      header: tc('actions'),
       render: (row: HookConfig) => (
         <div className="flex gap-2">
           <button
             className="btn btn-sm btn-secondary"
             onClick={() => setModal({ kind: 'edit', hook: row })}
           >
-            Edit
+            {tc('edit')}
           </button>
           <button
             className="btn btn-sm btn-danger"
             onClick={() => {
-              if (confirm(`Delete hook "${row.name}"?`)) del.mutate(row.id)
+              if (confirm(t('confirm_delete', { name: row.name }))) del.mutate(row.id)
             }}
           >
-            Delete
+            {tc('delete')}
           </button>
         </div>
       ),
@@ -242,26 +246,21 @@ export function Hooks() {
   return (
     <div>
       <PageHeader
-        title="Hook Configurations"
-        description="Configure pre- and post-transfer hooks"
+        title={t('title')}
+        description={t('description')}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
-            New Hook
+            {t('new_hook')}
           </button>
         }
       />
 
       <div className="card p-0 overflow-hidden">
-        <Table
-          columns={columns}
-          data={hooks}
-          isLoading={isLoading}
-          emptyMessage="No hooks configured."
-        />
+        <Table columns={columns} data={hooks} isLoading={isLoading} emptyMessage={t('no_hooks')} />
       </div>
 
       {modal.kind === 'create' && (
-        <Modal title="New Hook Configuration" onClose={close} size="lg">
+        <Modal title={t('modal_new')} onClose={close} size="lg">
           <HookForm
             onSubmit={(data) => create.mutate(data, { onSuccess: close })}
             onCancel={close}
@@ -272,7 +271,7 @@ export function Hooks() {
       )}
 
       {modal.kind === 'edit' && (
-        <Modal title="Edit Hook Configuration" onClose={close} size="lg">
+        <Modal title={t('modal_edit')} onClose={close} size="lg">
           <HookForm
             initial={modal.hook}
             onSubmit={(data) => update.mutate({ id: modal.hook.id, data }, { onSuccess: close })}

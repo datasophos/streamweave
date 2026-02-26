@@ -1,0 +1,18 @@
+{
+  "title": "Ubicaciones de Almacenamiento",
+  "description": "Configurar destinos para los datos recolectados",
+  "new_storage_location": "Nueva Ubicación de Almacenamiento",
+  "modal_new": "Nueva Ubicación de Almacenamiento",
+  "modal_edit": "Editar Ubicación de Almacenamiento",
+  "confirm_delete": "¿Eliminar {{name}}?",
+  "form_name": "Nombre *",
+  "form_type": "Tipo *",
+  "form_base_path": "Ruta Base *",
+  "form_enabled": "Habilitado",
+  "no_locations": "No hay ubicaciones de almacenamiento configuradas.",
+  "col_type": "Tipo",
+  "col_base_path": "Ruta Base",
+  "save": "Guardar",
+  "saving": "Guardando…",
+  "cancel": "Cancelar"
+}

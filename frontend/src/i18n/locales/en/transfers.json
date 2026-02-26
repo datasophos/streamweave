@@ -1,0 +1,23 @@
+{
+  "title": "Transfer History",
+  "description": "Track the status of all file transfers",
+  "all_statuses": "All statuses",
+  "status_pending": "Pending",
+  "status_in_progress": "In Progress",
+  "status_completed": "Completed",
+  "status_failed": "Failed",
+  "status_skipped": "Skipped",
+  "loading": "Loading…",
+  "no_transfers": "No transfers found.",
+  "failed_transfers": "Failed Transfers",
+  "checksum_verified": "Verified",
+  "checksum_failed": "Failed",
+  "col_transfer_id": "Transfer ID",
+  "col_status": "Status",
+  "col_destination": "Destination",
+  "col_adapter": "Adapter",
+  "col_bytes": "Bytes",
+  "col_checksum": "Checksum",
+  "col_started": "Started",
+  "col_completed": "Completed"
+}

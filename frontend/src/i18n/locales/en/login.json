@@ -1,0 +1,9 @@
+{
+  "title": "StreamWeave",
+  "subtitle": "Scientific instrument data management",
+  "sign_in": "Sign in",
+  "email": "Email address",
+  "password": "Password",
+  "signing_in": "Signing in…",
+  "invalid_credentials": "Invalid credentials."
+}

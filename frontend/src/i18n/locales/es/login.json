@@ -1,0 +1,9 @@
+{
+  "title": "StreamWeave",
+  "subtitle": "Gestión de datos de instrumentos científicos",
+  "sign_in": "Iniciar sesión",
+  "email": "Dirección de correo electrónico",
+  "password": "Contraseña",
+  "signing_in": "Iniciando sesión…",
+  "invalid_credentials": "Credenciales inválidas."
+}

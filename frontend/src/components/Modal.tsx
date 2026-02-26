@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface ModalProps {
   title: string
@@ -8,6 +9,8 @@ interface ModalProps {
 }
 
 export function Modal({ title, onClose, children, size = 'md' }: ModalProps) {
+  const { t } = useTranslation('common')
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -35,6 +38,7 @@ export function Modal({ title, onClose, children, size = 'md' }: ModalProps) {
             </h2>
             <button
               onClick={onClose}
+              aria-label={t('close')}
               className="text-sw-fg-faint hover:text-sw-fg-muted transition-colors"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

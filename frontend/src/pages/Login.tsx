@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { ErrorMessage } from '@/components/ErrorMessage'
 
 export function Login() {
+  const { t } = useTranslation('login')
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -32,20 +34,20 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center bg-sw-bg">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-sw-brand">StreamWeave</h1>
-          <p className="mt-2 text-sm text-sw-fg-muted">Scientific instrument data management</p>
+          <h1 className="text-3xl font-bold text-sw-brand">{t('title')}</h1>
+          <p className="mt-2 text-sm text-sw-fg-muted">{t('subtitle')}</p>
         </div>
         <div className="card">
-          <h2 className="text-xl font-semibold text-sw-fg mb-6">Sign in</h2>
+          <h2 className="text-xl font-semibold text-sw-fg mb-6">{t('sign_in')}</h2>
           {error != null && (
             <div className="mb-4">
-              <ErrorMessage error={error} fallback="Invalid credentials." />
+              <ErrorMessage error={error} fallback={t('invalid_credentials')} />
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="label">
-                Email address
+                {t('email')}
               </label>
               <input
                 id="email"
@@ -60,7 +62,7 @@ export function Login() {
             </div>
             <div>
               <label htmlFor="password" className="label">
-                Password
+                {t('password')}
               </label>
               <input
                 id="password"
@@ -73,7 +75,7 @@ export function Login() {
               />
             </div>
             <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
-              {loading ? 'Signing in…' : 'Sign in'}
+              {loading ? t('signing_in') : t('sign_in')}
             </button>
           </form>
         </div>

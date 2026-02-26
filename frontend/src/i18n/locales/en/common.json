@@ -1,0 +1,16 @@
+{
+  "save": "Save",
+  "saving": "Saving…",
+  "cancel": "Cancel",
+  "edit": "Edit",
+  "delete": "Delete",
+  "loading": "Loading…",
+  "error_default": "An error occurred.",
+  "no_records": "No records found.",
+  "close": "Close",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "name": "Name",
+  "status": "Status",
+  "actions": "Actions"
+}

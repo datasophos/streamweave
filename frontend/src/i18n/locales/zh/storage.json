@@ -1,0 +1,18 @@
+{
+  "title": "存储位置",
+  "description": "配置已采集数据的目标位置",
+  "new_storage_location": "新建存储位置",
+  "modal_new": "新建存储位置",
+  "modal_edit": "编辑存储位置",
+  "confirm_delete": "删除 {{name}}？",
+  "form_name": "名称 *",
+  "form_type": "类型 *",
+  "form_base_path": "基础路径 *",
+  "form_enabled": "已启用",
+  "no_locations": "未配置任何存储位置。",
+  "col_type": "类型",
+  "col_base_path": "基础路径",
+  "save": "保存",
+  "saving": "保存中…",
+  "cancel": "取消"
+}

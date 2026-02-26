@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Table } from '@/components/Table'
+import '@/i18n/config'
 
 describe('Table', () => {
   const data = [{ id: '1', name: 'Alice', role: 'admin' }]

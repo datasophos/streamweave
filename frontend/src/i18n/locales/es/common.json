@@ -1,0 +1,16 @@
+{
+  "save": "Guardar",
+  "saving": "Guardando…",
+  "cancel": "Cancelar",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "loading": "Cargando…",
+  "error_default": "Ocurrió un error.",
+  "no_records": "No se encontraron registros.",
+  "close": "Cerrar",
+  "enabled": "Habilitado",
+  "disabled": "Deshabilitado",
+  "name": "Nombre",
+  "status": "Estado",
+  "actions": "Acciones"
+}

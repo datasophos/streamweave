@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { PreferencesProvider, usePreferences } from '@/contexts/PreferencesContext'
+import '@/i18n/config'
 
 // Helper component that exposes context values for assertions
 function PrefsDisplay() {
@@ -10,6 +11,7 @@ function PrefsDisplay() {
       <span data-testid="theme">{preferences.theme}</span>
       <span data-testid="dateFormat">{preferences.dateFormat}</span>
       <span data-testid="itemsPerPage">{preferences.itemsPerPage}</span>
+      <span data-testid="language">{preferences.language}</span>
     </div>
   )
 }
@@ -24,6 +26,10 @@ function PrefsChanger() {
       <button onClick={() => setPreference('theme', 'system')}>set system</button>
       <button onClick={() => setPreference('dateFormat', 'absolute')}>set absolute</button>
       <button onClick={() => setPreference('itemsPerPage', 50)}>set 50</button>
+      <button onClick={() => setPreference('language', 'en')}>set en</button>
+      <button onClick={() => setPreference('language', 'es')}>set es</button>
+      <button onClick={() => setPreference('language', 'fr')}>set fr</button>
+      <button onClick={() => setPreference('language', 'zh')}>set zh</button>
     </div>
   )
 }
@@ -47,6 +53,7 @@ describe('PreferencesContext', () => {
     expect(screen.getByTestId('theme')).toHaveTextContent('system')
     expect(screen.getByTestId('dateFormat')).toHaveTextContent('relative')
     expect(screen.getByTestId('itemsPerPage')).toHaveTextContent('25')
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
   })
 
   it('loads saved preferences from localStorage on mount', () => {
@@ -186,5 +193,56 @@ describe('PreferencesContext', () => {
       return <div>{usePreferences().preferences.theme}</div>
     }
     expect(() => render(<Bare />)).toThrow('usePreferences must be used within PreferencesProvider')
+  })
+
+  it('initializes language field with default en', () => {
+    renderPrefs()
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
+  })
+
+  it('loads language from localStorage sw_preferences', () => {
+    localStorage.setItem('sw_preferences', JSON.stringify({ language: 'en' }))
+    renderPrefs()
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
+  })
+
+  it('setPreference language updates the displayed value', async () => {
+    renderPrefs()
+    act(() => screen.getByRole('button', { name: 'set en' }).click())
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
+  })
+
+  it('setPreference language persists to localStorage', async () => {
+    renderPrefs()
+    act(() => screen.getByRole('button', { name: 'set en' }).click())
+    const stored = JSON.parse(localStorage.getItem('sw_preferences') ?? '{}')
+    expect(stored.language).toBe('en')
+  })
+
+  it('language change writes sw_preferences_lang to localStorage', async () => {
+    renderPrefs()
+    act(() => screen.getByRole('button', { name: 'set en' }).click())
+    expect(localStorage.getItem('sw_preferences_lang')).toBe('en')
+  })
+
+  it('setPreference language supports es, fr, zh values', async () => {
+    renderPrefs()
+    act(() => screen.getByRole('button', { name: 'set es' }).click())
+    expect(screen.getByTestId('language')).toHaveTextContent('es')
+
+    act(() => screen.getByRole('button', { name: 'set fr' }).click())
+    expect(screen.getByTestId('language')).toHaveTextContent('fr')
+
+    act(() => screen.getByRole('button', { name: 'set zh' }).click())
+    expect(screen.getByTestId('language')).toHaveTextContent('zh')
+  })
+
+  it('loads language from sw_preferences_lang when stored language is falsy', () => {
+    // Simulate: sw_preferences exists but language is empty string (falsy),
+    // and the i18next detector has stored a value in sw_preferences_lang
+    localStorage.setItem('sw_preferences', JSON.stringify({ theme: 'light', language: '' }))
+    localStorage.setItem('sw_preferences_lang', 'en')
+    renderPrefs()
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
   })
 })

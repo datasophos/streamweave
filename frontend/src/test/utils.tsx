@@ -5,6 +5,7 @@ import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PreferencesProvider } from '@/contexts/PreferencesContext'
 import type { ReactNode } from 'react'
+import '@/i18n/config'
 
 export interface RenderWithProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
   routerProps?: MemoryRouterProps

@@ -1,0 +1,23 @@
+{
+  "title": "Historial de Transferencias",
+  "description": "Seguir el estado de todas las transferencias de archivos",
+  "all_statuses": "Todos los estados",
+  "status_pending": "Pendiente",
+  "status_in_progress": "En Progreso",
+  "status_completed": "Completado",
+  "status_failed": "Fallido",
+  "status_skipped": "Omitido",
+  "loading": "Cargando…",
+  "no_transfers": "No se encontraron transferencias.",
+  "failed_transfers": "Transferencias Fallidas",
+  "checksum_verified": "Verificado",
+  "checksum_failed": "Fallido",
+  "col_transfer_id": "ID de Transferencia",
+  "col_status": "Estado",
+  "col_destination": "Destino",
+  "col_adapter": "Adaptador",
+  "col_bytes": "Bytes",
+  "col_checksum": "Suma de Verificación",
+  "col_started": "Iniciado",
+  "col_completed": "Completado"
+}

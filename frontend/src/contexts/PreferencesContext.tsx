@@ -1,12 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import i18next from 'i18next'
 
 type DateFormat = 'relative' | 'absolute'
 type Theme = 'light' | 'dark' | 'system'
+export type Language = 'en' | 'es' | 'fr' | 'zh'
 
-interface Preferences {
+export interface Preferences {
   theme: Theme
   dateFormat: DateFormat
   itemsPerPage: 10 | 25 | 50
+  language: Language
 }
 
 interface PreferencesContextValue {
@@ -15,17 +18,25 @@ interface PreferencesContextValue {
 }
 
 const STORAGE_KEY = 'sw_preferences'
+const LANG_KEY = 'sw_preferences_lang'
 
 const defaults: Preferences = {
   theme: 'system',
   dateFormat: 'relative',
   itemsPerPage: 25,
+  language: 'en',
 }
 
 function loadPreferences(): Preferences {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...defaults, ...JSON.parse(raw) }
+    const stored = raw ? { ...defaults, ...JSON.parse(raw) } : defaults
+    // Sync language from the detector's key if not yet in sw_preferences
+    const detectedLang = localStorage.getItem(LANG_KEY)
+    if (detectedLang && !stored.language) {
+      stored.language = detectedLang as Language
+    }
+    return stored
   } catch {
     // ignore
   }
@@ -67,6 +78,12 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     return () => mq.removeEventListener('change', handler)
   }, [preferences.theme])
 
+  // Sync language preference with i18next and localStorage detector key
+  useEffect(() => {
+    void i18next.changeLanguage(preferences.language)
+    localStorage.setItem(LANG_KEY, preferences.language)
+  }, [preferences.language])
+
   const setPreference = useCallback(
     <K extends keyof Preferences>(key: K, value: Preferences[K]) => {
       setPreferences((prev) => {
@@ -85,6 +102,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePreferences() {
   const ctx = useContext(PreferencesContext)
   if (!ctx) throw new Error('usePreferences must be used within PreferencesProvider')

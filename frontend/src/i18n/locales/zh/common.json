@@ -1,0 +1,16 @@
+{
+  "save": "保存",
+  "saving": "保存中…",
+  "cancel": "取消",
+  "edit": "编辑",
+  "delete": "删除",
+  "loading": "加载中…",
+  "error_default": "发生错误。",
+  "no_records": "未找到记录。",
+  "close": "关闭",
+  "enabled": "已启用",
+  "disabled": "已禁用",
+  "name": "名称",
+  "status": "状态",
+  "actions": "操作"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "申请仪器采集",
+  "description": "申请将新仪器添加到采集系统",
+  "form_instrument_name": "仪器名称 *",
+  "form_location": "物理位置 *",
+  "form_contact_email": "联系邮箱 *",
+  "form_description": "仪器描述",
+  "form_justification": "理由 *",
+  "placeholder_instrument_name": "例如：TEM 显微镜实验室 3",
+  "placeholder_location": "例如：A 楼，204 室",
+  "placeholder_contact_email": "your@email.edu",
+  "placeholder_description": "描述仪器及其产生的数据类型…",
+  "placeholder_justification": "为什么此仪器需要自动数据采集？这是为哪个项目或课题？",
+  "submit": "提交申请",
+  "success_title": "申请已提交",
+  "success_message": "您对<bold>{{instrument_name}}</bold>的申请已提交。管理员将审核并通过 {{contact_email}} 与您联系。",
+  "submit_another": "再次提交申请"
+}

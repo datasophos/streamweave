@@ -1,10 +1,14 @@
+import { useTranslation } from 'react-i18next'
+
 interface ErrorMessageProps {
   error: unknown
   fallback?: string
 }
 
-export function ErrorMessage({ error, fallback = 'An error occurred.' }: ErrorMessageProps) {
-  let message = fallback
+export function ErrorMessage({ error, fallback }: ErrorMessageProps) {
+  const { t } = useTranslation('common')
+  const defaultFallback = fallback ?? t('error_default')
+  let message = defaultFallback
   if (
     typeof error === 'object' &&
     error !== null &&

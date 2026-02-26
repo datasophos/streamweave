@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 
-const adminNav = [
-  { to: '/admin/instruments', label: 'Instruments' },
-  { to: '/admin/storage', label: 'Storage' },
-  { to: '/admin/schedules', label: 'Schedules' },
-  { to: '/admin/hooks', label: 'Hooks' },
-  { to: '/admin/users', label: 'Users' },
-]
+const adminNavDefs = [
+  { to: '/admin/instruments', key: 'admin_instruments' },
+  { to: '/admin/storage', key: 'admin_storage' },
+  { to: '/admin/schedules', key: 'admin_schedules' },
+  { to: '/admin/hooks', key: 'admin_hooks' },
+  { to: '/admin/users', key: 'admin_users' },
+] as const
 
-const userNav = [
-  { to: '/files', label: 'My Files' },
-  { to: '/transfers', label: 'Transfers' },
-]
-
-const requestNav = { to: '/request', label: 'Request Instrument' }
+const userNavDefs = [
+  { to: '/files', key: 'my_files' },
+  { to: '/transfers', key: 'transfers' },
+] as const
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `px-2.5 py-1.5 text-sm font-medium rounded transition-colors whitespace-nowrap ${
@@ -29,12 +28,13 @@ function Divider() {
 }
 
 function AdminDropdown() {
+  const { t } = useTranslation('nav')
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const buttonRef = useRef<HTMLButtonElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
-  const isActive = adminNav.some((item) => location.pathname.startsWith(item.to))
+  const isActive = adminNavDefs.some((item) => location.pathname.startsWith(item.to))
 
   const openDropdown = () => {
     if (buttonRef.current) {
@@ -75,7 +75,7 @@ function AdminDropdown() {
             : 'text-sw-fg-muted hover:text-sw-fg hover:bg-sw-hover'
         }`}
       >
-        Admin
+        {t('admin')}
         <svg
           className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`}
           viewBox="0 0 16 16"
@@ -99,7 +99,7 @@ function AdminDropdown() {
           className="fixed w-44 bg-sw-surface border border-sw-border rounded-lg shadow-lg py-1 z-50"
           style={{ top: pos.top, left: pos.left }}
         >
-          {adminNav.map((item) => (
+          {adminNavDefs.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -111,7 +111,7 @@ function AdminDropdown() {
                 }`
               }
             >
-              {item.label}
+              {t(item.key)}
             </NavLink>
           ))}
         </div>
@@ -121,6 +121,7 @@ function AdminDropdown() {
 }
 
 function MobileMenu({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation('nav')
   const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
 
@@ -149,33 +150,33 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
       <div className="fixed top-14 left-0 right-0 bg-sw-surface border-b border-sw-border shadow-lg z-40 md:hidden">
         <nav className="px-4 py-3 space-y-0.5">
           <NavLink to="/" end className={mobileLinkClass}>
-            Dashboard
+            {t('dashboard')}
           </NavLink>
 
           {isAdmin && (
             <>
               <div className="pt-2 pb-1 px-3 text-xs font-semibold text-sw-fg-faint uppercase tracking-wider">
-                Admin
+                {t('admin')}
               </div>
-              {adminNav.map((item) => (
+              {adminNavDefs.map((item) => (
                 <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
-                  {item.label}
+                  {t(item.key)}
                 </NavLink>
               ))}
             </>
           )}
 
           <div className="pt-2 pb-1 px-3 text-xs font-semibold text-sw-fg-faint uppercase tracking-wider">
-            {isAdmin ? 'Browse' : 'My Work'}
+            {isAdmin ? t('section_browse') : t('section_my_work')}
           </div>
-          {userNav.map((item) => (
+          {userNavDefs.map((item) => (
             <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
-              {item.label}
+              {t(item.key)}
             </NavLink>
           ))}
           {!isAdmin && (
-            <NavLink to={requestNav.to} className={mobileLinkClass}>
-              {requestNav.label}
+            <NavLink to="/request" className={mobileLinkClass}>
+              {t('request_instrument')}
             </NavLink>
           )}
         </nav>
@@ -184,17 +185,17 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           <div className="flex items-center justify-between mb-2">
             <div>
               <p className="text-sm font-medium text-sw-fg">{user?.email}</p>
-              {isAdmin && <p className="text-xs text-sw-brand">Administrator</p>}
+              {isAdmin && <p className="text-xs text-sw-brand">{t('administrator')}</p>}
             </div>
             <button
               onClick={handleLogout}
               className="text-sm text-sw-fg-muted hover:text-sw-fg transition-colors"
             >
-              Sign out
+              {t('sign_out')}
             </button>
           </div>
           <NavLink to="/settings" className={mobileLinkClass}>
-            Settings
+            {t('settings')}
           </NavLink>
         </div>
       </div>
@@ -203,6 +204,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 }
 
 export function AppLayout() {
+  const { t } = useTranslation('nav')
   const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -236,7 +238,7 @@ export function AppLayout() {
               <Divider />
               <nav className="flex items-center gap-0.5">
                 <NavLink to="/" end className={linkClass}>
-                  Dashboard
+                  {t('dashboard')}
                 </NavLink>
 
                 {isAdmin && (
@@ -247,14 +249,14 @@ export function AppLayout() {
                 )}
 
                 <Divider />
-                {userNav.map((item) => (
+                {userNavDefs.map((item) => (
                   <NavLink key={item.to} to={item.to} className={linkClass}>
-                    {item.label}
+                    {t(item.key)}
                   </NavLink>
                 ))}
                 {!isAdmin && (
-                  <NavLink to={requestNav.to} className={linkClass}>
-                    {requestNav.label}
+                  <NavLink to="/request" className={linkClass}>
+                    {t('request_instrument')}
                   </NavLink>
                 )}
               </nav>
@@ -270,7 +272,7 @@ export function AppLayout() {
               </span>
               {isAdmin && (
                 <span className="text-xs font-medium text-sw-brand bg-sw-brand-bg border border-sw-brand-bd rounded-full px-2 py-0.5 whitespace-nowrap">
-                  Admin
+                  {t('admin')}
                 </span>
               )}
               <Divider />
@@ -287,14 +289,14 @@ export function AppLayout() {
                     clipRule="evenodd"
                   />
                 </svg>
-                Settings
+                {t('settings')}
               </NavLink>
               <Divider />
               <button
                 onClick={handleLogout}
                 className="text-sm text-sw-fg-muted hover:text-sw-fg transition-colors whitespace-nowrap"
               >
-                Sign out
+                {t('sign_out')}
               </button>
             </div>
 
@@ -302,7 +304,7 @@ export function AppLayout() {
             <button
               className="md:hidden p-2 rounded text-sw-fg-muted hover:text-sw-fg hover:bg-sw-hover transition-colors"
               onClick={() => setMobileOpen((o) => !o)}
-              aria-label="Toggle menu"
+              aria-label={t('toggle_menu')}
               aria-expanded={mobileOpen}
             >
               {mobileOpen ? (

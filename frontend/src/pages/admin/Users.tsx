@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
@@ -20,6 +21,7 @@ function CreateUserForm({
   isLoading: boolean
   error: unknown
 }) {
+  const { t } = useTranslation('users')
   const [form, setForm] = useState<UserCreate>({ email: '', password: '', role: 'user' })
   const set = (k: keyof UserCreate, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
@@ -33,7 +35,7 @@ function CreateUserForm({
     >
       {error != null && <ErrorMessage error={error} />}
       <div>
-        <label className="label">Email *</label>
+        <label className="label">{t('form_email')}</label>
         <input
           className="input"
           type="email"
@@ -43,7 +45,7 @@ function CreateUserForm({
         />
       </div>
       <div>
-        <label className="label">Password *</label>
+        <label className="label">{t('form_password')}</label>
         <input
           className="input"
           type="password"
@@ -53,18 +55,18 @@ function CreateUserForm({
         />
       </div>
       <div>
-        <label className="label">Role</label>
+        <label className="label">{t('form_role')}</label>
         <select className="input" value={form.role} onChange={(e) => set('role', e.target.value)}>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
+          <option value="user">{t('role_user')}</option>
+          <option value="admin">{t('role_admin')}</option>
         </select>
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t('cancel')}
         </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
-          {isLoading ? 'Creating…' : 'Create User'}
+          {isLoading ? t('creating') : t('create_user')}
         </button>
       </div>
     </form>
@@ -72,6 +74,8 @@ function CreateUserForm({
 }
 
 export function Users() {
+  const { t } = useTranslation('users')
+  const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const { user: me } = useAuth()
@@ -89,46 +93,46 @@ export function Users() {
   }
 
   const columns = [
-    { header: 'Email', key: 'email' as const },
+    { header: t('col_email'), key: 'email' as const },
     {
-      header: 'Role',
+      header: t('col_role'),
       render: (row: User) => (
         <span className={row.role === 'admin' ? 'badge-blue' : 'badge-gray'}>{row.role}</span>
       ),
     },
     {
-      header: 'Status',
+      header: tc('status'),
       render: (row: User) =>
         row.is_active ? (
-          <span className="badge-green">Active</span>
+          <span className="badge-green">{t('status_active')}</span>
         ) : (
-          <span className="badge-red">Inactive</span>
+          <span className="badge-red">{t('status_inactive')}</span>
         ),
     },
     {
-      header: 'Verified',
+      header: t('col_verified'),
       render: (row: User) =>
         row.is_verified ? (
-          <span className="badge-green">Yes</span>
+          <span className="badge-green">{t('verified_yes')}</span>
         ) : (
-          <span className="badge-yellow">No</span>
+          <span className="badge-yellow">{t('verified_no')}</span>
         ),
     },
     {
-      header: 'Actions',
+      header: tc('actions'),
       render: (row: User) => (
         <div className="flex gap-2">
           <button className="btn btn-sm btn-secondary" onClick={() => handleEditRole(row)}>
-            Edit Role
+            {t('edit_role')}
           </button>
           {row.id !== me?.id && (
             <button
               className="btn btn-sm btn-danger"
               onClick={() => {
-                if (confirm(`Delete user ${row.email}?`)) deleteUser.mutate(row.id)
+                if (confirm(t('confirm_delete', { email: row.email }))) deleteUser.mutate(row.id)
               }}
             >
-              Delete
+              {tc('delete')}
             </button>
           )}
         </div>
@@ -139,26 +143,21 @@ export function Users() {
   return (
     <div>
       <PageHeader
-        title="User Management"
-        description="Manage user accounts and roles"
+        title={t('title')}
+        description={t('description')}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
-            New User
+            {t('new_user')}
           </button>
         }
       />
 
       <div className="card p-0 overflow-hidden">
-        <Table
-          columns={columns}
-          data={users}
-          isLoading={isLoading}
-          emptyMessage="No users found."
-        />
+        <Table columns={columns} data={users} isLoading={isLoading} emptyMessage={t('no_users')} />
       </div>
 
       {modal.kind === 'create' && (
-        <Modal title="Create User" onClose={close} size="sm">
+        <Modal title={t('modal_create')} onClose={close} size="sm">
           <CreateUserForm
             onSubmit={(data) => createUser.mutate(data, { onSuccess: close })}
             onCancel={close}
@@ -169,22 +168,22 @@ export function Users() {
       )}
 
       {modal.kind === 'editRole' && (
-        <Modal title={`Edit Role: ${modal.user.email}`} onClose={close} size="sm">
+        <Modal title={t('modal_edit_role', { email: modal.user.email })} onClose={close} size="sm">
           <div className="space-y-4">
             <div>
-              <label className="label">Role</label>
+              <label className="label">{t('form_role')}</label>
               <select
                 className="input"
                 value={editRole}
                 onChange={(e) => setEditRole(e.target.value as 'admin' | 'user')}
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="user">{t('role_user')}</option>
+                <option value="admin">{t('role_admin')}</option>
               </select>
             </div>
             <div className="flex justify-end gap-3">
               <button onClick={close} className="btn-secondary">
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={() =>
@@ -196,7 +195,7 @@ export function Users() {
                 disabled={updateUser.isPending}
                 className="btn-primary"
               >
-                {updateUser.isPending ? 'Saving…' : 'Save'}
+                {updateUser.isPending ? t('saving') : t('save')}
               </button>
             </div>
             {updateUser.error != null && <ErrorMessage error={updateUser.error} />}

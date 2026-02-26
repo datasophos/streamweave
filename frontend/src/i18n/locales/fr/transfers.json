@@ -1,0 +1,23 @@
+{
+  "title": "Historique des Transferts",
+  "description": "Suivre l'état de tous les transferts de fichiers",
+  "all_statuses": "Tous les statuts",
+  "status_pending": "En attente",
+  "status_in_progress": "En cours",
+  "status_completed": "Terminé",
+  "status_failed": "Échoué",
+  "status_skipped": "Ignoré",
+  "loading": "Chargement…",
+  "no_transfers": "Aucun transfert trouvé.",
+  "failed_transfers": "Transferts Échoués",
+  "checksum_verified": "Vérifié",
+  "checksum_failed": "Échoué",
+  "col_transfer_id": "ID de Transfert",
+  "col_status": "Statut",
+  "col_destination": "Destination",
+  "col_adapter": "Adaptateur",
+  "col_bytes": "Octets",
+  "col_checksum": "Somme de Contrôle",
+  "col_started": "Démarré",
+  "col_completed": "Terminé"
+}

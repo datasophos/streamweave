@@ -1,0 +1,16 @@
+{
+  "title": "Mis Archivos",
+  "description": "Explorar y buscar archivos recolectados",
+  "search_placeholder": "Buscar por nombre de archivo, ruta o ID persistente…",
+  "all_instruments": "Todos los instrumentos",
+  "loading_files": "Cargando archivos…",
+  "no_files_filtered": "Ningún archivo coincide con sus filtros.",
+  "no_files": "Aún no se han descubierto archivos.",
+  "file_count_one": "{{count}} archivo",
+  "file_count_other": "{{count}} archivos",
+  "col_filename": "Nombre de Archivo",
+  "col_instrument": "Instrumento",
+  "col_size": "Tamaño",
+  "col_persistent_id": "ID Persistente",
+  "col_discovered": "Descubierto"
+}

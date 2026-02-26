@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
@@ -40,6 +41,7 @@ function InstrumentForm({
   isLoading: boolean
   error: unknown
 }) {
+  const { t } = useTranslation('instruments')
   const [form, setForm] = useState<InstrumentCreate>({
     name: initial?.name ?? '',
     description: initial?.description ?? '',
@@ -66,7 +68,7 @@ function InstrumentForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
           <label htmlFor="inst-name" className="label">
-            Name *
+            {t('form_name')}
           </label>
           <input
             id="inst-name"
@@ -78,7 +80,7 @@ function InstrumentForm({
         </div>
         <div className="col-span-2">
           <label htmlFor="inst-description" className="label">
-            Description
+            {t('form_description')}
           </label>
           <input
             id="inst-description"
@@ -89,7 +91,7 @@ function InstrumentForm({
         </div>
         <div>
           <label htmlFor="inst-location" className="label">
-            Location
+            {t('form_location')}
           </label>
           <input
             id="inst-location"
@@ -100,7 +102,7 @@ function InstrumentForm({
         </div>
         <div>
           <label htmlFor="inst-cifs-host" className="label">
-            CIFS Host *
+            {t('form_cifs_host')}
           </label>
           <input
             id="inst-cifs-host"
@@ -112,7 +114,7 @@ function InstrumentForm({
         </div>
         <div>
           <label htmlFor="inst-cifs-share" className="label">
-            CIFS Share *
+            {t('form_cifs_share')}
           </label>
           <input
             id="inst-cifs-share"
@@ -124,7 +126,7 @@ function InstrumentForm({
         </div>
         <div>
           <label htmlFor="inst-base-path" className="label">
-            Base Path
+            {t('form_base_path')}
           </label>
           <input
             id="inst-base-path"
@@ -135,7 +137,7 @@ function InstrumentForm({
         </div>
         <div>
           <label htmlFor="inst-adapter" className="label">
-            Transfer Adapter
+            {t('form_adapter')}
           </label>
           <select
             id="inst-adapter"
@@ -150,7 +152,7 @@ function InstrumentForm({
         </div>
         <div>
           <label htmlFor="inst-sa" className="label">
-            Service Account
+            {t('form_service_account')}
           </label>
           <select
             id="inst-sa"
@@ -158,7 +160,7 @@ function InstrumentForm({
             value={form.service_account_id}
             onChange={(e) => set('service_account_id', e.target.value)}
           >
-            <option value="">— None —</option>
+            <option value="">{t('form_none')}</option>
             {serviceAccounts.map((sa) => (
               <option key={sa.id} value={sa.id}>
                 {sa.name} ({sa.username})
@@ -175,16 +177,16 @@ function InstrumentForm({
             className="rounded border-gray-300"
           />
           <label htmlFor="enabled" className="text-sm font-medium text-sw-fg-2">
-            Enabled
+            {t('form_enabled')}
           </label>
         </div>
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t('cancel')}
         </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
-          {isLoading ? 'Saving…' : 'Save'}
+          {isLoading ? t('saving') : t('save')}
         </button>
       </div>
     </form>
@@ -202,6 +204,7 @@ function ServiceAccountForm({
   isLoading: boolean
   error: unknown
 }) {
+  const { t } = useTranslation('instruments')
   const [form, setForm] = useState<ServiceAccountCreate>({ name: '', username: '', password: '' })
   const set = (k: keyof ServiceAccountCreate, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
@@ -216,7 +219,7 @@ function ServiceAccountForm({
       {error != null && <ErrorMessage error={error} />}
       <div>
         <label htmlFor="sa-name" className="label">
-          Name *
+          {t('sa_name')}
         </label>
         <input
           id="sa-name"
@@ -228,7 +231,7 @@ function ServiceAccountForm({
       </div>
       <div>
         <label htmlFor="sa-domain" className="label">
-          Domain
+          {t('sa_domain')}
         </label>
         <input
           id="sa-domain"
@@ -239,7 +242,7 @@ function ServiceAccountForm({
       </div>
       <div>
         <label htmlFor="sa-username" className="label">
-          Username *
+          {t('sa_username')}
         </label>
         <input
           id="sa-username"
@@ -251,7 +254,7 @@ function ServiceAccountForm({
       </div>
       <div>
         <label htmlFor="sa-password" className="label">
-          Password *
+          {t('sa_password')}
         </label>
         <input
           id="sa-password"
@@ -264,10 +267,10 @@ function ServiceAccountForm({
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t('cancel')}
         </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
-          {isLoading ? 'Saving…' : 'Save'}
+          {isLoading ? t('saving') : t('save')}
         </button>
       </div>
     </form>
@@ -275,6 +278,8 @@ function ServiceAccountForm({
 }
 
 export function Instruments() {
+  const { t } = useTranslation('instruments')
+  const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
 
@@ -290,43 +295,44 @@ export function Instruments() {
   const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
 
   const instrumentColumns = [
-    { header: 'Name', key: 'name' as const },
-    { header: 'Host', key: 'cifs_host' as const },
-    { header: 'Share', key: 'cifs_share' as const },
+    { header: tc('name'), key: 'name' as const },
+    { header: t('col_host'), key: 'cifs_host' as const },
+    { header: t('col_share'), key: 'cifs_share' as const },
     {
-      header: 'Service Account',
+      header: t('col_service_account'),
       render: (row: Instrument) =>
         row.service_account_id
           ? (saMap[row.service_account_id]?.name ?? row.service_account_id)
           : '—',
     },
-    { header: 'Adapter', key: 'transfer_adapter' as const },
+    { header: t('col_adapter'), key: 'transfer_adapter' as const },
     {
-      header: 'Status',
+      header: tc('status'),
       render: (row: Instrument) =>
         row.enabled ? (
-          <span className="badge-green">Enabled</span>
+          <span className="badge-green">{tc('enabled')}</span>
         ) : (
-          <span className="badge-gray">Disabled</span>
+          <span className="badge-gray">{tc('disabled')}</span>
         ),
     },
     {
-      header: 'Actions',
+      header: tc('actions'),
       render: (row: Instrument) => (
         <div className="flex gap-2">
           <button
             className="btn btn-sm btn-secondary"
             onClick={() => setModal({ kind: 'editInstrument', instrument: row })}
           >
-            Edit
+            {tc('edit')}
           </button>
           <button
             className="btn btn-sm btn-danger"
             onClick={() => {
-              if (confirm(`Delete ${row.name}?`)) deleteInst.mutate(row.id)
+              if (confirm(t('confirm_delete_instrument', { name: row.name })))
+                deleteInst.mutate(row.id)
             }}
           >
-            Delete
+            {tc('delete')}
           </button>
         </div>
       ),
@@ -334,23 +340,23 @@ export function Instruments() {
   ]
 
   const saColumns = [
-    { header: 'Name', key: 'name' as const },
-    { header: 'Domain', render: (sa: ServiceAccount) => sa.domain ?? '—' },
-    { header: 'Username', key: 'username' as const },
+    { header: tc('name'), key: 'name' as const },
+    { header: t('sa_domain'), render: (sa: ServiceAccount) => sa.domain ?? '—' },
+    { header: t('col_username'), key: 'username' as const },
     {
-      header: 'Created',
+      header: t('col_created'),
       render: (sa: ServiceAccount) => new Date(sa.created_at).toLocaleDateString(),
     },
     {
-      header: 'Actions',
+      header: tc('actions'),
       render: (sa: ServiceAccount) => (
         <button
           className="btn btn-sm btn-danger"
           onClick={() => {
-            if (confirm(`Delete ${sa.name}?`)) deleteSA.mutate(sa.id)
+            if (confirm(t('confirm_delete_sa', { name: sa.name }))) deleteSA.mutate(sa.id)
           }}
         >
-          Delete
+          {tc('delete')}
         </button>
       ),
     },
@@ -359,18 +365,18 @@ export function Instruments() {
   return (
     <div>
       <PageHeader
-        title="Instruments"
-        description="Manage scientific instruments and CIFS service accounts"
+        title={t('title')}
+        description={t('description')}
         action={
           <div className="flex gap-2">
             <button
               className="btn-secondary"
               onClick={() => setModal({ kind: 'createServiceAccount' })}
             >
-              New Service Account
+              {t('new_service_account')}
             </button>
             <button className="btn-primary" onClick={() => setModal({ kind: 'createInstrument' })}>
-              New Instrument
+              {t('new_instrument')}
             </button>
           </div>
         }
@@ -378,20 +384,20 @@ export function Instruments() {
 
       <div className="card p-0 overflow-hidden mb-8">
         <div className="px-6 py-4 border-b border-sw-border">
-          <h2 className="text-base font-semibold text-sw-fg">Instruments</h2>
+          <h2 className="text-base font-semibold text-sw-fg">{t('instruments_section')}</h2>
         </div>
         <Table columns={instrumentColumns} data={instruments} isLoading={loadingInstruments} />
       </div>
 
       <div className="card p-0 overflow-hidden">
         <div className="px-6 py-4 border-b border-sw-border">
-          <h2 className="text-base font-semibold text-sw-fg">Service Accounts</h2>
+          <h2 className="text-base font-semibold text-sw-fg">{t('service_accounts_section')}</h2>
         </div>
         <Table columns={saColumns} data={serviceAccounts} />
       </div>
 
       {modal.kind === 'createInstrument' && (
-        <Modal title="New Instrument" onClose={close}>
+        <Modal title={t('modal_new_instrument')} onClose={close}>
           <InstrumentForm
             serviceAccounts={serviceAccounts}
             onSubmit={(data) => createInst.mutate(data, { onSuccess: close })}
@@ -403,7 +409,7 @@ export function Instruments() {
       )}
 
       {modal.kind === 'editInstrument' && (
-        <Modal title="Edit Instrument" onClose={close}>
+        <Modal title={t('modal_edit_instrument')} onClose={close}>
           <InstrumentForm
             initial={modal.instrument}
             serviceAccounts={serviceAccounts}
@@ -418,7 +424,7 @@ export function Instruments() {
       )}
 
       {modal.kind === 'createServiceAccount' && (
-        <Modal title="New Service Account" onClose={close} size="sm">
+        <Modal title={t('modal_new_service_account')} onClose={close} size="sm">
           <ServiceAccountForm
             onSubmit={(data) => createSA.mutate(data, { onSuccess: close })}
             onCancel={close}

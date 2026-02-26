@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface Column<T> {
   header: string
@@ -17,9 +18,12 @@ interface TableProps<T> {
 export function Table<T extends { id: string | number }>({
   columns,
   data,
-  emptyMessage = 'No records found.',
+  emptyMessage,
   isLoading,
 }: TableProps<T>) {
+  const { t } = useTranslation('common')
+  const empty = emptyMessage ?? t('no_records')
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12 text-sw-fg-faint">
@@ -38,7 +42,7 @@ export function Table<T extends { id: string | number }>({
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
           />
         </svg>
-        Loading…
+        {t('loading')}
       </div>
     )
   }
@@ -67,7 +71,7 @@ export function Table<T extends { id: string | number }>({
                 colSpan={columns.length}
                 className="px-4 py-8 text-center text-sw-fg-faint text-sm"
               >
-                {emptyMessage}
+                {empty}
               </td>
             </tr>
           ) : (

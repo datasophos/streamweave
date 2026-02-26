@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PreferencesProvider } from '@/contexts/PreferencesContext'
 import { App } from './App'
+import '@/i18n/config'
 import './index.css'
 
 const queryClient = new QueryClient({

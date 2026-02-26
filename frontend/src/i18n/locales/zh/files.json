@@ -1,0 +1,16 @@
+{
+  "title": "我的文件",
+  "description": "浏览和搜索已采集的文件",
+  "search_placeholder": "按文件名、路径或持久ID搜索…",
+  "all_instruments": "所有仪器",
+  "loading_files": "加载文件中…",
+  "no_files_filtered": "没有文件符合您的筛选条件。",
+  "no_files": "尚未发现任何文件。",
+  "file_count_one": "{{count}} 个文件",
+  "file_count_other": "{{count}} 个文件",
+  "col_filename": "文件名",
+  "col_instrument": "仪器",
+  "col_size": "大小",
+  "col_persistent_id": "持久ID",
+  "col_discovered": "发现时间"
+}

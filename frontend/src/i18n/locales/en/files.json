@@ -1,0 +1,16 @@
+{
+  "title": "My Files",
+  "description": "Browse and search harvested files",
+  "search_placeholder": "Search by filename, path, or persistent ID…",
+  "all_instruments": "All instruments",
+  "loading_files": "Loading files…",
+  "no_files_filtered": "No files match your filters.",
+  "no_files": "No files discovered yet.",
+  "file_count_one": "{{count}} file",
+  "file_count_other": "{{count}} files",
+  "col_filename": "Filename",
+  "col_instrument": "Instrument",
+  "col_size": "Size",
+  "col_persistent_id": "Persistent ID",
+  "col_discovered": "Discovered"
+}

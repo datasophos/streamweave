@@ -1,0 +1,18 @@
+{
+  "title": "Emplacements de Stockage",
+  "description": "Configurer les destinations pour les données collectées",
+  "new_storage_location": "Nouvel Emplacement de Stockage",
+  "modal_new": "Nouvel Emplacement de Stockage",
+  "modal_edit": "Modifier l'Emplacement de Stockage",
+  "confirm_delete": "Supprimer {{name}} ?",
+  "form_name": "Nom *",
+  "form_type": "Type *",
+  "form_base_path": "Chemin de Base *",
+  "form_enabled": "Activé",
+  "no_locations": "Aucun emplacement de stockage configuré.",
+  "col_type": "Type",
+  "col_base_path": "Chemin de Base",
+  "save": "Enregistrer",
+  "saving": "Enregistrement…",
+  "cancel": "Annuler"
+}

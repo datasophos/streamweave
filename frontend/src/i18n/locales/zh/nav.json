@@ -1,0 +1,19 @@
+{
+  "dashboard": "仪表板",
+  "my_files": "我的文件",
+  "transfers": "传输",
+  "request_instrument": "申请仪器",
+  "settings": "设置",
+  "sign_out": "退出登录",
+  "admin": "管理",
+  "admin_instruments": "仪器",
+  "admin_storage": "存储",
+  "admin_schedules": "计划",
+  "admin_hooks": "钩子",
+  "admin_users": "用户",
+  "section_browse": "浏览",
+  "section_my_work": "我的工作",
+  "footer": "StreamWeave — 科学数据采集，简便高效",
+  "toggle_menu": "切换菜单",
+  "administrator": "管理员"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Request Instrument Harvest",
+  "description": "Request that a new instrument be added to the harvest system",
+  "form_instrument_name": "Instrument Name *",
+  "form_location": "Physical Location *",
+  "form_contact_email": "Contact Email *",
+  "form_description": "Instrument Description",
+  "form_justification": "Justification *",
+  "placeholder_instrument_name": "e.g. TEM Microscope Lab 3",
+  "placeholder_location": "e.g. Building A, Room 204",
+  "placeholder_contact_email": "your@email.edu",
+  "placeholder_description": "Describe the instrument and the type of data it generates…",
+  "placeholder_justification": "Why does this instrument need automated data harvesting? What project/grant is this for?",
+  "submit": "Submit Request",
+  "success_title": "Request Submitted",
+  "success_message": "Your request for <bold>{{instrument_name}}</bold> has been submitted. An administrator will review it and contact you at {{contact_email}}.",
+  "submit_another": "Submit Another Request"
+}

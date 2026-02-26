@@ -1,0 +1,9 @@
+{
+  "title": "StreamWeave",
+  "subtitle": "科学仪器数据管理",
+  "sign_in": "登录",
+  "email": "电子邮件地址",
+  "password": "密码",
+  "signing_in": "登录中…",
+  "invalid_credentials": "凭据无效。"
+}

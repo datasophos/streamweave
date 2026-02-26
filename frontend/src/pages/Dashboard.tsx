@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useHealth } from '@/hooks/useHealth'
 import { useTransfers } from '@/hooks/useTransfers'
 import { useInstruments } from '@/hooks/useInstruments'
@@ -24,24 +25,27 @@ const STATUS_BADGE: Record<TransferStatus, string> = {
   skipped: 'badge-gray',
 }
 
-function TransferRow({ t }: { t: FileTransfer }) {
+function TransferRow({ t: transfer }: { t: FileTransfer }) {
   return (
     <tr className="hover:bg-sw-hover">
-      <td className="px-4 py-3 text-sm text-sw-fg font-mono">{t.id.slice(0, 8)}…</td>
+      <td className="px-4 py-3 text-sm text-sw-fg font-mono">{transfer.id.slice(0, 8)}…</td>
       <td className="px-4 py-3 text-sm">
-        <span className={STATUS_BADGE[t.status]}>{t.status}</span>
+        <span className={STATUS_BADGE[transfer.status]}>{transfer.status}</span>
       </td>
       <td className="px-4 py-3 text-sm text-sw-fg-muted">
-        {t.bytes_transferred != null ? `${(t.bytes_transferred / 1024).toFixed(1)} KB` : '—'}
+        {transfer.bytes_transferred != null
+          ? `${(transfer.bytes_transferred / 1024).toFixed(1)} KB`
+          : '—'}
       </td>
       <td className="px-4 py-3 text-sm text-sw-fg-faint">
-        {t.started_at ? new Date(t.started_at).toLocaleString() : '—'}
+        {transfer.started_at ? new Date(transfer.started_at).toLocaleString() : '—'}
       </td>
     </tr>
   )
 }
 
 export function Dashboard() {
+  const { t } = useTranslation('dashboard')
   const { isAdmin } = useAuth()
   const { data: health } = useHealth()
   const { data: transfers } = useTransfers()
@@ -49,68 +53,65 @@ export function Dashboard() {
   const { data: files } = useFiles()
 
   const recent = transfers?.slice(0, 10) ?? []
-  const completed = transfers?.filter((t) => t.status === 'completed').length ?? 0
-  const failed = transfers?.filter((t) => t.status === 'failed').length ?? 0
-  const inProgress = transfers?.filter((t) => t.status === 'in_progress').length ?? 0
+  const completed = transfers?.filter((tr) => tr.status === 'completed').length ?? 0
+  const failed = transfers?.filter((tr) => tr.status === 'failed').length ?? 0
+  const inProgress = transfers?.filter((tr) => tr.status === 'in_progress').length ?? 0
 
   return (
     <div>
-      <PageHeader
-        title="Dashboard"
-        description="Overview of instrument harvests and transfer activity"
-      />
+      <PageHeader title={t('title')} description={t('description')} />
 
       {/* System health */}
       <div className="mb-6 flex items-center gap-2">
-        <span className="text-sm text-sw-fg-muted">System status:</span>
+        <span className="text-sm text-sw-fg-muted">{t('system_status')}</span>
         {health?.status === 'ok' ? (
-          <span className="badge-green">Healthy</span>
+          <span className="badge-green">{t('healthy')}</span>
         ) : (
-          <span className="badge-red">Unavailable</span>
+          <span className="badge-red">{t('unavailable')}</span>
         )}
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {isAdmin && <StatCard label="Instruments" value={instruments?.length ?? '—'} />}
-        <StatCard label="Total Files" value={files?.length ?? '—'} />
+        {isAdmin && <StatCard label={t('stat_instruments')} value={instruments?.length ?? '—'} />}
+        <StatCard label={t('stat_total_files')} value={files?.length ?? '—'} />
         <StatCard
-          label="Transfers"
+          label={t('stat_transfers')}
           value={transfers?.length ?? '—'}
-          sub={`${completed} completed`}
+          sub={t('stat_completed', { count: completed })}
         />
-        <StatCard label="In Progress" value={inProgress} />
-        <StatCard label="Failed" value={failed} />
+        <StatCard label={t('stat_in_progress')} value={inProgress} />
+        <StatCard label={t('stat_failed')} value={failed} />
       </div>
 
       {/* Recent transfers */}
       <div className="card p-0 overflow-hidden">
         <div className="px-6 py-4 border-b border-sw-border">
-          <h2 className="text-base font-semibold text-sw-fg">Recent Transfers</h2>
+          <h2 className="text-base font-semibold text-sw-fg">{t('recent_transfers')}</h2>
         </div>
         {recent.length === 0 ? (
-          <p className="px-6 py-8 text-center text-sm text-sw-fg-faint">No transfers yet.</p>
+          <p className="px-6 py-8 text-center text-sm text-sw-fg-faint">{t('no_transfers')}</p>
         ) : (
           <table className="min-w-full divide-y divide-sw-border-sub">
             <thead className="bg-sw-subtle">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  ID
+                  {t('col_id')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Status
+                  {t('col_status')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Bytes
+                  {t('col_bytes')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Started
+                  {t('col_started')}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
-              {recent.map((t) => (
-                <TransferRow key={t.id} t={t} />
+              {recent.map((tr) => (
+                <TransferRow key={tr.id} t={tr} />
               ))}
             </tbody>
           </table>
@@ -121,22 +122,22 @@ export function Dashboard() {
       {isAdmin && instruments && instruments.length > 0 && (
         <div className="card mt-6 p-0 overflow-hidden">
           <div className="px-6 py-4 border-b border-sw-border">
-            <h2 className="text-base font-semibold text-sw-fg">Instrument Status</h2>
+            <h2 className="text-base font-semibold text-sw-fg">{t('instrument_status')}</h2>
           </div>
           <table className="min-w-full divide-y divide-sw-border-sub">
             <thead className="bg-sw-subtle">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Name
+                  {t('col_name')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Host
+                  {t('col_host')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Adapter
+                  {t('col_adapter')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-sw-fg-muted uppercase">
-                  Status
+                  {t('col_status')}
                 </th>
               </tr>
             </thead>
@@ -148,9 +149,9 @@ export function Dashboard() {
                   <td className="px-4 py-3 text-sm text-sw-fg-muted">{inst.transfer_adapter}</td>
                   <td className="px-4 py-3 text-sm">
                     {inst.enabled ? (
-                      <span className="badge-green">Enabled</span>
+                      <span className="badge-green">{t('enabled')}</span>
                     ) : (
-                      <span className="badge-gray">Disabled</span>
+                      <span className="badge-gray">{t('disabled')}</span>
                     )}
                   </td>
                 </tr>

@@ -1,0 +1,23 @@
+{
+  "title": "传输历史",
+  "description": "跟踪所有文件传输的状态",
+  "all_statuses": "所有状态",
+  "status_pending": "待处理",
+  "status_in_progress": "进行中",
+  "status_completed": "已完成",
+  "status_failed": "失败",
+  "status_skipped": "已跳过",
+  "loading": "加载中…",
+  "no_transfers": "未找到传输记录。",
+  "failed_transfers": "失败的传输",
+  "checksum_verified": "已验证",
+  "checksum_failed": "失败",
+  "col_transfer_id": "传输 ID",
+  "col_status": "状态",
+  "col_destination": "目标",
+  "col_adapter": "适配器",
+  "col_bytes": "字节",
+  "col_checksum": "校验和",
+  "col_started": "开始时间",
+  "col_completed": "完成时间"
+}

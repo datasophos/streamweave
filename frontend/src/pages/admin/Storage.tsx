@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
@@ -29,6 +30,7 @@ function StorageForm({
   isLoading: boolean
   error: unknown
 }) {
+  const { t } = useTranslation('storage')
   const [form, setForm] = useState<StorageLocationCreate>({
     name: initial?.name ?? '',
     type: initial?.type ?? 'posix',
@@ -47,7 +49,7 @@ function StorageForm({
     >
       {error != null && <ErrorMessage error={error} />}
       <div>
-        <label className="label">Name *</label>
+        <label className="label">{t('form_name')}</label>
         <input
           className="input"
           required
@@ -56,7 +58,7 @@ function StorageForm({
         />
       </div>
       <div>
-        <label className="label">Type *</label>
+        <label className="label">{t('form_type')}</label>
         <select
           className="input"
           value={form.type}
@@ -69,7 +71,7 @@ function StorageForm({
         </select>
       </div>
       <div>
-        <label className="label">Base Path *</label>
+        <label className="label">{t('form_base_path')}</label>
         <input
           className="input"
           required
@@ -87,15 +89,15 @@ function StorageForm({
           className="rounded border-gray-300"
         />
         <label htmlFor="sl-enabled" className="text-sm font-medium text-sw-fg-2">
-          Enabled
+          {t('form_enabled')}
         </label>
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t('cancel')}
         </button>
         <button type="submit" disabled={isLoading} className="btn-primary">
-          {isLoading ? 'Saving…' : 'Save'}
+          {isLoading ? t('saving') : t('save')}
         </button>
       </div>
     </form>
@@ -103,6 +105,8 @@ function StorageForm({
 }
 
 export function Storage() {
+  const { t } = useTranslation('storage')
+  const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
 
@@ -112,35 +116,35 @@ export function Storage() {
   const del = useDeleteStorageLocation()
 
   const columns = [
-    { header: 'Name', key: 'name' as const },
-    { header: 'Type', key: 'type' as const },
-    { header: 'Base Path', key: 'base_path' as const },
+    { header: tc('name'), key: 'name' as const },
+    { header: t('col_type'), key: 'type' as const },
+    { header: t('col_base_path'), key: 'base_path' as const },
     {
-      header: 'Status',
+      header: tc('status'),
       render: (row: StorageLocation) =>
         row.enabled ? (
-          <span className="badge-green">Enabled</span>
+          <span className="badge-green">{tc('enabled')}</span>
         ) : (
-          <span className="badge-gray">Disabled</span>
+          <span className="badge-gray">{tc('disabled')}</span>
         ),
     },
     {
-      header: 'Actions',
+      header: tc('actions'),
       render: (row: StorageLocation) => (
         <div className="flex gap-2">
           <button
             className="btn btn-sm btn-secondary"
             onClick={() => setModal({ kind: 'edit', location: row })}
           >
-            Edit
+            {tc('edit')}
           </button>
           <button
             className="btn btn-sm btn-danger"
             onClick={() => {
-              if (confirm(`Delete ${row.name}?`)) del.mutate(row.id)
+              if (confirm(t('confirm_delete', { name: row.name }))) del.mutate(row.id)
             }}
           >
-            Delete
+            {tc('delete')}
           </button>
         </div>
       ),
@@ -150,11 +154,11 @@ export function Storage() {
   return (
     <div>
       <PageHeader
-        title="Storage Locations"
-        description="Configure destinations for harvested data"
+        title={t('title')}
+        description={t('description')}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
-            New Storage Location
+            {t('new_storage_location')}
           </button>
         }
       />
@@ -164,12 +168,12 @@ export function Storage() {
           columns={columns}
           data={locations}
           isLoading={isLoading}
-          emptyMessage="No storage locations configured."
+          emptyMessage={t('no_locations')}
         />
       </div>
 
       {modal.kind === 'create' && (
-        <Modal title="New Storage Location" onClose={close}>
+        <Modal title={t('modal_new')} onClose={close}>
           <StorageForm
             onSubmit={(data) => create.mutate(data, { onSuccess: close })}
             onCancel={close}
@@ -180,7 +184,7 @@ export function Storage() {
       )}
 
       {modal.kind === 'edit' && (
-        <Modal title="Edit Storage Location" onClose={close}>
+        <Modal title={t('modal_edit')} onClose={close}>
           <StorageForm
             initial={modal.location}
             onSubmit={(data) =>

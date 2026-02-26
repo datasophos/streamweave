@@ -4,7 +4,7 @@
   "new_user": "新建用户",
   "modal_create": "创建用户",
   "modal_edit_role": "编辑角色：{{email}}",
-  "confirm_delete": "删除用户 {{email}}？",
+  "confirm_delete": "👤 删除用户 {{email}}？",
   "form_email": "电子邮件 *",
   "form_password": "密码 *",
   "form_role": "角色",

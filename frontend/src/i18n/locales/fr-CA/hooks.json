@@ -4,7 +4,7 @@
   "new_hook": "Nouveau Hook",
   "modal_new": "Nouvelle Configuration de Hook",
   "modal_edit": "Modifier la Configuration de Hook",
-  "confirm_delete": "Supprimer le hook « {{name}} » ?",
+  "confirm_delete": "🪝 Supprimer le hook « {{name}} » ?",
   "form_name": "Nom *",
   "form_description": "Description",
   "form_trigger": "Déclencheur *",

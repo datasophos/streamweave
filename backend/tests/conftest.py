@@ -7,7 +7,11 @@ from cryptography.fernet import Fernet
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.config import settings
+# Must be set before app.config is imported, as Settings() validates at module load time
+if "STREAMWEAVE_ENCRYPTION_KEY" not in os.environ:
+    os.environ["STREAMWEAVE_ENCRYPTION_KEY"] = Fernet.generate_key().decode()
+
+from app.config import settings  # noqa: E402
 from app.database import get_async_session
 from app.models import Base
 from app.models.user import User, UserRole

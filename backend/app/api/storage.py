@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.auth.setup import current_active_user
 from app.models.storage import StorageLocation
 from app.models.user import User
 from app.schemas.storage import StorageLocationCreate, StorageLocationRead, StorageLocationUpdate
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/storage-locations", tags=["storage"])
 @router.get("", response_model=list[StorageLocationRead])
 async def list_storage_locations(
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(current_active_user),
 ):
     result = await db.execute(select(StorageLocation))
     return result.scalars().all()

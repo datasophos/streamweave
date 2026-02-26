@@ -3,12 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@/hooks/useUsers'
 import { useAuth } from '@/contexts/AuthContext'
 import type { User, UserCreate } from '@/api/types'
 
-type ModalState = { kind: 'none' } | { kind: 'create' } | { kind: 'editRole'; user: User }
+type ModalState =
+  | { kind: 'none' }
+  | { kind: 'create' }
+  | { kind: 'editRole'; user: User }
+  | { kind: 'confirmDelete'; user: User }
 
 function CreateUserForm({
   onSubmit,
@@ -128,9 +133,7 @@ export function Users() {
           {row.id !== me?.id && (
             <button
               className="btn btn-sm btn-danger"
-              onClick={() => {
-                if (confirm(t('confirm_delete', { email: row.email }))) deleteUser.mutate(row.id)
-              }}
+              onClick={() => setModal({ kind: 'confirmDelete', user: row })}
             >
               {tc('delete')}
             </button>
@@ -201,6 +204,17 @@ export function Users() {
             {updateUser.error != null && <ErrorMessage error={updateUser.error} />}
           </div>
         </Modal>
+      )}
+
+      {modal.kind === 'confirmDelete' && (
+        <ConfirmDialog
+          title={t('confirm_delete', { email: modal.user.email })}
+          message={tc('delete_warning')}
+          confirmLabel={tc('delete')}
+          onConfirm={() => deleteUser.mutate(modal.user.id, { onSuccess: close })}
+          onCancel={close}
+          isPending={deleteUser.isPending}
+        />
       )}
     </div>
   )

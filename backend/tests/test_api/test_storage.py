@@ -95,6 +95,39 @@ async def test_delete_nonexistent_storage_location(client: AsyncClient, admin_he
 
 
 @pytest.mark.asyncio
-async def test_non_admin_storage_rejected(client: AsyncClient, regular_headers: dict):
+async def test_regular_user_can_list_storage_locations(
+    client: AsyncClient, admin_headers: dict, regular_headers: dict
+):
+    await client.post(
+        "/api/storage-locations",
+        json={"name": "Readable", "type": "posix", "base_path": "/mnt/read"},
+        headers=admin_headers,
+    )
     response = await client.get("/api/storage-locations", headers=regular_headers)
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_regular_user_cannot_create_storage_location(
+    client: AsyncClient, regular_headers: dict
+):
+    response = await client.post(
+        "/api/storage-locations",
+        json={"name": "X", "type": "posix", "base_path": "/x"},
+        headers=regular_headers,
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_regular_user_cannot_delete_storage_location(
+    client: AsyncClient, admin_headers: dict, regular_headers: dict
+):
+    create_resp = await client.post(
+        "/api/storage-locations",
+        json={"name": "Y", "type": "posix", "base_path": "/y"},
+        headers=admin_headers,
+    )
+    loc_id = create_resp.json()["id"]
+    response = await client.delete(f"/api/storage-locations/{loc_id}", headers=regular_headers)
     assert response.status_code == 403

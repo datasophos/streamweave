@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
 import {
@@ -220,20 +220,20 @@ describe('Schedules admin page', () => {
     })
   })
 
-  it('delete calls window.confirm', async () => {
+  it('delete button opens confirm dialog with cron expression in title', async () => {
     setupAdmin()
-    const confirmSpy = vi.mocked(window.confirm)
     const { user } = renderWithProviders(<Schedules />)
 
     await waitFor(() => screen.getAllByRole('button', { name: /^delete$/i }))
     await user.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
 
-    expect(confirmSpy).toHaveBeenCalled()
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
   })
 
-  it('delete sends DELETE when user confirms', async () => {
+  it('delete sends DELETE when user confirms via dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValue(true)
 
     let deletedUrl: string | undefined
     server.use(
@@ -247,14 +247,16 @@ describe('Schedules admin page', () => {
     await waitFor(() => screen.getAllByRole('button', { name: /^delete$/i }))
     await user.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
 
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: /^delete$/i }))
+
     await waitFor(() => {
       expect(deletedUrl).toContain('/api/schedules/')
     })
   })
 
-  it('delete does not send DELETE when user cancels', async () => {
+  it('delete does not send DELETE when user cancels via dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValueOnce(false)
 
     let deleteRequestMade = false
     server.use(
@@ -268,7 +270,12 @@ describe('Schedules admin page', () => {
     await waitFor(() => screen.getAllByRole('button', { name: /^delete$/i }))
     await user.click(screen.getAllByRole('button', { name: /^delete$/i })[0])
 
-    await new Promise((r) => setTimeout(r, 50))
+    await waitFor(() => screen.getByRole('button', { name: /cancel/i }))
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+    })
     expect(deleteRequestMade).toBe(false)
   })
 
@@ -418,6 +425,20 @@ describe('Schedules admin page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('unknown-')).toBeInTheDocument()
+    })
+  })
+
+  it('cron hint links to crontab.guru', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Schedules />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new schedule/i }))
+    await user.click(screen.getByRole('button', { name: /new schedule/i }))
+
+    await waitFor(() => {
+      const link = screen.getByRole('link', { name: /crontab\.guru/i })
+      expect(link).toHaveAttribute('href', 'https://crontab.guru/')
+      expect(link).toHaveAttribute('target', '_blank')
     })
   })
 

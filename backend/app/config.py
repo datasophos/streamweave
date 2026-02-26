@@ -25,7 +25,8 @@ class Settings(BaseSettings):
     @classmethod
     def validate_fernet_key(cls, v: str) -> str:
         try:
-            decoded = base64.urlsafe_b64decode(v)
+            # translate urlsafe chars then decode with validate=True to reject non-base64 input
+            decoded = base64.b64decode(v.replace("-", "+").replace("_", "/"), validate=True)
         except Exception as e:
             raise ValueError(
                 "STREAMWEAVE_ENCRYPTION_KEY must be a valid url-safe base64-encoded string. "

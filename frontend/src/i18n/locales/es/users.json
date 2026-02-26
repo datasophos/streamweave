@@ -4,7 +4,7 @@
   "new_user": "Nuevo Usuario",
   "modal_create": "Crear Usuario",
   "modal_edit_role": "Editar Rol: {{email}}",
-  "confirm_delete": "¿Eliminar usuario {{email}}?",
+  "confirm_delete": "👤 ¿Eliminar usuario {{email}}?",
   "form_email": "Correo *",
   "form_password": "Contraseña *",
   "form_role": "Rol",

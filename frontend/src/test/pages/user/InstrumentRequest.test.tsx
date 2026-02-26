@@ -26,7 +26,7 @@ describe('InstrumentRequest page', () => {
 
     await user.type(screen.getByPlaceholderText(/TEM Microscope/i), 'My Instrument')
     await user.type(screen.getByPlaceholderText(/Building A/i), 'Lab 101')
-    await user.type(screen.getByPlaceholderText(/your@email.edu/i), 'user@test.com')
+    await user.selectOptions(screen.getByRole('combobox'), 'daily')
     await user.type(
       screen.getByPlaceholderText(/why does this instrument/i),
       'We need it for science.'
@@ -37,7 +37,6 @@ describe('InstrumentRequest page', () => {
     await waitFor(() => {
       expect(screen.getByText('Request Submitted')).toBeInTheDocument()
       expect(screen.getByText(/My Instrument/)).toBeInTheDocument()
-      expect(screen.getByText(/user@test.com/)).toBeInTheDocument()
     })
   })
 
@@ -47,7 +46,7 @@ describe('InstrumentRequest page', () => {
 
     await user.type(screen.getByPlaceholderText(/TEM Microscope/i), 'Test Instrument')
     await user.type(screen.getByPlaceholderText(/Building A/i), 'Room 202')
-    await user.type(screen.getByPlaceholderText(/your@email.edu/i), 'test@test.com')
+    await user.selectOptions(screen.getByRole('combobox'), 'weekly')
     await user.type(screen.getByPlaceholderText(/why does this instrument/i), 'Important research.')
 
     await user.click(screen.getByRole('button', { name: /submit request/i }))

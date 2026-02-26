@@ -221,7 +221,7 @@ Navigate to **Storage** (`/admin/storage`).
    - **Base Path:** `/storage/archive`
 3. Click **Save**.
 
-**Expected:** Row appears in the table with name, type badge, and base path.
+- [x] **Expected:** Row appears in the table with name, type badge, and base path.
 
 ### 7.2 Create an S3 storage location
 
@@ -232,7 +232,7 @@ Navigate to **Storage** (`/admin/storage`).
    - **Base Path:** `my-bucket/data`
 3. Click **Save**.
 
-**Expected:** Second row appears; type badge shows "s3".
+- [x] **Expected:** Second row appears; type badge shows "s3".
 
 ### 7.3 Edit a storage location
 
@@ -240,7 +240,7 @@ Navigate to **Storage** (`/admin/storage`).
 2. Change **Base Path** to `/storage/archive2`.
 3. Click **Save**.
 
-**Expected:** Table row updates in-place.
+- [x] **Expected:** Table row updates in-place.
 
 ---
 
@@ -257,7 +257,8 @@ Navigate to **Schedules** (`/admin/schedules`).
    - **Cron Expression:** `0 * * * *` (hourly)
 3. Click **Save**.
 
-**Expected:** Row appears in the table showing instrument name, storage name, cron expression, and an "Enabled" badge. The "Prefect Deployment" column shows `—` (not yet synced to Prefect).
+- [x] **Expected:** Row appears in the table showing instrument name, storage name, cron expression, and an "Enabled" badge. The "Prefect Deployment" column shows 'synced'
+- [x] Prefect deployment at http://localhost:4200/deployments shows schedule
 
 ### 8.2 Edit a schedule
 
@@ -265,7 +266,8 @@ Navigate to **Schedules** (`/admin/schedules`).
 2. Change the **Cron Expression** to `0 2 * * *` (2 AM daily).
 3. Click **Save**.
 
-**Expected:** Row updates.
+- [x] **Expected:** Row updates.
+- [x] Prefect deployment shows updated schedule
 
 ---
 
@@ -283,14 +285,14 @@ Navigate to **Hooks** (`/admin/hooks`).
    - **Webhook URL:** `http://nemo.example.com/webhook`
 3. Click **Save**.
 
-**Expected:** Row appears in the hooks table.
+- [x] **Expected:** Row appears in the hooks table.
 
 ### 9.2 Create a global hook vs. instrument-scoped hook
 
 1. Create a hook with no instrument selected — it should appear with "Global" or `—` in the Instrument column.
 2. Create a second hook with an instrument selected.
 
-**Expected:** Both appear; the instrument-scoped hook shows the instrument name.
+- [x] **Expected:** Both appear; the instrument-scoped hook shows the instrument name.
 
 ---
 
@@ -300,7 +302,7 @@ Navigate to **Users** (`/admin/users`).
 
 ### 10.1 View users
 
-**Expected:** A table shows at least the admin account you created, with email, role badge ("admin"), and active status.
+- [x] **Expected:** A table shows at least the admin account you created, with email, role badge ("admin"), and active status.
 
 ### 10.2 Create a regular user
 
@@ -311,7 +313,7 @@ Navigate to **Users** (`/admin/users`).
    - **Role:** `user`
 3. Click **Save**.
 
-**Expected:** New row appears with role "user" and active status.
+- [x] **Expected:** New row appears with role "user" and active status.
 
 ### 10.3 Promote a user to admin
 
@@ -319,13 +321,13 @@ Navigate to **Users** (`/admin/users`).
 2. Change **Role** to `admin`.
 3. Click **Save**.
 
-**Expected:** Badge in the table updates to "admin".
+- [x] **Expected:** Badge in the table updates to "admin".
 
 ### 10.4 Cannot delete yourself
 
 1. Locate your own admin account row.
 
-**Expected:** The Delete button is disabled or absent for your own account.
+- [x] **Expected:** The Delete button is disabled or absent for your own account.
 
 ---
 
@@ -337,14 +339,14 @@ Navigate to **Users** (`/admin/users`).
 2. Sign in as `researcher@example.com` / `researchpass1`.
 
 **Expected:**
-- Nav bar shows: Dashboard, My Files, Transfers, Request Instrument.
-- Admin links (Instruments, Storage, Schedules, Hooks, Users) are **not visible**.
+- [x] Nav bar shows: Dashboard, My Files, Transfers, Request Instrument.
+- [x] Admin links (Instruments, Storage, Schedules, Hooks, Users) are **not visible**.
 
 ### 11.2 Direct URL access to admin page
 
 1. While logged in as the researcher, navigate to `http://localhost:3000/admin/instruments`.
 
-**Expected:** Redirected to `/` (Dashboard), not an error page.
+- [x] **Expected:** Redirected to `/` (Dashboard), not an error page.
 
 ---
 
@@ -354,7 +356,7 @@ Navigate to **My Files** (`/files`).
 
 With no harvests run yet, the table is empty.
 
-**Expected:** "No files found." message (or an empty table state), not a crash.
+- [x] **Expected:** "No files found." message (or an empty table state), not a crash.
 
 If you have seeded data (see section 15), rows appear with filename, instrument name, persistent ID (ARK), size, and a discovered date.
 
@@ -362,7 +364,7 @@ If you have seeded data (see section 15), rows appear with filename, instrument 
 
 1. Type part of a filename in the search box.
 
-**Expected:** The table filters in real-time (client-side) or re-queries. Only matching rows remain visible.
+- [x] **Expected:** The table filters in real-time (client-side) or re-queries. Only matching rows remain visible.
 
 ---
 
@@ -378,13 +380,16 @@ Status badges should be color-coded:
 - **in_progress** → blue
 - **pending** → yellow
 
+- [x] Nothing in here, so nothing really to test
+
 ---
 
 ## 14. User — Instrument Request
 
 Navigate to **Request Instrument** (`/request`).
 
-**Expected:** A form where a user can describe an instrument they want harvested. Submitting it should succeed (or show a relevant message if the endpoint isn't implemented for Milestone 3).
+- [x] **Expected:** A form where a user can describe an instrument they want harvested. Submitting it should succeed (or show a relevant message if the endpoint isn't implemented for Milestone 3).
+  - [ ] doesn't currently do anything... there are no backend routes for this
 
 ---
 
@@ -396,8 +401,11 @@ If you have the simulated lab running:
 # Start the simlab containers (Samba shares)
 docker compose -f simlab/docker-compose.simlab.yml up -d
 
-# Seed instruments/storage/schedules into the DB
-docker compose exec api python /app/../simlab/seed.py
+# Seed instruments/storage/schedules into the DB (run from repo root)
+export STREAMWEAVE_ENCRYPTION_KEY=$(docker compose exec api printenv STREAMWEAVE_ENCRYPTION_KEY | tr -d '\r')
+cd backend && DATABASE_URL=postgresql+asyncpg://streamweave:streamweave@localhost:5432/streamweave uv run python ../simlab/seed.py
+cd ..
+unset STREAMWEAVE_ENCRYPTION_KEY
 ```
 
 Then navigate to Instruments — three simulated instruments should appear (microscope-01, spectrometer-01, xray-diffraction-01) with their CIFS configs pre-filled.

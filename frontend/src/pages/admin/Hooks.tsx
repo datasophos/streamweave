@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import {
   useHookConfigs,
@@ -13,7 +14,11 @@ import {
 import { useInstruments } from '@/hooks/useInstruments'
 import type { HookConfig, HookConfigCreate, HookTrigger, HookImplementation } from '@/api/types'
 
-type ModalState = { kind: 'none' } | { kind: 'create' } | { kind: 'edit'; hook: HookConfig }
+type ModalState =
+  | { kind: 'none' }
+  | { kind: 'create' }
+  | { kind: 'edit'; hook: HookConfig }
+  | { kind: 'confirmDelete'; hook: HookConfig }
 
 function HookForm({
   initial,
@@ -232,9 +237,7 @@ export function Hooks() {
           </button>
           <button
             className="btn btn-sm btn-danger"
-            onClick={() => {
-              if (confirm(t('confirm_delete', { name: row.name }))) del.mutate(row.id)
-            }}
+            onClick={() => setModal({ kind: 'confirmDelete', hook: row })}
           >
             {tc('delete')}
           </button>
@@ -280,6 +283,17 @@ export function Hooks() {
             error={update.error}
           />
         </Modal>
+      )}
+
+      {modal.kind === 'confirmDelete' && (
+        <ConfirmDialog
+          title={t('confirm_delete', { name: modal.hook.name })}
+          message={tc('delete_warning')}
+          confirmLabel={tc('delete')}
+          onConfirm={() => del.mutate(modal.hook.id, { onSuccess: close })}
+          onCancel={close}
+          isPending={del.isPending}
+        />
       )}
     </div>
   )

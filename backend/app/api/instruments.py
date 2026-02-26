@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.auth.setup import current_active_user
 from app.models.instrument import Instrument
 from app.models.user import User
 from app.schemas.instrument import InstrumentCreate, InstrumentRead, InstrumentUpdate
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/instruments", tags=["instruments"])
 @router.get("", response_model=list[InstrumentRead])
 async def list_instruments(
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    _: User = Depends(current_active_user),
 ):
     result = await db.execute(select(Instrument))
     return result.scalars().all()

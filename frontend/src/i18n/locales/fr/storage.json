@@ -4,7 +4,7 @@
   "new_storage_location": "Nouvel Emplacement de Stockage",
   "modal_new": "Nouvel Emplacement de Stockage",
   "modal_edit": "Modifier l'Emplacement de Stockage",
-  "confirm_delete": "Supprimer {{name}} ?",
+  "confirm_delete": "🗄️ Supprimer {{name}} ?",
   "form_name": "Nom *",
   "form_type": "Type *",
   "form_base_path": "Chemin de Base *",

@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import {
   useSchedules,
@@ -18,6 +20,7 @@ type ModalState =
   | { kind: 'none' }
   | { kind: 'create' }
   | { kind: 'edit'; schedule: HarvestSchedule }
+  | { kind: 'confirmDelete'; schedule: HarvestSchedule }
 
 function ScheduleForm({
   initial,
@@ -94,7 +97,18 @@ function ScheduleForm({
           onChange={(e) => set('cron_expression', e.target.value)}
           placeholder="0 * * * *"
         />
-        <p className="mt-1 text-xs text-sw-fg-faint">{t('form_cron_hint')}</p>
+        <p className="mt-1 text-xs text-sw-fg-faint">
+          {t('form_cron_hint')} — {t('form_cron_help')}{' '}
+          <a
+            href="https://crontab.guru/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-0.5 underline hover:text-sw-fg-muted"
+          >
+            crontab.guru
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </p>
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -185,9 +199,7 @@ export function Schedules() {
           </button>
           <button
             className="btn btn-sm btn-danger"
-            onClick={() => {
-              if (confirm(t('confirm_delete'))) del.mutate(row.id)
-            }}
+            onClick={() => setModal({ kind: 'confirmDelete', schedule: row })}
           >
             {tc('delete')}
           </button>
@@ -240,6 +252,17 @@ export function Schedules() {
             error={update.error}
           />
         </Modal>
+      )}
+
+      {modal.kind === 'confirmDelete' && (
+        <ConfirmDialog
+          title={t('confirm_delete', { cron: modal.schedule.cron_expression })}
+          message={tc('delete_warning')}
+          confirmLabel={tc('delete')}
+          onConfirm={() => del.mutate(modal.schedule.id, { onSuccess: close })}
+          onCancel={close}
+          isPending={del.isPending}
+        />
       )}
     </div>
   )

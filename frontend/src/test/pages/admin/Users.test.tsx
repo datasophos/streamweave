@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
 import { TEST_BASE, makeAdminUser, makeUser } from '@/mocks/handlers'
@@ -293,9 +293,26 @@ describe('Users admin page', () => {
     expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
   })
 
-  it('delete sends DELETE to /users/:id when confirmed', async () => {
+  it('delete button opens confirm dialog with user email in title', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValue(true)
+    server.use(
+      http.get(`${TEST_BASE}/api/admin/users`, () =>
+        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com' })])
+      )
+    )
+
+    const { user } = renderWithProviders(<Users />)
+    await waitFor(() => expect(screen.getByText('other@test.com')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /^delete$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /other@test\.com/i })).toBeInTheDocument()
+    })
+  })
+
+  it('delete sends DELETE to /users/:id when confirmed via dialog', async () => {
+    setupAdmin()
 
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
@@ -316,14 +333,16 @@ describe('Users admin page', () => {
 
     await user.click(screen.getByRole('button', { name: /^delete$/i }))
 
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: /^delete$/i }))
+
     await waitFor(() => {
       expect(deletedUrl).toBe('/users/del-user-id')
     })
   })
 
-  it('delete does not send DELETE when cancelled', async () => {
+  it('delete does not send DELETE when cancelled via dialog', async () => {
     setupAdmin()
-    vi.mocked(window.confirm).mockReturnValueOnce(false)
 
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
@@ -344,7 +363,12 @@ describe('Users admin page', () => {
 
     await user.click(screen.getByRole('button', { name: /^delete$/i }))
 
-    await new Promise((r) => setTimeout(r, 50))
+    await waitFor(() => screen.getByRole('button', { name: /cancel/i }))
+    await user.click(screen.getByRole('button', { name: /cancel/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+    })
     expect(deleteRequestMade).toBe(false)
   })
 

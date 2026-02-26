@@ -50,5 +50,15 @@ async def test_non_admin_cannot_access_admin_routes(client: AsyncClient):
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    response = await client.get("/api/instruments", headers=headers)
+    response = await client.post(
+        "/api/instruments",
+        json={
+            "name": "test",
+            "adapter_type": "rclone_smb",
+            "host": "h",
+            "share": "s",
+            "storage_location_id": None,
+        },
+        headers=headers,
+    )
     assert response.status_code == 403

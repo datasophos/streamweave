@@ -4,7 +4,7 @@
   "new_storage_location": "New Storage Location",
   "modal_new": "New Storage Location",
   "modal_edit": "Edit Storage Location",
-  "confirm_delete": "Delete {{name}}?",
+  "confirm_delete": "🗄️ Delete {{name}}?",
   "form_name": "Name *",
   "form_type": "Type *",
   "form_base_path": "Base Path *",

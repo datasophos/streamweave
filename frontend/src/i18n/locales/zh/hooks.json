@@ -4,7 +4,7 @@
   "new_hook": "新建钩子",
   "modal_new": "新建钩子配置",
   "modal_edit": "编辑钩子配置",
-  "confirm_delete": "删除钩子 {{name}}？",
+  "confirm_delete": "🪝 删除钩子 {{name}}？",
   "form_name": "名称 *",
   "form_description": "描述",
   "form_trigger": "触发器 *",

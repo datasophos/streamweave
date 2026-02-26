@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import {
   useStorageLocations,
@@ -16,6 +17,7 @@ type ModalState =
   | { kind: 'none' }
   | { kind: 'create' }
   | { kind: 'edit'; location: StorageLocation }
+  | { kind: 'confirmDelete'; location: StorageLocation }
 
 function StorageForm({
   initial,
@@ -117,7 +119,20 @@ export function Storage() {
 
   const columns = [
     { header: tc('name'), key: 'name' as const },
-    { header: t('col_type'), key: 'type' as const },
+    {
+      header: t('col_type'),
+      render: (row: StorageLocation) => {
+        const cls =
+          row.type === 'posix'
+            ? 'badge-blue'
+            : row.type === 's3'
+              ? 'badge-yellow'
+              : row.type === 'nfs'
+                ? 'badge-green'
+                : 'badge-gray'
+        return <span className={cls}>{row.type.toUpperCase()}</span>
+      },
+    },
     { header: t('col_base_path'), key: 'base_path' as const },
     {
       header: tc('status'),
@@ -140,9 +155,7 @@ export function Storage() {
           </button>
           <button
             className="btn btn-sm btn-danger"
-            onClick={() => {
-              if (confirm(t('confirm_delete', { name: row.name }))) del.mutate(row.id)
-            }}
+            onClick={() => setModal({ kind: 'confirmDelete', location: row })}
           >
             {tc('delete')}
           </button>
@@ -195,6 +208,17 @@ export function Storage() {
             error={update.error}
           />
         </Modal>
+      )}
+
+      {modal.kind === 'confirmDelete' && (
+        <ConfirmDialog
+          title={t('confirm_delete', { name: modal.location.name })}
+          message={tc('delete_warning')}
+          confirmLabel={tc('delete')}
+          onConfirm={() => del.mutate(modal.location.id, { onSuccess: close })}
+          onCancel={close}
+          isPending={del.isPending}
+        />
       )}
     </div>
   )

@@ -116,6 +116,37 @@ async def test_delete_nonexistent_instrument(client: AsyncClient, admin_headers:
 
 
 @pytest.mark.asyncio
-async def test_non_admin_instruments_rejected(client: AsyncClient, regular_headers: dict):
+async def test_regular_user_can_list_instruments(
+    client: AsyncClient, admin_headers: dict, regular_headers: dict
+):
+    await client.post(
+        "/api/instruments",
+        json={"name": "Readable Instrument", "cifs_host": "192.168.1.1", "cifs_share": "data"},
+        headers=admin_headers,
+    )
     response = await client.get("/api/instruments", headers=regular_headers)
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_regular_user_cannot_create_instrument(client: AsyncClient, regular_headers: dict):
+    response = await client.post(
+        "/api/instruments",
+        json={"name": "X", "cifs_host": "192.168.1.1", "cifs_share": "data"},
+        headers=regular_headers,
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_regular_user_cannot_delete_instrument(
+    client: AsyncClient, admin_headers: dict, regular_headers: dict
+):
+    create_resp = await client.post(
+        "/api/instruments",
+        json={"name": "Y", "cifs_host": "192.168.1.2", "cifs_share": "data"},
+        headers=admin_headers,
+    )
+    inst_id = create_resp.json()["id"]
+    response = await client.delete(f"/api/instruments/{inst_id}", headers=regular_headers)
     assert response.status_code == 403

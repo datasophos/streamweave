@@ -4,7 +4,7 @@
   "new_storage_location": "新建存储位置",
   "modal_new": "新建存储位置",
   "modal_edit": "编辑存储位置",
-  "confirm_delete": "删除 {{name}}？",
+  "confirm_delete": "🗄️ 删除 {{name}}？",
   "form_name": "名称 *",
   "form_type": "类型 *",
   "form_base_path": "基础路径 *",

@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 interface RequestForm {
   instrument_name: string
   location: string
-  contact_email: string
+  harvest_frequency: string
   description: string
   justification: string
 }
@@ -16,7 +16,7 @@ export function InstrumentRequest() {
   const [form, setForm] = useState<RequestForm>({
     instrument_name: '',
     location: '',
-    contact_email: '',
+    harvest_frequency: '',
     description: '',
     justification: '',
   })
@@ -58,10 +58,7 @@ export function InstrumentRequest() {
             <Trans
               i18nKey="success_message"
               ns="request"
-              values={{
-                instrument_name: form.instrument_name,
-                contact_email: form.contact_email,
-              }}
+              values={{ instrument_name: form.instrument_name }}
               components={{ bold: <strong /> }}
             />
           </p>
@@ -71,7 +68,7 @@ export function InstrumentRequest() {
               setForm({
                 instrument_name: '',
                 location: '',
-                contact_email: '',
+                harvest_frequency: '',
                 description: '',
                 justification: '',
               })
@@ -89,59 +86,68 @@ export function InstrumentRequest() {
     <div>
       <PageHeader title={t('title')} description={t('description')} />
 
-      <div className="card max-w-lg">
+      <div className="card">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="label">{t('form_instrument_name')}</label>
-            <input
-              className="input"
-              required
-              value={form.instrument_name}
-              onChange={(e) => set('instrument_name', e.target.value)}
-              placeholder={t('placeholder_instrument_name')}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="label">{t('form_instrument_name')}</label>
+              <input
+                className="input"
+                required
+                value={form.instrument_name}
+                onChange={(e) => set('instrument_name', e.target.value)}
+                placeholder={t('placeholder_instrument_name')}
+              />
+            </div>
+            <div>
+              <label className="label">{t('form_location')}</label>
+              <input
+                className="input"
+                required
+                value={form.location}
+                onChange={(e) => set('location', e.target.value)}
+                placeholder={t('placeholder_location')}
+              />
+            </div>
+            <div>
+              <label className="label">{t('form_harvest_frequency')}</label>
+              <select
+                className="input"
+                required
+                value={form.harvest_frequency}
+                onChange={(e) => set('harvest_frequency', e.target.value)}
+              >
+                <option value="" disabled />
+                <option value="hourly">{t('freq_hourly')}</option>
+                <option value="every_4h">{t('freq_every_4h')}</option>
+                <option value="daily">{t('freq_daily')}</option>
+                <option value="weekly">{t('freq_weekly')}</option>
+                <option value="not_sure">{t('freq_not_sure')}</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="label">{t('form_location')}</label>
-            <input
-              className="input"
-              required
-              value={form.location}
-              onChange={(e) => set('location', e.target.value)}
-              placeholder={t('placeholder_location')}
-            />
-          </div>
-          <div>
-            <label className="label">{t('form_contact_email')}</label>
-            <input
-              className="input"
-              type="email"
-              required
-              value={form.contact_email}
-              onChange={(e) => set('contact_email', e.target.value)}
-              placeholder={t('placeholder_contact_email')}
-            />
-          </div>
-          <div>
-            <label className="label">{t('form_description')}</label>
-            <textarea
-              className="input"
-              rows={3}
-              value={form.description}
-              onChange={(e) => set('description', e.target.value)}
-              placeholder={t('placeholder_description')}
-            />
-          </div>
-          <div>
-            <label className="label">{t('form_justification')}</label>
-            <textarea
-              className="input"
-              rows={4}
-              required
-              value={form.justification}
-              onChange={(e) => set('justification', e.target.value)}
-              placeholder={t('placeholder_justification')}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">{t('form_description')}</label>
+              <textarea
+                className="input"
+                rows={4}
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+                placeholder={t('placeholder_description')}
+              />
+            </div>
+            <div>
+              <label className="label">{t('form_justification')}</label>
+              <textarea
+                className="input"
+                rows={4}
+                required
+                value={form.justification}
+                onChange={(e) => set('justification', e.target.value)}
+                placeholder={t('placeholder_justification')}
+              />
+            </div>
           </div>
           <div className="flex justify-end pt-2">
             <button type="submit" className="btn-primary">

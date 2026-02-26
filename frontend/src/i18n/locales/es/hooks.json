@@ -4,7 +4,7 @@
   "new_hook": "Nuevo Hook",
   "modal_new": "Nueva Configuración de Hook",
   "modal_edit": "Editar Configuración de Hook",
-  "confirm_delete": "¿Eliminar hook \"{{name}}\"?",
+  "confirm_delete": "🪝 ¿Eliminar hook \"{{name}}\"?",
   "form_name": "Nombre *",
   "form_description": "Descripción",
   "form_trigger": "Disparador *",

@@ -7,6 +7,20 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        'toast-in': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'toast-out': {
+          '0%': { opacity: '1', transform: 'translateY(0)' },
+          '100%': { opacity: '0', transform: 'translateY(8px)' },
+        },
+      },
+      animation: {
+        'toast-in': 'toast-in 0.15s ease-out forwards',
+        'toast-out': 'toast-out 0.15s ease-in forwards',
+      },
       colors: {
         brand: {
           50: '#f0f9ff',

@@ -9,6 +9,7 @@ const adminNavDefs = [
   { to: '/admin/schedules', key: 'admin_schedules' },
   { to: '/admin/hooks', key: 'admin_hooks' },
   { to: '/admin/users', key: 'admin_users' },
+  { to: '/admin/audit-log', key: 'admin_audit_log' },
 ] as const
 
 const userNavDefs = [

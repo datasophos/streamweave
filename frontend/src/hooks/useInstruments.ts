@@ -12,11 +12,11 @@ import type {
 const INSTRUMENTS_KEY = ['instruments']
 const SERVICE_ACCOUNTS_KEY = ['service-accounts']
 
-export function useInstruments() {
+export function useInstruments(includeDeleted = false) {
   return useQuery({
-    queryKey: INSTRUMENTS_KEY,
+    queryKey: [...INSTRUMENTS_KEY, { includeDeleted }],
     queryFn: async () => {
-      const resp = await instrumentsApi.list()
+      const resp = await instrumentsApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as Instrument[]
     },
   })
@@ -58,12 +58,22 @@ export function useDeleteInstrument() {
   })
 }
 
+export function useRestoreInstrument() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => instrumentsApi.restore(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: INSTRUMENTS_KEY }),
+  })
+}
+
 // Service Accounts
-export function useServiceAccounts() {
+export function useServiceAccounts(includeDeleted = false) {
   return useQuery({
-    queryKey: SERVICE_ACCOUNTS_KEY,
+    queryKey: [...SERVICE_ACCOUNTS_KEY, { includeDeleted }],
     queryFn: async () => {
-      const resp = await serviceAccountsApi.list()
+      const resp = await serviceAccountsApi.list(
+        includeDeleted ? { include_deleted: true } : undefined
+      )
       return resp.data as ServiceAccount[]
     },
   })
@@ -90,6 +100,14 @@ export function useDeleteServiceAccount() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => serviceAccountsApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SERVICE_ACCOUNTS_KEY }),
+  })
+}
+
+export function useRestoreServiceAccount() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => serviceAccountsApi.restore(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: SERVICE_ACCOUNTS_KEY }),
   })
 }

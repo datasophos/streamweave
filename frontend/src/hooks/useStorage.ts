@@ -4,11 +4,11 @@ import type { StorageLocation, StorageLocationCreate, StorageLocationUpdate } fr
 
 const KEY = ['storage']
 
-export function useStorageLocations() {
+export function useStorageLocations(includeDeleted = false) {
   return useQuery({
-    queryKey: KEY,
+    queryKey: [...KEY, { includeDeleted }],
     queryFn: async () => {
-      const resp = await storageApi.list()
+      const resp = await storageApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as StorageLocation[]
     },
   })
@@ -35,6 +35,14 @@ export function useDeleteStorageLocation() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => storageApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useRestoreStorageLocation() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => storageApi.restore(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

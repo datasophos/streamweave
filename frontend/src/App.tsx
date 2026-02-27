@@ -11,6 +11,7 @@ import { Storage } from '@/pages/admin/Storage'
 import { Schedules } from '@/pages/admin/Schedules'
 import { Hooks } from '@/pages/admin/Hooks'
 import { Users } from '@/pages/admin/Users'
+import { AuditLog } from '@/pages/admin/AuditLog'
 import { MyFiles } from '@/pages/user/MyFiles'
 import { Transfers } from '@/pages/user/Transfers'
 import { InstrumentRequest } from '@/pages/user/InstrumentRequest'
@@ -109,6 +110,14 @@ export function App() {
           element={
             <RequireAdmin>
               <Users />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/audit-log"
+          element={
+            <RequireAdmin>
+              <AuditLog />
             </RequireAdmin>
           }
         />

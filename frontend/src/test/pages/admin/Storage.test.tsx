@@ -256,7 +256,7 @@ describe('Storage admin page', () => {
     await user.type(screen.getByPlaceholderText('/storage/archive'), '/mnt/archive')
 
     // Uncheck the enabled checkbox
-    const checkbox = screen.getByRole('checkbox')
+    const checkbox = screen.getByRole('checkbox', { name: /^enabled$/i })
     await user.click(checkbox)
 
     await user.click(screen.getByRole('button', { name: /^save$/i }))
@@ -342,6 +342,49 @@ describe('Storage admin page', () => {
       const badge = screen.getByText(label)
       expect(badge).toBeInTheDocument()
       expect(badge).toHaveClass(cls)
+    })
+  })
+
+  it('shows Deleted badge and Restore button for deleted storage location', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([makeStorageLocation({ deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    renderWithProviders(<Storage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^restore$/i })).toBeInTheDocument()
+    })
+  })
+
+  it('clicking Restore button calls restore endpoint', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([
+          makeStorageLocation({ id: 'sl-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
+        ])
+      )
+    )
+
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/storage-locations/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeStorageLocation())
+      })
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /^restore$/i }))
+    await user.click(screen.getByRole('button', { name: /^restore$/i }))
+
+    await waitFor(() => {
+      expect(restoredUrl).toBe('/api/storage-locations/sl-restore-id/restore')
     })
   })
 

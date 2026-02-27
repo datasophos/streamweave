@@ -139,6 +139,61 @@ async def test_regular_user_cannot_create_instrument(client: AsyncClient, regula
 
 
 @pytest.mark.asyncio
+async def test_soft_delete_excluded_from_list(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/instruments",
+        json={"name": "ToDelete", "cifs_host": "h", "cifs_share": "s"},
+        headers=admin_headers,
+    )
+    inst_id = create_resp.json()["id"]
+    await client.delete(f"/api/instruments/{inst_id}", headers=admin_headers)
+
+    # Default list excludes deleted
+    list_resp = await client.get("/api/instruments", headers=admin_headers)
+    ids = [i["id"] for i in list_resp.json()]
+    assert inst_id not in ids
+
+    # include_deleted=true shows it
+    list_resp2 = await client.get("/api/instruments?include_deleted=true", headers=admin_headers)
+    ids2 = [i["id"] for i in list_resp2.json()]
+    assert inst_id in ids2
+
+
+@pytest.mark.asyncio
+async def test_restore_instrument(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/instruments",
+        json={"name": "RestoreMe", "cifs_host": "h", "cifs_share": "s"},
+        headers=admin_headers,
+    )
+    inst_id = create_resp.json()["id"]
+    await client.delete(f"/api/instruments/{inst_id}", headers=admin_headers)
+
+    # Restore
+    restore_resp = await client.post(f"/api/instruments/{inst_id}/restore", headers=admin_headers)
+    assert restore_resp.status_code == 200
+    assert restore_resp.json()["id"] == inst_id
+
+    # Now appears in regular list
+    list_resp = await client.get("/api/instruments", headers=admin_headers)
+    ids = [i["id"] for i in list_resp.json()]
+    assert inst_id in ids
+
+
+@pytest.mark.asyncio
+async def test_restore_non_deleted_instrument_returns_404(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/instruments",
+        json={"name": "NotDeleted", "cifs_host": "h", "cifs_share": "s"},
+        headers=admin_headers,
+    )
+    inst_id = create_resp.json()["id"]
+    # Instrument is active (not deleted) — restore should 404
+    restore_resp = await client.post(f"/api/instruments/{inst_id}/restore", headers=admin_headers)
+    assert restore_resp.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_regular_user_cannot_delete_instrument(
     client: AsyncClient, admin_headers: dict, regular_headers: dict
 ):

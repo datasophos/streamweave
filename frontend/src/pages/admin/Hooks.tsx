@@ -5,11 +5,13 @@ import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { Toggle } from '@/components/Toggle'
 import {
   useHookConfigs,
   useCreateHookConfig,
   useUpdateHookConfig,
   useDeleteHookConfig,
+  useRestoreHookConfig,
 } from '@/hooks/useHooks'
 import { useInstruments } from '@/hooks/useInstruments'
 import type { HookConfig, HookConfigCreate, HookTrigger, HookImplementation } from '@/api/types'
@@ -187,13 +189,15 @@ export function Hooks() {
   const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
+  const [showDeleted, setShowDeleted] = useState(false)
 
-  const { data: hooks = [], isLoading } = useHookConfigs()
+  const { data: hooks = [], isLoading } = useHookConfigs(showDeleted)
   const { data: instruments = [] } = useInstruments()
 
   const create = useCreateHookConfig()
   const update = useUpdateHookConfig()
   const del = useDeleteHookConfig()
+  const restore = useRestoreHookConfig()
 
   const instMap = Object.fromEntries(instruments.map((i) => [i.id, i.name]))
 
@@ -219,7 +223,9 @@ export function Hooks() {
     {
       header: tc('status'),
       render: (row: HookConfig) =>
-        row.enabled ? (
+        row.deleted_at ? (
+          <span className="badge-gray">{tc('deleted')}</span>
+        ) : row.enabled ? (
           <span className="badge-green">{tc('enabled')}</span>
         ) : (
           <span className="badge-gray">{tc('disabled')}</span>
@@ -227,22 +233,27 @@ export function Hooks() {
     },
     {
       header: tc('actions'),
-      render: (row: HookConfig) => (
-        <div className="flex gap-2">
-          <button
-            className="btn btn-sm btn-secondary"
-            onClick={() => setModal({ kind: 'edit', hook: row })}
-          >
-            {tc('edit')}
+      render: (row: HookConfig) =>
+        row.deleted_at ? (
+          <button className="btn btn-sm btn-secondary" onClick={() => restore.mutate(row.id)}>
+            {tc('restore')}
           </button>
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => setModal({ kind: 'confirmDelete', hook: row })}
-          >
-            {tc('delete')}
-          </button>
-        </div>
-      ),
+        ) : (
+          <div className="flex gap-2">
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setModal({ kind: 'edit', hook: row })}
+            >
+              {tc('edit')}
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => setModal({ kind: 'confirmDelete', hook: row })}
+            >
+              {tc('delete')}
+            </button>
+          </div>
+        ),
     },
   ]
 
@@ -259,7 +270,16 @@ export function Hooks() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <Table columns={columns} data={hooks} isLoading={isLoading} emptyMessage={t('no_hooks')} />
+        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
+          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        </div>
+        <Table
+          columns={columns}
+          data={hooks}
+          isLoading={isLoading}
+          emptyMessage={t('no_hooks')}
+          rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+        />
       </div>
 
       {modal.kind === 'create' && (

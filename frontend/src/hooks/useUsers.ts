@@ -4,11 +4,11 @@ import type { User, UserCreate, UserUpdate } from '@/api/types'
 
 const KEY = ['users']
 
-export function useUsers() {
+export function useUsers(includeDeleted = false) {
   return useQuery({
-    queryKey: KEY,
+    queryKey: [...KEY, { includeDeleted }],
     queryFn: async () => {
-      const resp = await usersApi.list()
+      const resp = await usersApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as User[]
     },
   })
@@ -34,6 +34,14 @@ export function useDeleteUser() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => usersApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useRestoreUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => usersApi.restore(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

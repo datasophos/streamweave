@@ -20,6 +20,7 @@ class HarvestScheduleRead(BaseModel):
     enabled: bool
     created_at: datetime
     updated_at: datetime
+    deleted_at: datetime | None
 
     model_config = {"from_attributes": True}
 

@@ -11,6 +11,7 @@
   "admin_schedules": "Horarios",
   "admin_hooks": "Hooks",
   "admin_users": "Usuarios",
+  "admin_audit_log": "Registro de Auditoría",
   "section_browse": "Explorar",
   "section_my_work": "Mi Trabajo",
   "footer": "StreamWeave — Recolección científica de datos, simplificada",

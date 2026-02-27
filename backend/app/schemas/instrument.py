@@ -20,6 +20,7 @@ class ServiceAccountRead(BaseModel):
     username: str
     created_at: datetime
     updated_at: datetime
+    deleted_at: datetime | None
 
     model_config = {"from_attributes": True}
 
@@ -60,6 +61,7 @@ class InstrumentRead(BaseModel):
     enabled: bool
     created_at: datetime
     updated_at: datetime
+    deleted_at: datetime | None
 
     model_config = {"from_attributes": True}
 

@@ -5,7 +5,14 @@ import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
-import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@/hooks/useUsers'
+import {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  useRestoreUser,
+} from '@/hooks/useUsers'
+import { Toggle } from '@/components/Toggle'
 import { useAuth } from '@/contexts/AuthContext'
 import type { User, UserCreate } from '@/api/types'
 
@@ -84,11 +91,13 @@ export function Users() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const { user: me } = useAuth()
+  const [showDeleted, setShowDeleted] = useState(false)
 
-  const { data: users = [], isLoading } = useUsers()
+  const { data: users = [], isLoading } = useUsers(showDeleted)
   const createUser = useCreateUser()
   const updateUser = useUpdateUser()
   const deleteUser = useDeleteUser()
+  const restoreUser = useRestoreUser()
 
   const [editRole, setEditRole] = useState<'admin' | 'user'>('user')
 
@@ -108,7 +117,9 @@ export function Users() {
     {
       header: tc('status'),
       render: (row: User) =>
-        row.is_active ? (
+        row.deleted_at ? (
+          <span className="badge-gray">{tc('deleted')}</span>
+        ) : row.is_active ? (
           <span className="badge-green">{t('status_active')}</span>
         ) : (
           <span className="badge-red">{t('status_inactive')}</span>
@@ -125,21 +136,26 @@ export function Users() {
     },
     {
       header: tc('actions'),
-      render: (row: User) => (
-        <div className="flex gap-2">
-          <button className="btn btn-sm btn-secondary" onClick={() => handleEditRole(row)}>
-            {t('edit_role')}
+      render: (row: User) =>
+        row.deleted_at ? (
+          <button className="btn btn-sm btn-secondary" onClick={() => restoreUser.mutate(row.id)}>
+            {tc('restore')}
           </button>
-          {row.id !== me?.id && (
-            <button
-              className="btn btn-sm btn-danger"
-              onClick={() => setModal({ kind: 'confirmDelete', user: row })}
-            >
-              {tc('delete')}
+        ) : (
+          <div className="flex gap-2">
+            <button className="btn btn-sm btn-secondary" onClick={() => handleEditRole(row)}>
+              {t('edit_role')}
             </button>
-          )}
-        </div>
-      ),
+            {row.id !== me?.id && (
+              <button
+                className="btn btn-sm btn-danger"
+                onClick={() => setModal({ kind: 'confirmDelete', user: row })}
+              >
+                {tc('delete')}
+              </button>
+            )}
+          </div>
+        ),
     },
   ]
 
@@ -156,7 +172,16 @@ export function Users() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <Table columns={columns} data={users} isLoading={isLoading} emptyMessage={t('no_users')} />
+        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
+          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        </div>
+        <Table
+          columns={columns}
+          data={users}
+          isLoading={isLoading}
+          emptyMessage={t('no_users')}
+          rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+        />
       </div>
 
       {modal.kind === 'create' && (

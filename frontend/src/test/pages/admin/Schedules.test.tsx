@@ -312,7 +312,7 @@ describe('Schedules admin page', () => {
     await user.selectOptions(combos[1], 'storage-uuid-1')
 
     // Uncheck the enabled checkbox
-    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('checkbox', { name: /^enabled$/i }))
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
     await waitFor(() => {
@@ -439,6 +439,49 @@ describe('Schedules admin page', () => {
       const link = screen.getByRole('link', { name: /crontab\.guru/i })
       expect(link).toHaveAttribute('href', 'https://crontab.guru/')
       expect(link).toHaveAttribute('target', '_blank')
+    })
+  })
+
+  it('shows Deleted badge and Restore button for deleted schedule', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/schedules`, () =>
+        HttpResponse.json([makeSchedule({ deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    renderWithProviders(<Schedules />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^restore$/i })).toBeInTheDocument()
+    })
+  })
+
+  it('clicking Restore button calls restore endpoint', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/schedules`, () =>
+        HttpResponse.json([
+          makeSchedule({ id: 'sched-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
+        ])
+      )
+    )
+
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/schedules/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeSchedule())
+      })
+    )
+
+    const { user } = renderWithProviders(<Schedules />)
+    await waitFor(() => screen.getByRole('button', { name: /^restore$/i }))
+    await user.click(screen.getByRole('button', { name: /^restore$/i }))
+
+    await waitFor(() => {
+      expect(restoredUrl).toBe('/api/schedules/sched-restore-id/restore')
     })
   })
 

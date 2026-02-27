@@ -5,11 +5,13 @@ import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { Toggle } from '@/components/Toggle'
 import {
   useStorageLocations,
   useCreateStorageLocation,
   useUpdateStorageLocation,
   useDeleteStorageLocation,
+  useRestoreStorageLocation,
 } from '@/hooks/useStorage'
 import type { StorageLocation, StorageLocationCreate, StorageType } from '@/api/types'
 
@@ -111,11 +113,13 @@ export function Storage() {
   const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
+  const [showDeleted, setShowDeleted] = useState(false)
 
-  const { data: locations = [], isLoading } = useStorageLocations()
+  const { data: locations = [], isLoading } = useStorageLocations(showDeleted)
   const create = useCreateStorageLocation()
   const update = useUpdateStorageLocation()
   const del = useDeleteStorageLocation()
+  const restore = useRestoreStorageLocation()
 
   const columns = [
     { header: tc('name'), key: 'name' as const },
@@ -137,7 +141,9 @@ export function Storage() {
     {
       header: tc('status'),
       render: (row: StorageLocation) =>
-        row.enabled ? (
+        row.deleted_at ? (
+          <span className="badge-gray">{tc('deleted')}</span>
+        ) : row.enabled ? (
           <span className="badge-green">{tc('enabled')}</span>
         ) : (
           <span className="badge-gray">{tc('disabled')}</span>
@@ -145,22 +151,27 @@ export function Storage() {
     },
     {
       header: tc('actions'),
-      render: (row: StorageLocation) => (
-        <div className="flex gap-2">
-          <button
-            className="btn btn-sm btn-secondary"
-            onClick={() => setModal({ kind: 'edit', location: row })}
-          >
-            {tc('edit')}
+      render: (row: StorageLocation) =>
+        row.deleted_at ? (
+          <button className="btn btn-sm btn-secondary" onClick={() => restore.mutate(row.id)}>
+            {tc('restore')}
           </button>
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => setModal({ kind: 'confirmDelete', location: row })}
-          >
-            {tc('delete')}
-          </button>
-        </div>
-      ),
+        ) : (
+          <div className="flex gap-2">
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setModal({ kind: 'edit', location: row })}
+            >
+              {tc('edit')}
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => setModal({ kind: 'confirmDelete', location: row })}
+            >
+              {tc('delete')}
+            </button>
+          </div>
+        ),
     },
   ]
 
@@ -177,11 +188,15 @@ export function Storage() {
       />
 
       <div className="card p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
+          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        </div>
         <Table
           columns={columns}
           data={locations}
           isLoading={isLoading}
           emptyMessage={t('no_locations')}
+          rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
         />
       </div>
 

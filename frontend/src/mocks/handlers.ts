@@ -20,6 +20,7 @@ export const makeUser = (overrides: Partial<User> = {}): User => ({
   role: 'user',
   is_active: true,
   is_verified: true,
+  deleted_at: null,
   ...overrides,
 })
 
@@ -33,6 +34,7 @@ export const makeServiceAccount = (overrides: Partial<ServiceAccount> = {}): Ser
   username: 'labuser',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
   ...overrides,
 })
 
@@ -51,6 +53,7 @@ export const makeInstrument = (overrides: Partial<Instrument> = {}): Instrument 
   enabled: true,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
   ...overrides,
 })
 
@@ -63,6 +66,7 @@ export const makeStorageLocation = (overrides: Partial<StorageLocation> = {}): S
   enabled: true,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
   ...overrides,
 })
 
@@ -75,6 +79,7 @@ export const makeSchedule = (overrides: Partial<HarvestSchedule> = {}): HarvestS
   enabled: true,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
   ...overrides,
 })
 
@@ -93,6 +98,7 @@ export const makeHookConfig = (overrides: Partial<HookConfig> = {}): HookConfig 
   enabled: true,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
   ...overrides,
 })
 

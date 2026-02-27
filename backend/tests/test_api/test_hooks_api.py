@@ -103,6 +103,18 @@ class TestHooksCRUD:
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
+    async def test_restore_hook(self, client, admin_headers, hook):
+        await client.delete(f"/api/hooks/{hook.id}", headers=admin_headers)
+        resp = await client.post(f"/api/hooks/{hook.id}/restore", headers=admin_headers)
+        assert resp.status_code == 200
+        assert resp.json()["id"] == str(hook.id)
+
+    @pytest.mark.asyncio
+    async def test_restore_non_deleted_hook_returns_404(self, client, admin_headers, hook):
+        resp = await client.post(f"/api/hooks/{hook.id}/restore", headers=admin_headers)
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
     async def test_non_admin_rejected(self, client, regular_headers):
         resp = await client.get("/api/hooks", headers=regular_headers)
         assert resp.status_code == 403

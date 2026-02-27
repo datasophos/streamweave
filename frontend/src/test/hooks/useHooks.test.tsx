@@ -10,6 +10,7 @@ import {
   useCreateHookConfig,
   useUpdateHookConfig,
   useDeleteHookConfig,
+  useRestoreHookConfig,
 } from '@/hooks/useHooks'
 import { makeTestQueryClient } from '@/test/utils'
 
@@ -101,5 +102,43 @@ describe('useDeleteHookConfig', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(deletedUrl).toBe('/api/hooks/hook-uuid-1')
     expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['hooks'] }))
+  })
+})
+
+describe('useRestoreHookConfig', () => {
+  it('sends POST to /api/hooks/:id/restore and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/hooks/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeHookConfig())
+      })
+    )
+
+    const { result } = renderHook(() => useRestoreHookConfig(), { wrapper: wrapper(qc) })
+    result.current.mutate('hook-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(restoredUrl).toBe('/api/hooks/hook-uuid-1/restore')
+    expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['hooks'] }))
+  })
+})
+
+describe('useHookConfigs with includeDeleted', () => {
+  it('passes include_deleted=true param when includeDeleted is true', async () => {
+    const qc = makeTestQueryClient()
+    let capturedParams: URLSearchParams | null = null
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks`, ({ request }) => {
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json([makeHookConfig()])
+      })
+    )
+
+    const { result } = renderHook(() => useHookConfigs(true), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(capturedParams!.get('include_deleted')).toBe('true')
   })
 })

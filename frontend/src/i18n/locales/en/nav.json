@@ -11,6 +11,7 @@
   "admin_schedules": "Schedules",
   "admin_hooks": "Hooks",
   "admin_users": "Users",
+  "admin_audit_log": "Audit Log",
   "section_browse": "Browse",
   "section_my_work": "My Work",
   "footer": "StreamWeave — Scientific data harvesting, simplified",

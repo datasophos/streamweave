@@ -6,11 +6,13 @@ import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { Toggle } from '@/components/Toggle'
 import {
   useSchedules,
   useCreateSchedule,
   useUpdateSchedule,
   useDeleteSchedule,
+  useRestoreSchedule,
 } from '@/hooks/useSchedules'
 import { useInstruments } from '@/hooks/useInstruments'
 import { useStorageLocations } from '@/hooks/useStorage'
@@ -139,14 +141,16 @@ export function Schedules() {
   const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
+  const [showDeleted, setShowDeleted] = useState(false)
 
-  const { data: schedules = [], isLoading } = useSchedules()
+  const { data: schedules = [], isLoading } = useSchedules(showDeleted)
   const { data: instruments = [] } = useInstruments()
   const { data: storageLocations = [] } = useStorageLocations()
 
   const create = useCreateSchedule()
   const update = useUpdateSchedule()
   const del = useDeleteSchedule()
+  const restore = useRestoreSchedule()
 
   const instMap = Object.fromEntries(instruments.map((i) => [i.id, i.name]))
   const storageMap = Object.fromEntries(storageLocations.map((s) => [s.id, s.name]))
@@ -181,7 +185,9 @@ export function Schedules() {
     {
       header: tc('status'),
       render: (row: HarvestSchedule) =>
-        row.enabled ? (
+        row.deleted_at ? (
+          <span className="badge-gray">{tc('deleted')}</span>
+        ) : row.enabled ? (
           <span className="badge-green">{tc('enabled')}</span>
         ) : (
           <span className="badge-gray">{tc('disabled')}</span>
@@ -189,22 +195,27 @@ export function Schedules() {
     },
     {
       header: tc('actions'),
-      render: (row: HarvestSchedule) => (
-        <div className="flex gap-2">
-          <button
-            className="btn btn-sm btn-secondary"
-            onClick={() => setModal({ kind: 'edit', schedule: row })}
-          >
-            {tc('edit')}
+      render: (row: HarvestSchedule) =>
+        row.deleted_at ? (
+          <button className="btn btn-sm btn-secondary" onClick={() => restore.mutate(row.id)}>
+            {tc('restore')}
           </button>
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => setModal({ kind: 'confirmDelete', schedule: row })}
-          >
-            {tc('delete')}
-          </button>
-        </div>
-      ),
+        ) : (
+          <div className="flex gap-2">
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setModal({ kind: 'edit', schedule: row })}
+            >
+              {tc('edit')}
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => setModal({ kind: 'confirmDelete', schedule: row })}
+            >
+              {tc('delete')}
+            </button>
+          </div>
+        ),
     },
   ]
 
@@ -221,11 +232,15 @@ export function Schedules() {
       />
 
       <div className="card p-0 overflow-hidden">
+        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
+          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        </div>
         <Table
           columns={columns}
           data={schedules}
           isLoading={isLoading}
           emptyMessage={t('no_schedules')}
+          rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
         />
       </div>
 

@@ -322,7 +322,7 @@ describe('Users admin page', () => {
 
     let deletedUrl: string | undefined
     server.use(
-      http.delete(`${TEST_BASE}/users/:id`, ({ request }) => {
+      http.delete(`${TEST_BASE}/api/admin/users/:id`, ({ request }) => {
         deletedUrl = new URL(request.url).pathname
         return new HttpResponse(null, { status: 204 })
       })
@@ -337,7 +337,7 @@ describe('Users admin page', () => {
     await user.click(within(dialog).getByRole('button', { name: /^delete$/i }))
 
     await waitFor(() => {
-      expect(deletedUrl).toBe('/users/del-user-id')
+      expect(deletedUrl).toBe('/api/admin/users/del-user-id')
     })
   })
 
@@ -370,6 +370,47 @@ describe('Users admin page', () => {
       expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
     })
     expect(deleteRequestMade).toBe(false)
+  })
+
+  it('shows Deleted badge and Restore button for deleted user', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/admin/users`, () =>
+        HttpResponse.json([makeUser({ deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    renderWithProviders(<Users />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^restore$/i })).toBeInTheDocument()
+    })
+  })
+
+  it('clicking Restore button calls restore endpoint', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/admin/users`, () =>
+        HttpResponse.json([makeUser({ id: 'user-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/admin/users/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeUser())
+      })
+    )
+
+    const { user } = renderWithProviders(<Users />)
+    await waitFor(() => screen.getByRole('button', { name: /^restore$/i }))
+    await user.click(screen.getByRole('button', { name: /^restore$/i }))
+
+    await waitFor(() => {
+      expect(restoredUrl).toBe('/api/admin/users/user-restore-id/restore')
+    })
   })
 
   it('shows Inactive badge for inactive user', async () => {

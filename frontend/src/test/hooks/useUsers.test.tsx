@@ -5,7 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
 import { TEST_BASE, makeUser } from '@/mocks/handlers'
-import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@/hooks/useUsers'
+import {
+  useUsers,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+  useRestoreUser,
+} from '@/hooks/useUsers'
 import { makeTestQueryClient } from '@/test/utils'
 
 function wrapper(queryClient: QueryClient) {
@@ -78,7 +84,7 @@ describe('useDeleteUser', () => {
     const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
     let deletedUrl: string | undefined
     server.use(
-      http.delete(`${TEST_BASE}/users/:id`, ({ request }) => {
+      http.delete(`${TEST_BASE}/api/admin/users/:id`, ({ request }) => {
         deletedUrl = new URL(request.url).pathname
         return new HttpResponse(null, { status: 204 })
       })
@@ -88,7 +94,45 @@ describe('useDeleteUser', () => {
     result.current.mutate('user-uuid-1')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(deletedUrl).toBe('/users/user-uuid-1')
+    expect(deletedUrl).toBe('/api/admin/users/user-uuid-1')
     expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['users'] }))
+  })
+})
+
+describe('useRestoreUser', () => {
+  it('sends POST to /api/admin/users/:id/restore and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/admin/users/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeUser())
+      })
+    )
+
+    const { result } = renderHook(() => useRestoreUser(), { wrapper: wrapper(qc) })
+    result.current.mutate('user-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(restoredUrl).toBe('/api/admin/users/user-uuid-1/restore')
+    expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['users'] }))
+  })
+})
+
+describe('useUsers with includeDeleted', () => {
+  it('passes include_deleted=true param when includeDeleted is true', async () => {
+    const qc = makeTestQueryClient()
+    let capturedParams: URLSearchParams | null = null
+    server.use(
+      http.get(`${TEST_BASE}/api/admin/users`, ({ request }) => {
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json([makeUser()])
+      })
+    )
+
+    const { result } = renderHook(() => useUsers(true), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(capturedParams!.get('include_deleted')).toBe('true')
   })
 })

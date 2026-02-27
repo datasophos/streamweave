@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -32,6 +33,7 @@ class HookConfigRead(BaseModel):
     instrument_id: uuid.UUID | None
     priority: int
     enabled: bool
+    deleted_at: datetime | None
 
     model_config = {"from_attributes": True}
 

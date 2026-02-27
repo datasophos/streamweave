@@ -8,6 +8,7 @@ export interface User {
   role: 'admin' | 'user'
   is_active: boolean
   is_verified: boolean
+  deleted_at: string | null
 }
 
 export interface ServiceAccount {
@@ -17,6 +18,7 @@ export interface ServiceAccount {
   username: string
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface ServiceAccountCreate {
@@ -50,6 +52,7 @@ export interface Instrument {
   enabled: boolean
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface InstrumentCreate {
@@ -91,6 +94,7 @@ export interface StorageLocation {
   enabled: boolean
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface StorageLocationCreate {
@@ -118,6 +122,7 @@ export interface HarvestSchedule {
   enabled: boolean
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface HarvestScheduleCreate {
@@ -152,6 +157,7 @@ export interface HookConfig {
   enabled: boolean
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface HookConfigCreate {
@@ -280,4 +286,18 @@ export interface PaginatedResponse<T> {
 // Health check
 export interface HealthResponse {
   status: string
+}
+
+// Audit log
+export type AuditAction = 'create' | 'update' | 'delete' | 'restore'
+
+export interface AuditLogEntry {
+  id: UUID
+  entity_type: string
+  entity_id: UUID
+  action: AuditAction
+  actor_id: UUID | null
+  actor_email: string
+  changes: Record<string, { before: unknown; after: unknown }> | null
+  created_at: string
 }

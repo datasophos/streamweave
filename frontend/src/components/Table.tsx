@@ -13,6 +13,7 @@ interface TableProps<T> {
   data: T[]
   emptyMessage?: string
   isLoading?: boolean
+  rowClassName?: (row: T) => string
 }
 
 export function Table<T extends { id: string | number }>({
@@ -20,6 +21,7 @@ export function Table<T extends { id: string | number }>({
   data,
   emptyMessage,
   isLoading,
+  rowClassName,
 }: TableProps<T>) {
   const { t } = useTranslation('common')
   const empty = emptyMessage ?? t('no_records')
@@ -76,7 +78,10 @@ export function Table<T extends { id: string | number }>({
             </tr>
           ) : (
             data.map((row) => (
-              <tr key={row.id} className="hover:bg-sw-hover transition-colors">
+              <tr
+                key={row.id}
+                className={`hover:bg-sw-hover transition-colors ${rowClassName ? rowClassName(row) : ''}`}
+              >
                 {columns.map((col) => (
                   <td
                     key={col.header}

@@ -50,3 +50,25 @@ async def test_send_email_multiple_recipients(monkeypatch):
     with patch("app.services.email.aiosmtplib.send", new_callable=AsyncMock) as mock_send:
         await send_email(["a@example.com", "b@example.com"], "Multi", "<p>Hi</p>")
         mock_send.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_send_email_failure_raises(monkeypatch):
+    """Exception from aiosmtplib is re-raised after logging."""
+    monkeypatch.setattr("app.services.email.settings.smtp_enabled", True)
+    monkeypatch.setattr("app.services.email.settings.smtp_host", "localhost")
+    monkeypatch.setattr("app.services.email.settings.smtp_port", 1025)
+    monkeypatch.setattr("app.services.email.settings.smtp_tls", False)
+    monkeypatch.setattr("app.services.email.settings.smtp_username", "")
+    monkeypatch.setattr("app.services.email.settings.smtp_password", "")
+    monkeypatch.setattr("app.services.email.settings.smtp_from", "noreply@streamweave.local")
+
+    with (
+        patch(
+            "app.services.email.aiosmtplib.send",
+            new_callable=AsyncMock,
+            side_effect=Exception("SMTP connection refused"),
+        ),
+        pytest.raises(Exception, match="SMTP connection refused"),
+    ):
+        await send_email("user@example.com", "Subject", "<p>Body</p>")

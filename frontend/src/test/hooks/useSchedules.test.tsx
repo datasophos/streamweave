@@ -10,6 +10,7 @@ import {
   useCreateSchedule,
   useUpdateSchedule,
   useDeleteSchedule,
+  useRestoreSchedule,
 } from '@/hooks/useSchedules'
 import { makeTestQueryClient } from '@/test/utils'
 
@@ -100,5 +101,43 @@ describe('useDeleteSchedule', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(deletedUrl).toBe('/api/schedules/sched-uuid-1')
     expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['schedules'] }))
+  })
+})
+
+describe('useRestoreSchedule', () => {
+  it('sends POST to /api/schedules/:id/restore and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/schedules/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeSchedule())
+      })
+    )
+
+    const { result } = renderHook(() => useRestoreSchedule(), { wrapper: wrapper(qc) })
+    result.current.mutate('sched-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(restoredUrl).toBe('/api/schedules/sched-uuid-1/restore')
+    expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['schedules'] }))
+  })
+})
+
+describe('useSchedules with includeDeleted', () => {
+  it('passes include_deleted=true param when includeDeleted is true', async () => {
+    const qc = makeTestQueryClient()
+    let capturedParams: URLSearchParams | null = null
+    server.use(
+      http.get(`${TEST_BASE}/api/schedules`, ({ request }) => {
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json([makeSchedule()])
+      })
+    )
+
+    const { result } = renderHook(() => useSchedules(true), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(capturedParams!.get('include_deleted')).toBe('true')
   })
 })

@@ -207,7 +207,7 @@ describe('Instruments admin page', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /confirm me/i })).toBeInTheDocument()
-      expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument()
+      expect(screen.getByText(/admin can restore/i)).toBeInTheDocument()
     })
   })
 
@@ -403,7 +403,7 @@ describe('Instruments admin page', () => {
     )
 
     // Uncheck enabled
-    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('checkbox', { name: /^enabled$/i }))
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
     await waitFor(() => {
@@ -485,6 +485,92 @@ describe('Instruments admin page', () => {
 
     await waitFor(() => {
       expect(postedBody).toMatchObject({ name: 'Domain SA', domain: 'LAB' })
+    })
+  })
+
+  it('shows Restore button for deleted instrument', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([makeInstrument({ deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    renderWithProviders(<Instruments />)
+
+    await waitFor(() => {
+      const restoreButtons = screen.getAllByRole('button', { name: /^restore$/i })
+      expect(restoreButtons.length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  it('clicking Restore instrument button calls restore endpoint', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json([
+          makeInstrument({ id: 'inst-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
+        ])
+      )
+    )
+
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/instruments/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeInstrument())
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getAllByRole('button', { name: /^restore$/i }))
+    await user.click(screen.getAllByRole('button', { name: /^restore$/i })[0])
+
+    await waitFor(() => {
+      expect(restoredUrl).toBe('/api/instruments/inst-restore-id/restore')
+    })
+  })
+
+  it('shows Restore button for deleted service account', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    renderWithProviders(<Instruments />)
+
+    await waitFor(() => {
+      const restoreButtons = screen.getAllByRole('button', { name: /^restore$/i })
+      expect(restoreButtons.length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  it('clicking Restore service account button calls restore endpoint', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([
+          makeServiceAccount({ id: 'sa-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
+        ])
+      )
+    )
+
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/service-accounts/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeServiceAccount())
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => screen.getAllByRole('button', { name: /^restore$/i }))
+    await user.click(screen.getAllByRole('button', { name: /^restore$/i })[0])
+
+    await waitFor(() => {
+      expect(restoredUrl).toBe('/api/service-accounts/sa-restore-id/restore')
     })
   })
 

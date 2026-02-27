@@ -10,6 +10,7 @@ import {
   useCreateStorageLocation,
   useUpdateStorageLocation,
   useDeleteStorageLocation,
+  useRestoreStorageLocation,
 } from '@/hooks/useStorage'
 import { makeTestQueryClient } from '@/test/utils'
 
@@ -95,5 +96,43 @@ describe('useDeleteStorageLocation', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(deletedUrl).toBe('/api/storage-locations/storage-uuid-1')
     expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['storage'] }))
+  })
+})
+
+describe('useRestoreStorageLocation', () => {
+  it('sends POST to /api/storage-locations/:id/restore and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/storage-locations/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeStorageLocation())
+      })
+    )
+
+    const { result } = renderHook(() => useRestoreStorageLocation(), { wrapper: wrapper(qc) })
+    result.current.mutate('storage-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(restoredUrl).toBe('/api/storage-locations/storage-uuid-1/restore')
+    expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['storage'] }))
+  })
+})
+
+describe('useStorageLocations with includeDeleted', () => {
+  it('passes include_deleted=true param when includeDeleted is true', async () => {
+    const qc = makeTestQueryClient()
+    let capturedParams: URLSearchParams | null = null
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, ({ request }) => {
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json([makeStorageLocation()])
+      })
+    )
+
+    const { result } = renderHook(() => useStorageLocations(true), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(capturedParams!.get('include_deleted')).toBe('true')
   })
 })

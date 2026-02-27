@@ -4,15 +4,18 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeInstrument } from '@/mocks/handlers'
+import { TEST_BASE, makeInstrument, makeServiceAccount } from '@/mocks/handlers'
 import {
   useInstruments,
+  useServiceAccounts,
   useCreateInstrument,
   useUpdateInstrument,
   useDeleteInstrument,
+  useRestoreInstrument,
   useInstrument,
   useUpdateServiceAccount,
   useDeleteServiceAccount,
+  useRestoreServiceAccount,
 } from '@/hooks/useInstruments'
 import { makeTestQueryClient } from '@/test/utils'
 
@@ -186,5 +189,87 @@ describe('useDeleteInstrument', () => {
     expect(invalidateSpy).toHaveBeenCalledWith(
       expect.objectContaining({ queryKey: ['instruments'] })
     )
+  })
+})
+
+describe('useRestoreInstrument', () => {
+  it('sends POST to /api/instruments/:id/restore and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let restoredUrl: string | undefined
+
+    server.use(
+      http.post(`${TEST_BASE}/api/instruments/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeInstrument())
+      })
+    )
+
+    const { result } = renderHook(() => useRestoreInstrument(), { wrapper: wrapper(qc) })
+    result.current.mutate('inst-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(restoredUrl).toBe('/api/instruments/inst-uuid-1/restore')
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ['instruments'] })
+    )
+  })
+})
+
+describe('useRestoreServiceAccount', () => {
+  it('sends POST to /api/service-accounts/:id/restore and invalidates query', async () => {
+    const qc = makeTestQueryClient()
+    const invalidateSpy = vi.spyOn(qc, 'invalidateQueries')
+    let restoredUrl: string | undefined
+
+    server.use(
+      http.post(`${TEST_BASE}/api/service-accounts/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeServiceAccount())
+      })
+    )
+
+    const { result } = renderHook(() => useRestoreServiceAccount(), { wrapper: wrapper(qc) })
+    result.current.mutate('sa-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(restoredUrl).toBe('/api/service-accounts/sa-uuid-1/restore')
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ['service-accounts'] })
+    )
+  })
+})
+
+describe('useInstruments with includeDeleted', () => {
+  it('passes include_deleted=true param when includeDeleted is true', async () => {
+    const qc = makeTestQueryClient()
+    let capturedParams: URLSearchParams | null = null
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, ({ request }) => {
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json([makeInstrument()])
+      })
+    )
+
+    const { result } = renderHook(() => useInstruments(true), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(capturedParams!.get('include_deleted')).toBe('true')
+  })
+})
+
+describe('useServiceAccounts with includeDeleted', () => {
+  it('passes include_deleted=true param when includeDeleted is true', async () => {
+    const qc = makeTestQueryClient()
+    let capturedParams: URLSearchParams | null = null
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, ({ request }) => {
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json([makeServiceAccount()])
+      })
+    )
+
+    const { result } = renderHook(() => useServiceAccounts(true), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(capturedParams!.get('include_deleted')).toBe('true')
   })
 })

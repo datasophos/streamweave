@@ -4,11 +4,11 @@ import type { HarvestSchedule, HarvestScheduleCreate, HarvestScheduleUpdate } fr
 
 const KEY = ['schedules']
 
-export function useSchedules() {
+export function useSchedules(includeDeleted = false) {
   return useQuery({
-    queryKey: KEY,
+    queryKey: [...KEY, { includeDeleted }],
     queryFn: async () => {
-      const resp = await schedulesApi.list()
+      const resp = await schedulesApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as HarvestSchedule[]
     },
   })
@@ -35,6 +35,14 @@ export function useDeleteSchedule() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => schedulesApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useRestoreSchedule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => schedulesApi.restore(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }

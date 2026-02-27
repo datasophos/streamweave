@@ -119,6 +119,34 @@ async def test_delete_nonexistent_service_account(client: AsyncClient, admin_hea
 
 
 @pytest.mark.asyncio
+async def test_restore_service_account(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/service-accounts",
+        json={"name": "RestoreSA", "username": "rsa", "password": "pass123"},
+        headers=admin_headers,
+    )
+    sa_id = create_resp.json()["id"]
+    await client.delete(f"/api/service-accounts/{sa_id}", headers=admin_headers)
+    resp = await client.post(f"/api/service-accounts/{sa_id}/restore", headers=admin_headers)
+    assert resp.status_code == 200
+    assert resp.json()["id"] == sa_id
+
+
+@pytest.mark.asyncio
+async def test_restore_non_deleted_service_account_returns_404(
+    client: AsyncClient, admin_headers: dict
+):
+    create_resp = await client.post(
+        "/api/service-accounts",
+        json={"name": "ActiveSA", "username": "asa", "password": "pass123"},
+        headers=admin_headers,
+    )
+    sa_id = create_resp.json()["id"]
+    resp = await client.post(f"/api/service-accounts/{sa_id}/restore", headers=admin_headers)
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_non_admin_service_accounts_rejected(client: AsyncClient, regular_headers: dict):
     response = await client.get("/api/service-accounts", headers=regular_headers)
     assert response.status_code == 403

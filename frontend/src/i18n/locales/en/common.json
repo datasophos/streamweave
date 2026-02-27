@@ -13,5 +13,8 @@
   "name": "Name",
   "status": "Status",
   "actions": "Actions",
-  "delete_warning": "This action cannot be undone."
+  "delete_warning": "This item will be disabled. An admin can restore it later.",
+  "deleted": "Deleted",
+  "restore": "Restore",
+  "show_deleted": "Show deleted"
 }

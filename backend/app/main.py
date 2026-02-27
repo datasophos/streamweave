@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.access import router as access_router
+from app.api.audit import router as audit_router
 from app.api.files import router as files_router
 from app.api.groups import router as groups_router
 from app.api.hooks import router as hooks_router
@@ -54,6 +55,7 @@ def create_app() -> FastAPI:
     app.include_router(files_router, prefix="/api")
     app.include_router(access_router, prefix="/api")
     app.include_router(transfers_router, prefix="/api")
+    app.include_router(audit_router, prefix="/api")
 
     @app.get("/health")
     async def health():

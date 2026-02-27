@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { screen, waitFor } from '@testing-library/react'
-import { renderWithProviders } from '@/test/utils'
+import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE } from '@/mocks/handlers'
+import { TEST_BASE, makeAdminUser } from '@/mocks/handlers'
 import { Login } from '@/pages/Login'
 
 describe('Login page', () => {
@@ -126,6 +126,18 @@ describe('Login page', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
+  })
+
+  it('redirects to dashboard when already authenticated', async () => {
+    setupAuthToken()
+    server.use(http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeAdminUser())))
+
+    renderWithProviders(<Login />)
+
+    // When authenticated, the Login component returns <Navigate>, so the sign-in form disappears
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /sign in/i })).not.toBeInTheDocument()
     })
   })
 })

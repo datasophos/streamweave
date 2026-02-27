@@ -53,43 +53,50 @@ export const authApi = {
 
 // Resource endpoints
 export const instrumentsApi = {
-  list: () => apiClient.get('/api/instruments'),
+  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/instruments', { params }),
   get: (id: string) => apiClient.get(`/api/instruments/${id}`),
   create: (data: unknown) => apiClient.post('/api/instruments', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/instruments/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/instruments/${id}`),
+  restore: (id: string) => apiClient.post(`/api/instruments/${id}/restore`),
 }
 
 export const serviceAccountsApi = {
-  list: () => apiClient.get('/api/service-accounts'),
+  list: (params?: { include_deleted?: boolean }) =>
+    apiClient.get('/api/service-accounts', { params }),
   get: (id: string) => apiClient.get(`/api/service-accounts/${id}`),
   create: (data: unknown) => apiClient.post('/api/service-accounts', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/service-accounts/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/service-accounts/${id}`),
+  restore: (id: string) => apiClient.post(`/api/service-accounts/${id}/restore`),
 }
 
 export const storageApi = {
-  list: () => apiClient.get('/api/storage-locations'),
+  list: (params?: { include_deleted?: boolean }) =>
+    apiClient.get('/api/storage-locations', { params }),
   get: (id: string) => apiClient.get(`/api/storage-locations/${id}`),
   create: (data: unknown) => apiClient.post('/api/storage-locations', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/storage-locations/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/storage-locations/${id}`),
+  restore: (id: string) => apiClient.post(`/api/storage-locations/${id}/restore`),
 }
 
 export const schedulesApi = {
-  list: () => apiClient.get('/api/schedules'),
+  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/schedules', { params }),
   get: (id: string) => apiClient.get(`/api/schedules/${id}`),
   create: (data: unknown) => apiClient.post('/api/schedules', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/schedules/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/schedules/${id}`),
+  restore: (id: string) => apiClient.post(`/api/schedules/${id}/restore`),
 }
 
 export const hooksApi = {
-  list: () => apiClient.get('/api/hooks'),
+  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/hooks', { params }),
   get: (id: string) => apiClient.get(`/api/hooks/${id}`),
   create: (data: unknown) => apiClient.post('/api/hooks', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/hooks/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/hooks/${id}`),
+  restore: (id: string) => apiClient.post(`/api/hooks/${id}/restore`),
 }
 
 export const filesApi = {
@@ -103,10 +110,11 @@ export const transfersApi = {
 }
 
 export const usersApi = {
-  list: () => apiClient.get('/api/admin/users'),
+  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/admin/users', { params }),
   get: (id: string) => apiClient.get(`/users/${id}`),
   update: (id: string, data: unknown) => apiClient.patch(`/users/${id}`, data),
-  delete: (id: string) => apiClient.delete(`/users/${id}`),
+  delete: (id: string) => apiClient.delete(`/api/admin/users/${id}`),
+  restore: (id: string) => apiClient.post(`/api/admin/users/${id}/restore`),
 }
 
 export const projectsApi = {
@@ -123,4 +131,16 @@ export const meApi = {
 
 export const healthApi = {
   check: () => apiClient.get('/health'),
+}
+
+export const auditApi = {
+  list: (params?: {
+    entity_type?: string
+    action?: string
+    actor_id?: string
+    since?: string
+    until?: string
+    limit?: number
+    offset?: number
+  }) => apiClient.get('/api/admin/audit-logs', { params }),
 }

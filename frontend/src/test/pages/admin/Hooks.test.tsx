@@ -248,7 +248,7 @@ describe('Hooks admin page', () => {
     await user.type(priorityInput, '5')
 
     // Uncheck enabled
-    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('checkbox', { name: /^enabled$/i }))
 
     // Type in builtin name
     const builtinInput = screen.getByPlaceholderText(/nemo_status_check/i)
@@ -550,6 +550,49 @@ describe('Hooks admin page', () => {
 
     await waitFor(() => {
       expect(deletedUrl).toContain('/api/hooks/')
+    })
+  })
+
+  it('shows Deleted badge and Restore button for deleted hook', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks`, () =>
+        HttpResponse.json([makeHookConfig({ deleted_at: '2024-01-01T00:00:00Z' })])
+      )
+    )
+
+    renderWithProviders(<Hooks />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Deleted')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^restore$/i })).toBeInTheDocument()
+    })
+  })
+
+  it('clicking Restore button calls restore endpoint', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks`, () =>
+        HttpResponse.json([
+          makeHookConfig({ id: 'hook-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
+        ])
+      )
+    )
+
+    let restoredUrl: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/hooks/:id/restore`, ({ request }) => {
+        restoredUrl = new URL(request.url).pathname
+        return HttpResponse.json(makeHookConfig())
+      })
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => screen.getByRole('button', { name: /^restore$/i }))
+    await user.click(screen.getByRole('button', { name: /^restore$/i }))
+
+    await waitFor(() => {
+      expect(restoredUrl).toBe('/api/hooks/hook-restore-id/restore')
     })
   })
 

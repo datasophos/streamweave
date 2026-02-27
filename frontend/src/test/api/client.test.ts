@@ -262,3 +262,18 @@ describe('authApi.login', () => {
     expect(resp.data.access_token).toBe('test-token')
   })
 })
+
+describe('authApi.requestVerification', () => {
+  it('sends POST to /auth/request-verify-token', async () => {
+    let capturedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/auth/request-verify-token`, async ({ request }) => {
+        capturedBody = await request.json()
+        return new HttpResponse(null, { status: 202 })
+      })
+    )
+
+    await authApi.requestVerification('user@test.com')
+    expect((capturedBody as { email: string }).email).toBe('user@test.com')
+  })
+})

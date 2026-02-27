@@ -5,14 +5,17 @@ import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
+import { Toggle } from '@/components/Toggle'
 import {
   useInstruments,
   useCreateInstrument,
   useUpdateInstrument,
   useDeleteInstrument,
+  useRestoreInstrument,
   useServiceAccounts,
   useCreateServiceAccount,
   useDeleteServiceAccount,
+  useRestoreServiceAccount,
 } from '@/hooks/useInstruments'
 import type {
   Instrument,
@@ -343,15 +346,21 @@ export function Instruments() {
   const { t: tc } = useTranslation('common')
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
+  const [showDeletedInst, setShowDeletedInst] = useState(false)
+  const [showDeletedSA, setShowDeletedSA] = useState(false)
 
-  const { data: instruments = [], isLoading: loadingInstruments } = useInstruments()
-  const { data: serviceAccounts = [] } = useServiceAccounts()
+  const { data: instruments = [], isLoading: loadingInstruments } = useInstruments(showDeletedInst)
+  const { data: serviceAccounts = [] } = useServiceAccounts(showDeletedSA)
+  // For the service account selector in the instrument form, always fetch active only
+  const { data: activeSAs = [] } = useServiceAccounts(false)
 
   const createInst = useCreateInstrument()
   const updateInst = useUpdateInstrument()
   const deleteInst = useDeleteInstrument()
+  const restoreInst = useRestoreInstrument()
   const createSA = useCreateServiceAccount()
   const deleteSA = useDeleteServiceAccount()
+  const restoreSA = useRestoreServiceAccount()
 
   const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
 
@@ -370,7 +379,9 @@ export function Instruments() {
     {
       header: tc('status'),
       render: (row: Instrument) =>
-        row.enabled ? (
+        row.deleted_at ? (
+          <span className="badge-gray">{tc('deleted')}</span>
+        ) : row.enabled ? (
           <span className="badge-green">{tc('enabled')}</span>
         ) : (
           <span className="badge-gray">{tc('disabled')}</span>
@@ -378,22 +389,27 @@ export function Instruments() {
     },
     {
       header: tc('actions'),
-      render: (row: Instrument) => (
-        <div className="flex gap-2">
-          <button
-            className="btn btn-sm btn-secondary"
-            onClick={() => setModal({ kind: 'editInstrument', instrument: row })}
-          >
-            {tc('edit')}
+      render: (row: Instrument) =>
+        row.deleted_at ? (
+          <button className="btn btn-sm btn-secondary" onClick={() => restoreInst.mutate(row.id)}>
+            {tc('restore')}
           </button>
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => setModal({ kind: 'confirmDeleteInstrument', instrument: row })}
-          >
-            {tc('delete')}
-          </button>
-        </div>
-      ),
+        ) : (
+          <div className="flex gap-2">
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setModal({ kind: 'editInstrument', instrument: row })}
+            >
+              {tc('edit')}
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => setModal({ kind: 'confirmDeleteInstrument', instrument: row })}
+            >
+              {tc('delete')}
+            </button>
+          </div>
+        ),
     },
   ]
 
@@ -407,14 +423,19 @@ export function Instruments() {
     },
     {
       header: tc('actions'),
-      render: (sa: ServiceAccount) => (
-        <button
-          className="btn btn-sm btn-danger"
-          onClick={() => setModal({ kind: 'confirmDeleteServiceAccount', sa })}
-        >
-          {tc('delete')}
-        </button>
-      ),
+      render: (sa: ServiceAccount) =>
+        sa.deleted_at ? (
+          <button className="btn btn-sm btn-secondary" onClick={() => restoreSA.mutate(sa.id)}>
+            {tc('restore')}
+          </button>
+        ) : (
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => setModal({ kind: 'confirmDeleteServiceAccount', sa })}
+          >
+            {tc('delete')}
+          </button>
+        ),
     },
   ]
 
@@ -439,29 +460,50 @@ export function Instruments() {
       />
 
       <div className="card p-0 overflow-hidden mb-8">
-        <div className="px-4 py-4 border-b border-sw-border">
+        <div className="px-4 py-4 border-b border-sw-border flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
             <span>🔬</span>
             {t('instruments_section')}
           </h2>
+          <Toggle
+            id="show-deleted-inst"
+            checked={showDeletedInst}
+            onChange={setShowDeletedInst}
+            label={tc('show_deleted')}
+          />
         </div>
-        <Table columns={instrumentColumns} data={instruments} isLoading={loadingInstruments} />
+        <Table
+          columns={instrumentColumns}
+          data={instruments}
+          isLoading={loadingInstruments}
+          rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+        />
       </div>
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-4 py-4 border-b border-sw-border">
+        <div className="px-4 py-4 border-b border-sw-border flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
             <span>🔑</span>
             {t('service_accounts_section')}
           </h2>
+          <Toggle
+            id="show-deleted-sa"
+            checked={showDeletedSA}
+            onChange={setShowDeletedSA}
+            label={tc('show_deleted')}
+          />
         </div>
-        <Table columns={saColumns} data={serviceAccounts} />
+        <Table
+          columns={saColumns}
+          data={serviceAccounts}
+          rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+        />
       </div>
 
       {modal.kind === 'createInstrument' && (
         <Modal title={t('modal_new_instrument')} onClose={close}>
           <InstrumentForm
-            serviceAccounts={serviceAccounts}
+            serviceAccounts={activeSAs}
             onSubmit={(data) => createInst.mutate(data, { onSuccess: close })}
             onCancel={close}
             isLoading={createInst.isPending}
@@ -474,7 +516,7 @@ export function Instruments() {
         <Modal title={t('modal_edit_instrument')} onClose={close}>
           <InstrumentForm
             initial={modal.instrument}
-            serviceAccounts={serviceAccounts}
+            serviceAccounts={activeSAs}
             onSubmit={(data) =>
               updateInst.mutate({ id: modal.instrument.id, data }, { onSuccess: close })
             }

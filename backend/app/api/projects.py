@@ -1,10 +1,12 @@
 import uuid
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.models.audit import AuditAction
 from app.models.project import Project, ProjectMembership
 from app.models.user import User
 from app.schemas.project import (
@@ -14,16 +16,21 @@ from app.schemas.project import (
     ProjectRead,
     ProjectUpdate,
 )
+from app.services.audit import log_action
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.get("", response_model=list[ProjectRead])
 async def list_projects(
+    include_deleted: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    result = await db.execute(select(Project))
+    stmt = select(Project)
+    if not include_deleted:
+        stmt = stmt.where(Project.deleted_at.is_(None))
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 
@@ -31,10 +38,12 @@ async def list_projects(
 async def create_project(
     data: ProjectCreate,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    actor: User = Depends(require_admin),
 ):
     project = Project(**data.model_dump())
     db.add(project)
+    await db.flush()
+    await log_action(db, "project", project.id, AuditAction.create, actor)
     await db.commit()
     await db.refresh(project)
     return project
@@ -47,7 +56,7 @@ async def get_project(
     _: User = Depends(require_admin),
 ):
     project = await db.get(Project, project_id)
-    if not project:
+    if not project or project.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
 
@@ -57,13 +66,17 @@ async def update_project(
     project_id: uuid.UUID,
     data: ProjectUpdate,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    actor: User = Depends(require_admin),
 ):
     project = await db.get(Project, project_id)
-    if not project:
+    if not project or project.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Project not found")
+    changes: dict = {}
     for key, value in data.model_dump(exclude_unset=True).items():
+        before = getattr(project, key)
         setattr(project, key, value)
+        changes[key] = {"before": before, "after": value}
+    await log_action(db, "project", project.id, AuditAction.update, actor, changes)
     await db.commit()
     await db.refresh(project)
     return project
@@ -73,13 +86,30 @@ async def update_project(
 async def delete_project(
     project_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(require_admin),
+    actor: User = Depends(require_admin),
 ):
     project = await db.get(Project, project_id)
-    if not project:
+    if not project or project.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Project not found")
-    await db.delete(project)
+    project.deleted_at = datetime.now(UTC)
+    await log_action(db, "project", project.id, AuditAction.delete, actor)
     await db.commit()
+
+
+@router.post("/{project_id}/restore", response_model=ProjectRead)
+async def restore_project(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    actor: User = Depends(require_admin),
+):
+    project = await db.get(Project, project_id)
+    if not project or project.deleted_at is None:
+        raise HTTPException(status_code=404, detail="Deleted project not found")
+    project.deleted_at = None
+    await log_action(db, "project", project.id, AuditAction.restore, actor)
+    await db.commit()
+    await db.refresh(project)
+    return project
 
 
 @router.get("/{project_id}/members", response_model=list[ProjectMemberRead])

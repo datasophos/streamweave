@@ -11,6 +11,7 @@
   "admin_schedules": "计划",
   "admin_hooks": "钩子",
   "admin_users": "用户",
+  "admin_audit_log": "审计日志",
   "section_browse": "浏览",
   "section_my_work": "我的工作",
   "footer": "StreamWeave — 科学数据采集，简便高效",

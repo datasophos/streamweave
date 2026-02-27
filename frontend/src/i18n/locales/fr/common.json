@@ -13,5 +13,8 @@
   "name": "Nom",
   "status": "Statut",
   "actions": "Actions",
-  "delete_warning": "Cette action est irréversible."
+  "delete_warning": "Cet élément sera désactivé. Un administrateur pourra le restaurer ultérieurement.",
+  "deleted": "Supprimé",
+  "restore": "Restaurer",
+  "show_deleted": "Afficher les supprimés"
 }

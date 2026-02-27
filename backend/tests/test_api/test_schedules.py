@@ -319,6 +319,18 @@ class TestSchedulesCRUD:
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
+    async def test_restore_schedule(self, client, admin_headers, schedule):
+        await client.delete(f"/api/schedules/{schedule.id}", headers=admin_headers)
+        resp = await client.post(f"/api/schedules/{schedule.id}/restore", headers=admin_headers)
+        assert resp.status_code == 200
+        assert resp.json()["id"] == str(schedule.id)
+
+    @pytest.mark.asyncio
+    async def test_restore_non_deleted_schedule_returns_404(self, client, admin_headers, schedule):
+        resp = await client.post(f"/api/schedules/{schedule.id}/restore", headers=admin_headers)
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
     async def test_non_admin_rejected(self, client, regular_headers):
         resp = await client.get("/api/schedules", headers=regular_headers)
         assert resp.status_code == 403

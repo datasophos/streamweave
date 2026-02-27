@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { hooksApi } from '@/api/client'
 import type { HookConfig, HookConfigCreate, HookConfigUpdate } from '@/api/types'
 
@@ -11,6 +11,7 @@ export function useHookConfigs(includeDeleted = false) {
       const resp = await hooksApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as HookConfig[]
     },
+    placeholderData: keepPreviousData,
   })
 }
 

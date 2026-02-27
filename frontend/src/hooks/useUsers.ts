@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { usersApi, authApi } from '@/api/client'
 import type { User, UserCreate, UserUpdate } from '@/api/types'
 
@@ -11,6 +11,7 @@ export function useUsers(includeDeleted = false) {
       const resp = await usersApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as User[]
     },
+    placeholderData: keepPreviousData,
   })
 }
 

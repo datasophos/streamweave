@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { schedulesApi } from '@/api/client'
 import type { HarvestSchedule, HarvestScheduleCreate, HarvestScheduleUpdate } from '@/api/types'
 
@@ -11,6 +11,7 @@ export function useSchedules(includeDeleted = false) {
       const resp = await schedulesApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as HarvestSchedule[]
     },
+    placeholderData: keepPreviousData,
   })
 }
 

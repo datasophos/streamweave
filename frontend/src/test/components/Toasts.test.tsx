@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ToastProvider, useToast } from '@/contexts/ToastContext'
+import { ToastProvider } from '@/contexts/ToastProvider'
+import { useToast } from '@/hooks/useToast'
 import { Toasts } from '@/components/Toasts'
 
 function ToastTrigger({ message, type }: { message: string; type?: 'success' | 'error' | 'info' }) {

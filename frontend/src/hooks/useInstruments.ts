@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { instrumentsApi, serviceAccountsApi } from '@/api/client'
 import type {
   Instrument,
@@ -19,6 +19,7 @@ export function useInstruments(includeDeleted = false) {
       const resp = await instrumentsApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as Instrument[]
     },
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -88,6 +89,7 @@ export function useServiceAccounts(includeDeleted = false) {
       )
       return resp.data as ServiceAccount[]
     },
+    placeholderData: keepPreviousData,
   })
 }
 

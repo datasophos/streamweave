@@ -155,6 +155,10 @@ export const handlers = [
     HttpResponse.json({ access_token: 'test-token', token_type: 'bearer' })
   ),
   http.post(`${TEST_BASE}/auth/jwt/logout`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${TEST_BASE}/auth/forgot-password`, () => new HttpResponse(null, { status: 202 })),
+  http.post(`${TEST_BASE}/auth/reset-password`, () =>
+    HttpResponse.json({ detail: 'RESET_PASSWORD_INVALID_PASSWORD' }, { status: 400 })
+  ),
   http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeUser())),
 
   // Admin users list

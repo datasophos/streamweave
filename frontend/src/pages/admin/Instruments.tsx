@@ -318,7 +318,7 @@ function ServiceAccountForm({
         <input
           id="sa-domain"
           className="input"
-          value={form.domain ?? ''}
+          value={form.domain}
           onChange={(e) => set('domain', e.target.value)}
         />
       </div>
@@ -550,7 +550,6 @@ export function Instruments() {
             {t('instruments_section')}
           </h2>
           <Toggle
-            id="show-deleted-inst"
             checked={showDeletedInst}
             onChange={setShowDeletedInst}
             label={tc('show_deleted')}
@@ -570,12 +569,7 @@ export function Instruments() {
             <span>🔑</span>
             {t('service_accounts_section')}
           </h2>
-          <Toggle
-            id="show-deleted-sa"
-            checked={showDeletedSA}
-            onChange={setShowDeletedSA}
-            label={tc('show_deleted')}
-          />
+          <Toggle checked={showDeletedSA} onChange={setShowDeletedSA} label={tc('show_deleted')} />
         </div>
         <Table
           columns={saColumns}

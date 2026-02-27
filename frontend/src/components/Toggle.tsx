@@ -6,17 +6,16 @@ interface ToggleProps {
 }
 
 export function Toggle({ checked, onChange, label, id }: ToggleProps) {
-  const inputId = id ?? `toggle-${label.replace(/\s+/g, '-').toLowerCase()}`
   return (
-    <label htmlFor={inputId} className="flex items-center gap-2 cursor-pointer select-none group">
+    <label className="flex items-center gap-2 cursor-pointer select-none group">
       <span className="text-sm text-sw-fg-muted group-hover:text-sw-fg transition-colors">
         {label}
       </span>
-      <div className="relative">
+      <div className="relative w-9 h-5">
         <input
-          id={inputId}
+          id={id}
           type="checkbox"
-          className="sr-only"
+          className="opacity-0 absolute inset-0 w-full h-full cursor-pointer m-0"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
         />
@@ -26,7 +25,7 @@ export function Toggle({ checked, onChange, label, id }: ToggleProps) {
           }`}
         />
         <div
-          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+          className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 pointer-events-none ${
             checked ? 'translate-x-4' : 'translate-x-0'
           }`}
         />

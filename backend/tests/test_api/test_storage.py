@@ -447,3 +447,97 @@ async def test_regular_user_cannot_delete_storage_location(
     loc_id = create_resp.json()["id"]
     response = await client.delete(f"/api/storage-locations/{loc_id}", headers=regular_headers)
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_update_connection_config_null_hits_existing_config_branch(
+    client: AsyncClient, admin_headers: dict
+):
+    """_apply_sensitive_update: update_config=None returns existing_config unchanged (line 45).
+
+    Sending connection_config=null in the PATCH body causes update_dict to contain
+    {"connection_config": None}, which calls _apply_sensitive_update with None as
+    the update_config argument, hitting the early-return on line 45.
+    """
+    create_resp = await client.post(
+        "/api/storage-locations",
+        json={
+            "name": "S3 NullConfig",
+            "type": "s3",
+            "base_path": "s3://bucket/data",
+            "connection_config": S3_CONFIG,
+        },
+        headers=admin_headers,
+    )
+    assert create_resp.status_code == 201
+    loc_id = create_resp.json()["id"]
+
+    resp = await client.patch(
+        f"/api/storage-locations/{loc_id}",
+        json={"connection_config": None},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    # Existing config preserved — sensitive field still masked
+    assert resp.json()["connection_config"]["secret_access_key"] == "****"
+
+
+@pytest.mark.asyncio
+async def test_update_sensitive_field_with_new_value(client: AsyncClient, admin_headers: dict):
+    """_apply_sensitive_update: non-masked sensitive value gets re-encrypted (line 52).
+
+    Sending a real new secret (not "****") in connection_config hits the encrypt_value
+    branch instead of the preserve-masked branch.
+    """
+    create_resp = await client.post(
+        "/api/storage-locations",
+        json={
+            "name": "S3 Rotate",
+            "type": "s3",
+            "base_path": "s3://bucket/rotate",
+            "connection_config": S3_CONFIG,
+        },
+        headers=admin_headers,
+    )
+    assert create_resp.status_code == 201
+    loc_id = create_resp.json()["id"]
+
+    # Send a real new secret — not the masked placeholder — to exercise line 52
+    resp = await client.patch(
+        f"/api/storage-locations/{loc_id}",
+        json={"connection_config": {**S3_CONFIG, "secret_access_key": "brand-new-secret-key"}},
+        headers=admin_headers,
+    )
+    assert resp.status_code == 200
+    # New secret was accepted and is masked in the response
+    assert resp.json()["connection_config"]["secret_access_key"] == "****"
+
+
+@pytest.mark.asyncio
+async def test_test_connection_unknown_type_returns_ok(
+    client: AsyncClient, admin_headers: dict, db_session
+):
+    """test_storage_location else branch: unknown storage type returns ok (line 203).
+
+    The API schema only accepts known StorageType values, so we insert a row
+    directly into the DB with type="custom" to reach the else branch.
+    """
+    import uuid as _uuid
+
+    from app.models.storage import StorageLocation
+
+    loc = StorageLocation(
+        id=_uuid.uuid4(),
+        name="Custom Type",
+        type="custom",  # type: ignore[arg-type]
+        base_path="/mnt/custom",
+        enabled=True,
+        connection_config=None,
+    )
+    db_session.add(loc)
+    await db_session.flush()
+
+    resp = await client.get(f"/api/storage-locations/{loc.id}/test", headers=admin_headers)
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+    assert resp.json()["type"] == "custom"

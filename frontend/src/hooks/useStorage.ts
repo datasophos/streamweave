@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { storageApi } from '@/api/client'
 import type { StorageLocation, StorageLocationCreate, StorageLocationUpdate } from '@/api/types'
 
@@ -11,6 +11,7 @@ export function useStorageLocations(includeDeleted = false) {
       const resp = await storageApi.list(includeDeleted ? { include_deleted: true } : undefined)
       return resp.data as StorageLocation[]
     },
+    placeholderData: keepPreviousData,
   })
 }
 

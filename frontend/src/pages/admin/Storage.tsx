@@ -6,6 +6,7 @@ import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import { Toggle } from '@/components/Toggle'
+import { useToast } from '@/contexts/ToastContext'
 import {
   useStorageLocations,
   useCreateStorageLocation,
@@ -362,7 +363,7 @@ export function Storage() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
-  const [testResult, setTestResult] = useState<{ id: string; ok: boolean } | null>(null)
+  const { showToast } = useToast()
 
   const { data: locations = [], isLoading } = useStorageLocations(showDeleted)
   const create = useCreateStorageLocation()
@@ -373,8 +374,11 @@ export function Storage() {
 
   const handleTest = (id: string) => {
     testConn.mutate(id, {
-      onSuccess: () => setTestResult({ id, ok: true }),
-      onError: () => setTestResult({ id, ok: false }),
+      onSuccess: () => showToast(t('test_ok'), 'success'),
+      onError: (err) => {
+        const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+        showToast(msg ?? tc('error_default'), 'error')
+      },
     })
   }
 
@@ -423,17 +427,9 @@ export function Storage() {
             >
               {t('test_connection')}
             </button>
-            {testResult?.id === row.id && (
-              <span className={testResult.ok ? 'text-green-600 text-sm' : 'text-red-600 text-sm'}>
-                {testResult.ok ? t('test_ok') : tc('error_default')}
-              </span>
-            )}
             <button
               className="btn btn-sm btn-secondary"
-              onClick={() => {
-                setTestResult(null)
-                setModal({ kind: 'edit', location: row })
-              }}
+              onClick={() => setModal({ kind: 'edit', location: row })}
             >
               {tc('edit')}
             </button>

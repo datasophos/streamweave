@@ -1,0 +1,30 @@
+Instrument: Thermo Orbitrap Exploris 480
+Method: DDA_HCD_TopN
+Date: 2026-01-15 09:30:00
+Operator: proteomics
+
+[Source]
+Spray Voltage: 2000 V
+Ion Transfer Tube Temp: 275 C
+Sheath Gas: 35
+Aux Gas: 10
+
+[Full Scan MS1]
+Resolution: 120000
+AGC Target: 3e6
+Max IT: 50 ms
+Scan Range: 375-1500 m/z
+
+[Data-Dependent MS2]
+TopN: 20
+HCD Collision Energy: 28%
+Resolution: 15000
+AGC Target: 1e5
+Max IT: 22 ms
+Dynamic Exclusion: 30 s
+
+[Sample]
+Name: HeLa cell digest (1 ug)
+Prep: In-solution trypsin digest
+LC Column: 25cm x 75um Acclaim PepMap C18
+Gradient: 5-35% ACN/0.1% FA, 90 min

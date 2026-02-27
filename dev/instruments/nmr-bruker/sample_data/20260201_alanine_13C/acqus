@@ -1,0 +1,23 @@
+##TITLE= Parameter file, XWIN-NMR		Version 4.1
+##JCAMP-DX= 5.0  $$ Bruker JCAMP library
+##DATA TYPE= Parameter Values
+##ORIGIN= Bruker BioSpin GmbH
+##OWNER= nmruser
+$$ 2026-02-01T14:15:03Z
+##$BF1= 150.90
+##$DATE= 1738415703
+##$DS= 4
+##$EXP= <zgpg30>
+##$NS= 1024
+##$NUC1= <13C>
+##$O1= 11286.0
+##$PROBHD= <5 mm CPDUL 13C-1H/D Z-GRD>
+##$PULPROG= <zgpg30>
+##$RG= 203.0
+##$SFO1= 150.9112860
+##$SOLVENT= <D2O>
+##$SW= 238.935
+##$SW_h= 36075.04
+##$TD= 65536
+##$TE= 298.0
+##END=

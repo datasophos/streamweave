@@ -1,0 +1,23 @@
+Session: 2026-01-15
+Instrument: FEI Titan Themis 300
+Operator: em-operator
+Accelerating Voltage: 300 kV
+Gun: XFEG
+Cs corrector: DCOR (probe)
+Detector: Fischione HAADF, BF
+
+Sample: Gold nanoparticles on carbon film
+Preparation: Drop-cast from aqueous suspension (citrate-stabilized, ~10 nm)
+Grid: Quantifoil R1.2/1.3, 200 mesh Cu
+
+Acquisition:
+  HAADF convergence: 21.4 mrad
+  HAADF inner/outer: 73 / 200 mrad
+  Probe current: ~50 pA
+  Pixel dwell: 10 us
+  Image size: 512 x 512 px
+  Pixel size: 0.048 nm
+
+Tomography (tomo_001.mrc):
+  Tilt range: -70 to +70 deg, 2 deg step
+  Reconstruction: SIRT 30 iterations

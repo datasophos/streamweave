@@ -5,6 +5,81 @@ services:
       - "8025:8025"   # Web UI
       - "1025:1025"   # SMTP
 
+  # S3-compatible object storage backed by rclone (Apache 2.0)
+  # Endpoint: http://localhost:9000  Access key: devkey  Secret: devsecret
+  s3-dev:
+    image: rclone/rclone:latest
+    command: >
+      serve s3 /data
+      --addr :9000
+      --auth-key devkey,devsecret
+      --vfs-cache-mode full
+    ports:
+      - "9000:9000"
+    volumes:
+      - s3_data:/data
+
+  # ── Instrument data sources (one Samba server per instrument) ────────────
+  # Each serves local sample_data/ as a CIFS share — mimics real lab instruments.
+  # Instruments point their cifs_host at these containers.
+
+  nmr-bruker:
+    image: dperson/samba:latest
+    environment:
+      USER: "devuser;devpass"
+      SHARE: "nmr;/data;yes;no;no;devuser"
+      WORKGROUP: WORKGROUP
+    volumes:
+      - ./dev/instruments/nmr-bruker/sample_data:/data:ro
+    ports:
+      - "4461:445"
+
+  hplc-waters:
+    image: dperson/samba:latest
+    environment:
+      USER: "devuser;devpass"
+      SHARE: "hplc;/data;yes;no;no;devuser"
+      WORKGROUP: WORKGROUP
+    volumes:
+      - ./dev/instruments/hplc-waters/sample_data:/data:ro
+    ports:
+      - "4462:445"
+
+  ms-orbitrap:
+    image: dperson/samba:latest
+    environment:
+      USER: "devuser;devpass"
+      SHARE: "ms;/data;yes;no;no;devuser"
+      WORKGROUP: WORKGROUP
+    volumes:
+      - ./dev/instruments/ms-orbitrap/sample_data:/data:ro
+    ports:
+      - "4463:445"
+
+  tem-titan:
+    image: dperson/samba:latest
+    environment:
+      USER: "devuser;devpass"
+      SHARE: "tem;/data;yes;no;no;devuser"
+      WORKGROUP: WORKGROUP
+    volumes:
+      - ./dev/instruments/tem-titan/sample_data:/data:ro
+    ports:
+      - "4464:445"
+
+  # ── Archive destination ───────────────────────────────────────────────────
+  # Separate Samba share used as the CIFS storage location target.
+  samba-archive:
+    image: dperson/samba:latest
+    ports:
+      - "445:445"
+    environment:
+      USER: "devuser;devpass"
+      SHARE: "archive;/share;yes;no;no;devuser"
+      WORKGROUP: WORKGROUP
+    volumes:
+      - samba_data:/share
+
   api:
     build:
       context: ./backend
@@ -36,6 +111,29 @@ services:
       sh -c "alembic upgrade head &&
              python ensure_admin.py &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+
+  # Seeds realistic example data once the API is healthy.
+  # Re-running is safe — existing resources are skipped.
+  dev-seed:
+    build:
+      context: ./backend
+    environment:
+      API_URL: http://api:8000
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpassword}
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - ./dev:/seed
+    command: python /seed/seed.py
+    restart: "no"
 
   worker:
     build:
@@ -81,3 +179,5 @@ services:
 
 volumes:
   harvest_data:
+  s3_data:
+  samba_data:

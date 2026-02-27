@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PreferencesProvider } from '@/contexts/PreferencesContext'
+import { ToastProvider } from '@/contexts/ToastContext'
+import { Toasts } from '@/components/Toasts'
 import type { ReactNode } from 'react'
 import '@/i18n/config'
 
@@ -36,9 +38,12 @@ export function renderWithProviders(
     return (
       <QueryClientProvider client={queryClient}>
         <PreferencesProvider>
-          <MemoryRouter {...routerProps}>
-            <AuthProvider>{children}</AuthProvider>
-          </MemoryRouter>
+          <ToastProvider>
+            <MemoryRouter {...routerProps}>
+              <AuthProvider>{children}</AuthProvider>
+            </MemoryRouter>
+            <Toasts />
+          </ToastProvider>
         </PreferencesProvider>
       </QueryClientProvider>
     )

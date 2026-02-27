@@ -67,7 +67,8 @@ export const serviceAccountsApi = {
   get: (id: string) => apiClient.get(`/api/service-accounts/${id}`),
   create: (data: unknown) => apiClient.post('/api/service-accounts', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/service-accounts/${id}`, data),
-  getPassword: (id: string) => apiClient.get<{ password: string }>(`/api/service-accounts/${id}/password`),
+  getPassword: (id: string) =>
+    apiClient.get<{ password: string }>(`/api/service-accounts/${id}/password`),
   delete: (id: string) => apiClient.delete(`/api/service-accounts/${id}`),
   restore: (id: string) => apiClient.post(`/api/service-accounts/${id}/restore`),
 }

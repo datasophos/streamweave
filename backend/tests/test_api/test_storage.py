@@ -1,4 +1,5 @@
 import uuid
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -195,7 +196,11 @@ async def test_test_connection_posix(client: AsyncClient, admin_headers: dict):
         headers=admin_headers,
     )
     loc_id = create_resp.json()["id"]
-    resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
+    with patch(
+        "app.services.storage_test.test_posix",
+        new=AsyncMock(return_value=(True, "ok")),
+    ):
+        resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
 
@@ -213,9 +218,74 @@ async def test_test_connection_s3(client: AsyncClient, admin_headers: dict):
         headers=admin_headers,
     )
     loc_id = create_resp.json()["id"]
-    resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
+    with patch(
+        "app.services.storage_test.test_s3",
+        new=AsyncMock(return_value=(True, "ok")),
+    ):
+        resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_test_connection_cifs(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/storage-locations",
+        json={
+            "name": "CIFS Test",
+            "type": "cifs",
+            "base_path": "/mnt/cifs",
+            "connection_config": CIFS_CONFIG,
+        },
+        headers=admin_headers,
+    )
+    loc_id = create_resp.json()["id"]
+    with patch(
+        "app.services.storage_test.test_cifs",
+        new=AsyncMock(return_value=(True, "ok")),
+    ):
+        resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_test_connection_nfs(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/storage-locations",
+        json={
+            "name": "NFS Test",
+            "type": "nfs",
+            "base_path": "/mnt/nfs",
+            "connection_config": NFS_CONFIG,
+        },
+        headers=admin_headers,
+    )
+    loc_id = create_resp.json()["id"]
+    with patch(
+        "app.services.storage_test.test_nfs",
+        new=AsyncMock(return_value=(True, "ok")),
+    ):
+        resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_test_connection_failure_returns_502(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/storage-locations",
+        json={"name": "Fail Test", "type": "posix", "base_path": "/no/such/path"},
+        headers=admin_headers,
+    )
+    loc_id = create_resp.json()["id"]
+    with patch(
+        "app.services.storage_test.test_posix",
+        new=AsyncMock(return_value=(False, "Path does not exist: /no/such/path")),
+    ):
+        resp = await client.get(f"/api/storage-locations/{loc_id}/test", headers=admin_headers)
+    assert resp.status_code == 502
+    assert "Path does not exist" in resp.json()["detail"]
 
 
 @pytest.mark.asyncio

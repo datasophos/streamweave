@@ -1,0 +1,22 @@
+##TITLE= Parameter file, XWIN-NMR		Version 4.1
+##JCAMP-DX= 5.0  $$ Bruker JCAMP library
+##DATA TYPE= Parameter Values
+##ORIGIN= Bruker BioSpin GmbH
+##OWNER= nmruser
+$$ 2026-01-15T09:48:22Z
+##$BYTORDP= 0
+##$FT_mod= 6
+##$LB= 0.30
+##$MC2= 0
+##$OFFSET= 10.000000000
+##$PHC0= -124.285
+##$PHC1= 0.000
+##$SI= 32768
+##$SF= 600.1300000
+##$SSB= 0
+##$STSR= 0
+##$STSI= 0
+##$TDeff= 65536
+##$WDW= 1
+##$XDIM= 0
+##END=

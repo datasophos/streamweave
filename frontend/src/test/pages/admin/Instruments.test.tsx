@@ -642,7 +642,9 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/service-accounts`, () =>
-        HttpResponse.json([makeServiceAccount({ name: 'Lab SA', username: 'labuser', domain: 'LAB' })])
+        HttpResponse.json([
+          makeServiceAccount({ name: 'Lab SA', username: 'labuser', domain: 'LAB' }),
+        ])
       ),
       http.get(`${TEST_BASE}/api/service-accounts/:id/password`, () =>
         HttpResponse.json({ password: 'stored-pass' })

@@ -1,0 +1,27 @@
+Instrument: Thermo Orbitrap Exploris 480
+Method: DDA_HCD_TopN_deep
+Date: 2026-02-01 08:00:00
+Operator: proteomics
+
+[Source]
+Spray Voltage: 1800 V
+Ion Transfer Tube Temp: 275 C
+Sheath Gas: 30
+
+[Full Scan MS1]
+Resolution: 60000
+AGC Target: 1e6
+Max IT: 50 ms
+Scan Range: 350-1600 m/z
+
+[Data-Dependent MS2]
+TopN: 15
+HCD Collision Energy: 30%
+Resolution: 15000
+Dynamic Exclusion: 45 s
+
+[Sample]
+Name: S. cerevisiae BY4741 whole-cell lysate (2 ug)
+Prep: FASP trypsin digest
+LC Column: 50cm x 75um PepMap C18
+Gradient: 5-40% ACN/0.1% FA, 180 min

@@ -1,0 +1,17 @@
+Session: 2026-02-01
+Instrument: FEI Titan Themis 300
+Operator: em-operator
+Accelerating Voltage: 300 kV
+
+Sample: ZnO nanowires on lacey carbon
+Preparation: Sonication in ethanol, drop-cast
+Grid: Lacey carbon, 300 mesh Cu
+
+Acquisition:
+  Mode: STEM-HAADF + selected area diffraction
+  HAADF pixel size: 0.072 nm
+  Diffraction camera length: 230 mm
+  SAED aperture: 200 um
+
+Notes: Wurtzite phase confirmed by diffraction pattern.
+       Nanowire diameter range: 80-150 nm, length 2-8 um.

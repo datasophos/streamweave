@@ -472,7 +472,7 @@ describe('Storage admin page', () => {
     expect(screen.queryByLabelText(/export path \*/i)).not.toBeInTheDocument()
   })
 
-  it('Test Connection button calls test endpoint and shows OK result', async () => {
+  it('Test Connection button calls test endpoint and shows success toast', async () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
@@ -488,18 +488,19 @@ describe('Storage admin page', () => {
     await user.click(screen.getByRole('button', { name: /test connection/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/connection ok/i)).toBeInTheDocument()
+      const toast = screen.getByRole('alert')
+      expect(toast).toHaveTextContent(/connection ok/i)
     })
   })
 
-  it('Test Connection error shows error message', async () => {
+  it('Test Connection error shows error toast with API detail message', async () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
         HttpResponse.json([makeStorageLocation({ id: 'sl-err-id' })])
       ),
       http.get(`${TEST_BASE}/api/storage-locations/:id/test`, () =>
-        HttpResponse.json({ detail: 'Connection refused' }, { status: 409 })
+        HttpResponse.json({ detail: 'Connection refused' }, { status: 502 })
       )
     )
 
@@ -508,7 +509,32 @@ describe('Storage admin page', () => {
     await user.click(screen.getByRole('button', { name: /test connection/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/an error occurred/i)).toBeInTheDocument()
+      const toast = screen.getByRole('alert')
+      expect(toast).toHaveTextContent(/connection refused/i)
+    })
+  })
+
+  it('Test Connection error falls back to default message when no detail', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([makeStorageLocation({ id: 'sl-nodetail-id' })])
+      ),
+      http.get(
+        `${TEST_BASE}/api/storage-locations/:id/test`,
+        () =>
+          // 500 with no body detail — tests the msg ?? tc('error_default') fallback
+          new HttpResponse(null, { status: 500 })
+      )
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /test connection/i }))
+    await user.click(screen.getByRole('button', { name: /test connection/i }))
+
+    await waitFor(() => {
+      const toast = screen.getByRole('alert')
+      expect(toast).toHaveTextContent(/an error occurred/i)
     })
   })
 

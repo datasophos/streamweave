@@ -18,8 +18,9 @@ from app.schemas.storage import (
     StorageLocationUpdate,
     mask_sensitive,
 )
+from app.services import storage_test as _storage_test
 from app.services.audit import log_action
-from app.services.credentials import decrypt_value, encrypt_value
+from app.services.credentials import encrypt_value
 
 router = APIRouter(prefix="/storage-locations", tags=["storage"])
 
@@ -180,27 +181,27 @@ async def test_storage_location(
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
-    """Validate that a storage location's connection config is complete and well-formed."""
+    """Test actual connectivity for a storage location."""
     location = await db.get(StorageLocation, location_id)
     if not location or location.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Storage location not found")
     if not location.enabled:
         raise HTTPException(status_code=409, detail="Storage location is disabled")
-    # Decrypt sensitive fields so we can verify they're non-empty
+
     config = location.connection_config or {}
-    sensitive = SENSITIVE_FIELDS.get(location.type, [])
-    for field in sensitive:
-        raw = config.get(field)
-        if not raw:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Missing required field '{field}' in connection config",
-            )
-        try:
-            decrypt_value(raw)
-        except Exception as exc:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Field '{field}' could not be decrypted — re-enter the value",
-            ) from exc
-    return {"status": "ok", "type": location.type, "name": location.name}
+    storage_type = location.type
+
+    if storage_type == "posix":
+        ok, detail = await _storage_test.test_posix(location.base_path)
+    elif storage_type == "s3":
+        ok, detail = await _storage_test.test_s3(config, location.base_path)
+    elif storage_type == "cifs":
+        ok, detail = await _storage_test.test_cifs(config)
+    elif storage_type == "nfs":
+        ok, detail = await _storage_test.test_nfs(config)
+    else:
+        ok, detail = True, "ok"
+
+    if not ok:
+        raise HTTPException(status_code=502, detail=detail)
+    return {"status": "ok", "type": storage_type, "name": location.name}

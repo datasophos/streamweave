@@ -254,7 +254,12 @@ function ServiceAccountForm({
 }) {
   const { t } = useTranslation('instruments')
   const isEdit = initial != null
-  const [form, setForm] = useState({ name: initial?.name ?? '', domain: initial?.domain ?? '', username: initial?.username ?? '', password: initial?.password ?? '' })
+  const [form, setForm] = useState({
+    name: initial?.name ?? '',
+    domain: initial?.domain ?? '',
+    username: initial?.username ?? '',
+    password: initial?.password ?? '',
+  })
   const [invalid, setInvalid] = useState(new Set<string>())
   const [showPassword, setShowPassword] = useState(false)
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
@@ -277,15 +282,17 @@ function ServiceAccountForm({
       }
       onSubmit(data)
     } else {
-      onSubmit({ name: form.name, domain: form.domain || undefined, username: form.username, password: form.password })
+      onSubmit({
+        name: form.name,
+        domain: form.domain || undefined,
+        username: form.username,
+        password: form.password,
+      })
     }
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error != null && <ErrorMessage error={error} />}
       <div>
         <label htmlFor="sa-name" className="label">
@@ -395,7 +402,10 @@ function EditServiceAccountModal({
         <ServiceAccountForm
           initial={{ ...sa, password: currentPassword }}
           onSubmit={(data) =>
-            updateSA.mutate({ id: sa.id, data: data as ServiceAccountUpdate }, { onSuccess: onClose })
+            updateSA.mutate(
+              { id: sa.id, data: data as ServiceAccountUpdate },
+              { onSuccess: onClose }
+            )
           }
           onCancel={onClose}
           isLoading={updateSA.isPending}

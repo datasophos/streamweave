@@ -172,8 +172,14 @@ export const handlers = [
 
   // Service Accounts
   http.get(`${TEST_BASE}/api/service-accounts`, () => HttpResponse.json([makeServiceAccount()])),
+  http.get(`${TEST_BASE}/api/service-accounts/:id/password`, () =>
+    HttpResponse.json({ password: 'test-password' })
+  ),
   http.post(`${TEST_BASE}/api/service-accounts`, () =>
     HttpResponse.json(makeServiceAccount(), { status: 201 })
+  ),
+  http.patch(`${TEST_BASE}/api/service-accounts/:id`, ({ params }) =>
+    HttpResponse.json(makeServiceAccount({ id: params.id as string }))
   ),
   http.delete(
     `${TEST_BASE}/api/service-accounts/:id`,
@@ -191,6 +197,9 @@ export const handlers = [
   http.delete(
     `${TEST_BASE}/api/storage-locations/:id`,
     () => new HttpResponse(null, { status: 204 })
+  ),
+  http.get(`${TEST_BASE}/api/storage-locations/:id/test`, () =>
+    HttpResponse.json({ status: 'ok', type: 'posix', name: 'Archive' })
   ),
 
   // Schedules

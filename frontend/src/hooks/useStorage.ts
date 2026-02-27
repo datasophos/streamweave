@@ -46,3 +46,9 @@ export function useRestoreStorageLocation() {
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }
+
+export function useTestStorageLocation() {
+  return useMutation({
+    mutationFn: (id: string) => storageApi.test(id),
+  })
+}

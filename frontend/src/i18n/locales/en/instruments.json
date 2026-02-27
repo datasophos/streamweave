@@ -8,6 +8,8 @@
   "modal_new_instrument": "New Instrument",
   "modal_edit_instrument": "Edit Instrument",
   "modal_new_service_account": "New Service Account",
+  "modal_edit_service_account": "Edit Service Account",
+  "sa_password_hint": "Leave blank to keep current password",
   "confirm_delete_instrument": "🔬 Delete {{name}}?",
   "confirm_delete_sa": "🔑 Delete {{name}}?",
   "form_name": "Name *",

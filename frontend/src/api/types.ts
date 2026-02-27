@@ -85,11 +85,35 @@ export interface InstrumentUpdate {
 
 export type StorageType = 'posix' | 's3' | 'cifs' | 'nfs'
 
+export interface S3Config {
+  bucket: string
+  region: string
+  endpoint_url?: string
+  access_key_id: string
+  secret_access_key: string
+}
+
+export interface CIFSConfig {
+  host: string
+  share: string
+  domain?: string
+  username: string
+  password: string
+}
+
+export interface NFSConfig {
+  host: string
+  export_path: string
+  mount_options?: string
+}
+
+export type ConnectionConfig = S3Config | CIFSConfig | NFSConfig | Record<string, unknown>
+
 export interface StorageLocation {
   id: UUID
   name: string
   type: StorageType
-  connection_config: Record<string, unknown> | null
+  connection_config: ConnectionConfig | null
   base_path: string
   enabled: boolean
   created_at: string
@@ -100,7 +124,7 @@ export interface StorageLocation {
 export interface StorageLocationCreate {
   name: string
   type: StorageType
-  connection_config?: Record<string, unknown>
+  connection_config?: ConnectionConfig
   base_path: string
   enabled?: boolean
 }
@@ -108,7 +132,7 @@ export interface StorageLocationCreate {
 export interface StorageLocationUpdate {
   name?: string
   type?: StorageType
-  connection_config?: Record<string, unknown>
+  connection_config?: ConnectionConfig
   base_path?: string
   enabled?: boolean
 }

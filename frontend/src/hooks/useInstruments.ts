@@ -67,6 +67,18 @@ export function useRestoreInstrument() {
 }
 
 // Service Accounts
+export function useServiceAccountPassword(id: string) {
+  return useQuery({
+    queryKey: ['service-account-password', id],
+    queryFn: async () => {
+      const resp = await serviceAccountsApi.getPassword(id)
+      return resp.data.password
+    },
+    staleTime: 0,
+    gcTime: 0,
+  })
+}
+
 export function useServiceAccounts(includeDeleted = false) {
   return useQuery({
     queryKey: [...SERVICE_ACCOUNTS_KEY, { includeDeleted }],

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -13,7 +14,9 @@ import {
   useDeleteInstrument,
   useRestoreInstrument,
   useServiceAccounts,
+  useServiceAccountPassword,
   useCreateServiceAccount,
+  useUpdateServiceAccount,
   useDeleteServiceAccount,
   useRestoreServiceAccount,
 } from '@/hooks/useInstruments'
@@ -22,6 +25,7 @@ import type {
   ServiceAccount,
   InstrumentCreate,
   ServiceAccountCreate,
+  ServiceAccountUpdate,
 } from '@/api/types'
 
 type ModalState =
@@ -30,6 +34,7 @@ type ModalState =
   | { kind: 'editInstrument'; instrument: Instrument }
   | { kind: 'confirmDeleteInstrument'; instrument: Instrument }
   | { kind: 'createServiceAccount' }
+  | { kind: 'editServiceAccount'; sa: ServiceAccount }
   | { kind: 'confirmDeleteServiceAccount'; sa: ServiceAccount }
 
 function InstrumentForm({
@@ -235,20 +240,24 @@ function InstrumentForm({
 }
 
 function ServiceAccountForm({
+  initial,
   onSubmit,
   onCancel,
   isLoading,
   error,
 }: {
-  onSubmit: (data: ServiceAccountCreate) => void
+  initial?: Pick<ServiceAccount, 'name' | 'domain' | 'username'> & { password?: string }
+  onSubmit: (data: ServiceAccountCreate | ServiceAccountUpdate) => void
   onCancel: () => void
   isLoading: boolean
   error: unknown
 }) {
   const { t } = useTranslation('instruments')
-  const [form, setForm] = useState<ServiceAccountCreate>({ name: '', username: '', password: '' })
+  const isEdit = initial != null
+  const [form, setForm] = useState({ name: initial?.name ?? '', domain: initial?.domain ?? '', username: initial?.username ?? '', password: initial?.password ?? '' })
   const [invalid, setInvalid] = useState(new Set<string>())
-  const set = (k: keyof ServiceAccountCreate, v: string) => setForm((f) => ({ ...f, [k]: v }))
+  const [showPassword, setShowPassword] = useState(false)
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
   const markInvalid = (field: string) => () => setInvalid((prev) => new Set(prev).add(field))
   const clearInvalid = (field: string) => () =>
     setInvalid((prev) => {
@@ -257,12 +266,24 @@ function ServiceAccountForm({
       return n
     })
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isEdit) {
+      const data: ServiceAccountUpdate = {
+        name: form.name,
+        domain: form.domain || undefined,
+        username: form.username,
+        ...(form.password ? { password: form.password } : {}),
+      }
+      onSubmit(data)
+    } else {
+      onSubmit({ name: form.name, domain: form.domain || undefined, username: form.username, password: form.password })
+    }
+  }
+
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit(form)
-      }}
+      onSubmit={handleSubmit}
       className="space-y-4"
     >
       {error != null && <ErrorMessage error={error} />}
@@ -313,21 +334,34 @@ function ServiceAccountForm({
       </div>
       <div>
         <label htmlFor="sa-password" className="label">
-          {t('sa_password')}
+          {isEdit ? t('sa_password').replace(' *', '') : t('sa_password')}
         </label>
-        <input
-          id="sa-password"
-          className="input"
-          type="password"
-          required
-          value={form.password}
-          aria-invalid={invalid.has('password') || undefined}
-          onChange={(e) => {
-            clearInvalid('password')()
-            set('password', e.target.value)
-          }}
-          onInvalid={markInvalid('password')}
-        />
+        <div className="relative">
+          <input
+            id="sa-password"
+            className="input pr-10"
+            type={showPassword ? 'text' : 'password'}
+            required={!isEdit}
+            placeholder={isEdit ? t('sa_password_hint') : undefined}
+            value={form.password}
+            aria-invalid={invalid.has('password') || undefined}
+            onChange={(e) => {
+              clearInvalid('password')()
+              set('password', e.target.value)
+            }}
+            onInvalid={markInvalid('password')}
+          />
+          {form.password.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-sw-fg-3 hover:text-sw-fg transition-colors"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          )}
+        </div>
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="btn-secondary">
@@ -338,6 +372,37 @@ function ServiceAccountForm({
         </button>
       </div>
     </form>
+  )
+}
+
+function EditServiceAccountModal({
+  sa,
+  onClose,
+  updateSA,
+}: {
+  sa: ServiceAccount
+  onClose: () => void
+  updateSA: ReturnType<typeof useUpdateServiceAccount>
+}) {
+  const { t } = useTranslation('instruments')
+  const { data: currentPassword, isLoading } = useServiceAccountPassword(sa.id)
+
+  return (
+    <Modal title={t('modal_edit_service_account')} onClose={onClose} size="sm">
+      {isLoading ? (
+        <div className="py-8 text-center text-sw-fg-3">{t('saving').replace('…', '…')}</div>
+      ) : (
+        <ServiceAccountForm
+          initial={{ ...sa, password: currentPassword }}
+          onSubmit={(data) =>
+            updateSA.mutate({ id: sa.id, data: data as ServiceAccountUpdate }, { onSuccess: onClose })
+          }
+          onCancel={onClose}
+          isLoading={updateSA.isPending}
+          error={updateSA.error}
+        />
+      )}
+    </Modal>
   )
 }
 
@@ -359,6 +424,7 @@ export function Instruments() {
   const deleteInst = useDeleteInstrument()
   const restoreInst = useRestoreInstrument()
   const createSA = useCreateServiceAccount()
+  const updateSA = useUpdateServiceAccount()
   const deleteSA = useDeleteServiceAccount()
   const restoreSA = useRestoreServiceAccount()
 
@@ -429,12 +495,20 @@ export function Instruments() {
             {tc('restore')}
           </button>
         ) : (
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => setModal({ kind: 'confirmDeleteServiceAccount', sa })}
-          >
-            {tc('delete')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setModal({ kind: 'editServiceAccount', sa })}
+            >
+              {tc('edit')}
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => setModal({ kind: 'confirmDeleteServiceAccount', sa })}
+            >
+              {tc('delete')}
+            </button>
+          </div>
         ),
     },
   ]
@@ -530,12 +604,16 @@ export function Instruments() {
       {modal.kind === 'createServiceAccount' && (
         <Modal title={t('modal_new_service_account')} onClose={close} size="sm">
           <ServiceAccountForm
-            onSubmit={(data) => createSA.mutate(data, { onSuccess: close })}
+            onSubmit={(data) => createSA.mutate(data as ServiceAccountCreate, { onSuccess: close })}
             onCancel={close}
             isLoading={createSA.isPending}
             error={createSA.error}
           />
         </Modal>
+      )}
+
+      {modal.kind === 'editServiceAccount' && (
+        <EditServiceAccountModal sa={modal.sa} onClose={close} updateSA={updateSA} />
       )}
 
       {modal.kind === 'confirmDeleteInstrument' && (

@@ -14,5 +14,21 @@
   "col_base_path": "Ruta Base",
   "save": "Guardar",
   "saving": "Guardando…",
-  "cancel": "Cancelar"
+  "cancel": "Cancelar",
+  "test_connection": "Probar Conexión",
+  "test_ok": "Conexión OK",
+  "s3_bucket": "Bucket *",
+  "s3_region": "Región *",
+  "s3_endpoint_url": "URL de Endpoint (opcional)",
+  "s3_access_key_id": "ID de Clave de Acceso *",
+  "s3_secret_access_key": "Clave de Acceso Secreta *",
+  "cifs_host": "Host *",
+  "cifs_share": "Compartido *",
+  "cifs_domain": "Dominio (opcional)",
+  "cifs_username": "Usuario *",
+  "cifs_password": "Contraseña *",
+  "nfs_host": "Host *",
+  "nfs_export_path": "Ruta de Exportación *",
+  "nfs_mount_options": "Opciones de Montaje (opcional)",
+  "secret_placeholder": "Dejar en blanco para conservar el valor actual"
 }

@@ -11,6 +11,7 @@ import {
   useUpdateStorageLocation,
   useDeleteStorageLocation,
   useRestoreStorageLocation,
+  useTestStorageLocation,
 } from '@/hooks/useStorage'
 import { makeTestQueryClient } from '@/test/utils'
 
@@ -117,6 +118,25 @@ describe('useRestoreStorageLocation', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(restoredUrl).toBe('/api/storage-locations/storage-uuid-1/restore')
     expect(invalidateSpy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['storage'] }))
+  })
+})
+
+describe('useTestStorageLocation', () => {
+  it('sends GET to /api/storage-locations/:id/test', async () => {
+    const qc = makeTestQueryClient()
+    let testedUrl: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations/:id/test`, ({ request }) => {
+        testedUrl = new URL(request.url).pathname
+        return HttpResponse.json({ status: 'ok', type: 'posix', name: 'Archive' })
+      })
+    )
+
+    const { result } = renderHook(() => useTestStorageLocation(), { wrapper: wrapper(qc) })
+    result.current.mutate('storage-uuid-1')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(testedUrl).toBe('/api/storage-locations/storage-uuid-1/test')
   })
 })
 

@@ -12,6 +12,7 @@ import {
   useUpdateStorageLocation,
   useDeleteStorageLocation,
   useRestoreStorageLocation,
+  useTestStorageLocation,
 } from '@/hooks/useStorage'
 import type { StorageLocation, StorageLocationCreate, StorageType } from '@/api/types'
 
@@ -20,6 +21,217 @@ type ModalState =
   | { kind: 'create' }
   | { kind: 'edit'; location: StorageLocation }
   | { kind: 'confirmDelete'; location: StorageLocation }
+
+// Blank connection config shapes per type
+const emptyS3 = () => ({
+  bucket: '',
+  region: '',
+  endpoint_url: '',
+  access_key_id: '',
+  secret_access_key: '',
+})
+
+const emptyCIFS = () => ({
+  host: '',
+  share: '',
+  domain: '',
+  username: '',
+  password: '',
+})
+
+const emptyNFS = () => ({
+  host: '',
+  export_path: '',
+  mount_options: '',
+})
+
+function getDefaultConfig(type: StorageType): Record<string, string> | undefined {
+  if (type === 's3') return emptyS3()
+  if (type === 'cifs') return emptyCIFS()
+  if (type === 'nfs') return emptyNFS()
+  return undefined
+}
+
+function initConfigFromLocation(location: StorageLocation): Record<string, string> | undefined {
+  const raw = location.connection_config as Record<string, string | null> | null
+  if (!raw) return getDefaultConfig(location.type)
+  // Merge raw values into blank template; coerce null → '' for safe input values
+  const base = getDefaultConfig(location.type) ?? {}
+  const merged = { ...base, ...raw }
+  return Object.fromEntries(Object.entries(merged).map(([k, v]) => [k, v ?? '']))
+}
+
+function S3Fields({
+  config,
+  isEdit,
+  onChange,
+}: {
+  config: Record<string, string>
+  isEdit: boolean
+  onChange: (key: string, val: string) => void
+}) {
+  const { t } = useTranslation('storage')
+  return (
+    <>
+      <div>
+        <label className="label">{t('s3_bucket')}</label>
+        <input
+          className="input"
+          required
+          value={config.bucket}
+          onChange={(e) => onChange('bucket', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="label">{t('s3_region')}</label>
+        <input
+          className="input"
+          required
+          value={config.region}
+          onChange={(e) => onChange('region', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="label">{t('s3_endpoint_url')}</label>
+        <input
+          className="input"
+          value={config.endpoint_url}
+          onChange={(e) => onChange('endpoint_url', e.target.value)}
+          placeholder="https://s3.example.com"
+        />
+      </div>
+      <div>
+        <label className="label">{t('s3_access_key_id')}</label>
+        <input
+          className="input"
+          required
+          value={config.access_key_id}
+          onChange={(e) => onChange('access_key_id', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="label">{t('s3_secret_access_key')}</label>
+        <input
+          className="input"
+          type="password"
+          required={!isEdit}
+          value={config.secret_access_key}
+          onChange={(e) => onChange('secret_access_key', e.target.value)}
+          placeholder={isEdit ? t('secret_placeholder') : undefined}
+          autoComplete="new-password"
+        />
+      </div>
+    </>
+  )
+}
+
+function CIFSFields({
+  config,
+  isEdit,
+  onChange,
+}: {
+  config: Record<string, string>
+  isEdit: boolean
+  onChange: (key: string, val: string) => void
+}) {
+  const { t } = useTranslation('storage')
+  return (
+    <>
+      <div>
+        <label className="label">{t('cifs_host')}</label>
+        <input
+          className="input"
+          required
+          value={config.host}
+          onChange={(e) => onChange('host', e.target.value)}
+          placeholder="fileserver.lab.local"
+        />
+      </div>
+      <div>
+        <label className="label">{t('cifs_share')}</label>
+        <input
+          className="input"
+          required
+          value={config.share}
+          onChange={(e) => onChange('share', e.target.value)}
+          placeholder="data"
+        />
+      </div>
+      <div>
+        <label className="label">{t('cifs_domain')}</label>
+        <input
+          className="input"
+          value={config.domain}
+          onChange={(e) => onChange('domain', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="label">{t('cifs_username')}</label>
+        <input
+          className="input"
+          required
+          value={config.username}
+          onChange={(e) => onChange('username', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="label">{t('cifs_password')}</label>
+        <input
+          className="input"
+          type="password"
+          required={!isEdit}
+          value={config.password}
+          onChange={(e) => onChange('password', e.target.value)}
+          placeholder={isEdit ? t('secret_placeholder') : undefined}
+          autoComplete="new-password"
+        />
+      </div>
+    </>
+  )
+}
+
+function NFSFields({
+  config,
+  onChange,
+}: {
+  config: Record<string, string>
+  onChange: (key: string, val: string) => void
+}) {
+  const { t } = useTranslation('storage')
+  return (
+    <>
+      <div>
+        <label className="label">{t('nfs_host')}</label>
+        <input
+          className="input"
+          required
+          value={config.host}
+          onChange={(e) => onChange('host', e.target.value)}
+          placeholder="nfsserver.lab.local"
+        />
+      </div>
+      <div>
+        <label className="label">{t('nfs_export_path')}</label>
+        <input
+          className="input"
+          required
+          value={config.export_path}
+          onChange={(e) => onChange('export_path', e.target.value)}
+          placeholder="/export/data"
+        />
+      </div>
+      <div>
+        <label className="label">{t('nfs_mount_options')}</label>
+        <input
+          className="input"
+          value={config.mount_options}
+          onChange={(e) => onChange('mount_options', e.target.value)}
+          placeholder="rw,hard,intr"
+        />
+      </div>
+    </>
+  )
+}
 
 function StorageForm({
   initial,
@@ -35,22 +247,53 @@ function StorageForm({
   error: unknown
 }) {
   const { t } = useTranslation('storage')
+  const isEdit = Boolean(initial?.id)
   const [form, setForm] = useState<StorageLocationCreate>({
     name: initial?.name ?? '',
     type: initial?.type ?? 'posix',
     base_path: initial?.base_path ?? '',
     enabled: initial?.enabled ?? true,
+    connection_config: initial ? initConfigFromLocation(initial as StorageLocation) : undefined,
   })
+
   const set = (k: keyof StorageLocationCreate, v: unknown) => setForm((f) => ({ ...f, [k]: v }))
 
+  const setConfig = (key: string, val: string) => {
+    setForm((f) => ({
+      ...f,
+      // connection_config is always set when setConfig is called (typed storage types)
+      connection_config: { ...(f.connection_config as Record<string, string>), [key]: val },
+    }))
+  }
+
+  const handleTypeChange = (newType: StorageType) => {
+    setForm((f) => ({
+      ...f,
+      type: newType,
+      connection_config: getDefaultConfig(newType),
+    }))
+  }
+
+  const config = (form.connection_config as Record<string, string>) ?? {}
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Strip empty optional fields from connection_config before submitting
+    const cleaned = form.connection_config
+      ? Object.fromEntries(
+          Object.entries(form.connection_config as Record<string, string>).filter(
+            ([, v]) => v !== ''
+          )
+        )
+      : undefined
+    onSubmit({
+      ...form,
+      connection_config: Object.keys(cleaned ?? {}).length ? cleaned : undefined,
+    })
+  }
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit(form)
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       {error != null && <ErrorMessage error={error} />}
       <div>
         <label className="label">{t('form_name')}</label>
@@ -66,7 +309,7 @@ function StorageForm({
         <select
           className="input"
           value={form.type}
-          onChange={(e) => set('type', e.target.value as StorageType)}
+          onChange={(e) => handleTypeChange(e.target.value as StorageType)}
         >
           <option value="posix">POSIX</option>
           <option value="s3">S3</option>
@@ -84,6 +327,11 @@ function StorageForm({
           placeholder="/storage/archive"
         />
       </div>
+
+      {form.type === 's3' && <S3Fields config={config} isEdit={isEdit} onChange={setConfig} />}
+      {form.type === 'cifs' && <CIFSFields config={config} isEdit={isEdit} onChange={setConfig} />}
+      {form.type === 'nfs' && <NFSFields config={config} onChange={setConfig} />}
+
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
@@ -114,12 +362,21 @@ export function Storage() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
+  const [testResult, setTestResult] = useState<{ id: string; ok: boolean } | null>(null)
 
   const { data: locations = [], isLoading } = useStorageLocations(showDeleted)
   const create = useCreateStorageLocation()
   const update = useUpdateStorageLocation()
   const del = useDeleteStorageLocation()
   const restore = useRestoreStorageLocation()
+  const testConn = useTestStorageLocation()
+
+  const handleTest = (id: string) => {
+    testConn.mutate(id, {
+      onSuccess: () => setTestResult({ id, ok: true }),
+      onError: () => setTestResult({ id, ok: false }),
+    })
+  }
 
   const columns = [
     { header: tc('name'), key: 'name' as const },
@@ -157,10 +414,26 @@ export function Storage() {
             {tc('restore')}
           </button>
         ) : (
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <button
               className="btn btn-sm btn-secondary"
-              onClick={() => setModal({ kind: 'edit', location: row })}
+              onClick={() => handleTest(row.id)}
+              disabled={testConn.isPending && testConn.variables === row.id}
+              aria-label={t('test_connection')}
+            >
+              {t('test_connection')}
+            </button>
+            {testResult?.id === row.id && (
+              <span className={testResult.ok ? 'text-green-600 text-sm' : 'text-red-600 text-sm'}>
+                {testResult.ok ? t('test_ok') : tc('error_default')}
+              </span>
+            )}
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => {
+                setTestResult(null)
+                setModal({ kind: 'edit', location: row })
+              }}
             >
               {tc('edit')}
             </button>

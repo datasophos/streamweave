@@ -147,6 +147,35 @@ async def test_restore_non_deleted_service_account_returns_404(
 
 
 @pytest.mark.asyncio
+async def test_get_service_account_password(client: AsyncClient, admin_headers: dict):
+    create_resp = await client.post(
+        "/api/service-accounts",
+        json={"name": "SA-PWD", "username": "upwd", "password": "mysecret123"},
+        headers=admin_headers,
+    )
+    sa_id = create_resp.json()["id"]
+    response = await client.get(f"/api/service-accounts/{sa_id}/password", headers=admin_headers)
+    assert response.status_code == 200
+    assert response.json()["password"] == "mysecret123"
+
+
+@pytest.mark.asyncio
+async def test_get_password_nonexistent_service_account(client: AsyncClient, admin_headers: dict):
+    response = await client.get(
+        f"/api/service-accounts/{uuid.uuid4()}/password", headers=admin_headers
+    )
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_password_non_admin_rejected(client: AsyncClient, regular_headers: dict):
+    response = await client.get(
+        f"/api/service-accounts/{uuid.uuid4()}/password", headers=regular_headers
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
 async def test_non_admin_service_accounts_rejected(client: AsyncClient, regular_headers: dict):
     response = await client.get("/api/service-accounts", headers=regular_headers)
     assert response.status_code == 403

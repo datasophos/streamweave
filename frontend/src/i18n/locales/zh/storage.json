@@ -14,5 +14,21 @@
   "col_base_path": "基础路径",
   "save": "保存",
   "saving": "保存中…",
-  "cancel": "取消"
+  "cancel": "取消",
+  "test_connection": "测试连接",
+  "test_ok": "连接正常",
+  "s3_bucket": "存储桶 *",
+  "s3_region": "区域 *",
+  "s3_endpoint_url": "端点 URL（可选）",
+  "s3_access_key_id": "Access Key ID *",
+  "s3_secret_access_key": "Secret Access Key *",
+  "cifs_host": "主机 *",
+  "cifs_share": "共享名 *",
+  "cifs_domain": "域（可选）",
+  "cifs_username": "用户名 *",
+  "cifs_password": "密码 *",
+  "nfs_host": "主机 *",
+  "nfs_export_path": "导出路径 *",
+  "nfs_mount_options": "挂载选项（可选）",
+  "secret_placeholder": "留空以保留现有值"
 }

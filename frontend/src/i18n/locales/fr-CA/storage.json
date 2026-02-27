@@ -14,5 +14,21 @@
   "col_base_path": "Chemin de Base",
   "save": "Enregistrer",
   "saving": "Enregistrement…",
-  "cancel": "Annuler"
+  "cancel": "Annuler",
+  "test_connection": "Tester la Connexion",
+  "test_ok": "Connexion OK",
+  "s3_bucket": "Bucket *",
+  "s3_region": "Région *",
+  "s3_endpoint_url": "URL de point de terminaison (facultatif)",
+  "s3_access_key_id": "ID de clé d'accès *",
+  "s3_secret_access_key": "Clé d'accès secrète *",
+  "cifs_host": "Hôte *",
+  "cifs_share": "Partage *",
+  "cifs_domain": "Domaine (facultatif)",
+  "cifs_username": "Nom d'utilisateur *",
+  "cifs_password": "Mot de passe *",
+  "nfs_host": "Hôte *",
+  "nfs_export_path": "Chemin d'exportation *",
+  "nfs_mount_options": "Options de montage (facultatif)",
+  "secret_placeholder": "Laisser vide pour conserver la valeur existante"
 }

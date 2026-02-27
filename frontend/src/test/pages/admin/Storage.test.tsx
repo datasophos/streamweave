@@ -280,15 +280,20 @@ describe('Storage admin page', () => {
     await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
     await user.click(screen.getByRole('button', { name: /new storage location/i }))
 
+    // Change type to NFS and fill required NFS fields
+    await user.selectOptions(screen.getByRole('combobox'), 'nfs')
+    // Fill required NFS fields
+    await user.type(screen.getByPlaceholderText('nfsserver.lab.local'), 'nfs.lab.local')
+    await user.type(screen.getByPlaceholderText('/export/data'), '/export/archive')
+    // Fill name and base_path
     const textboxes = screen.getAllByRole('textbox')
-    await user.type(textboxes[0], 'S3 Bucket')
-    await user.selectOptions(screen.getByRole('combobox'), 's3')
-    await user.type(screen.getByPlaceholderText('/storage/archive'), 's3://my-bucket')
+    await user.type(textboxes[0], 'NFS Mount')
+    await user.type(screen.getByPlaceholderText('/storage/archive'), '/mnt/nfs')
 
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
     await waitFor(() => {
-      expect(postedBody).toMatchObject({ name: 'S3 Bucket', type: 's3' })
+      expect(postedBody).toMatchObject({ name: 'NFS Mount', type: 'nfs' })
     })
   })
 
@@ -400,6 +405,391 @@ describe('Storage admin page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Disabled')).toBeInTheDocument()
+    })
+  })
+
+  it('S3 fields appear when type S3 is selected in create form', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Storage />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    await user.selectOptions(screen.getByRole('combobox'), 's3')
+
+    await waitFor(() => {
+      // Check S3-specific placeholders / input types
+      expect(screen.getByPlaceholderText('https://s3.example.com')).toBeInTheDocument()
+      // S3 has a password-type input for the secret key
+      const passwordInputs = document.querySelectorAll('input[type="password"]')
+      expect(passwordInputs.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('CIFS fields appear when type CIFS is selected in create form', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Storage />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    await user.selectOptions(screen.getByRole('combobox'), 'cifs')
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('fileserver.lab.local')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('data')).toBeInTheDocument()
+      // CIFS has a password-type input
+      const passwordInputs = document.querySelectorAll('input[type="password"]')
+      expect(passwordInputs.length).toBeGreaterThan(0)
+    })
+  })
+
+  it('NFS fields appear when type NFS is selected in create form', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Storage />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    await user.selectOptions(screen.getByRole('combobox'), 'nfs')
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('nfsserver.lab.local')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('/export/data')).toBeInTheDocument()
+    })
+  })
+
+  it('POSIX type shows no connection config fields', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Storage />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    // posix is default — no S3/CIFS/NFS fields
+    expect(screen.queryByLabelText(/bucket \*/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/share \*/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/export path \*/i)).not.toBeInTheDocument()
+  })
+
+  it('Test Connection button calls test endpoint and shows OK result', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([makeStorageLocation({ id: 'sl-test-id' })])
+      ),
+      http.get(`${TEST_BASE}/api/storage-locations/:id/test`, () =>
+        HttpResponse.json({ status: 'ok', type: 'posix', name: 'Archive' })
+      )
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /test connection/i }))
+    await user.click(screen.getByRole('button', { name: /test connection/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/connection ok/i)).toBeInTheDocument()
+    })
+  })
+
+  it('Test Connection error shows error message', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([makeStorageLocation({ id: 'sl-err-id' })])
+      ),
+      http.get(`${TEST_BASE}/api/storage-locations/:id/test`, () =>
+        HttpResponse.json({ detail: 'Connection refused' }, { status: 409 })
+      )
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /test connection/i }))
+    await user.click(screen.getByRole('button', { name: /test connection/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/an error occurred/i)).toBeInTheDocument()
+    })
+  })
+
+  it('edit S3 storage with existing connection_config pre-populates S3 fields', async () => {
+    setupAdmin()
+    // null values in stored config trigger the ?? '' defensive fallback in S3 field inputs
+    const s3Location = makeStorageLocation({
+      id: 's3-edit-id',
+      type: 's3',
+      connection_config: {
+        bucket: 'my-bucket',
+        region: null as unknown as string,
+        access_key_id: null as unknown as string,
+        secret_access_key: null as unknown as string,
+        endpoint_url: '',
+      },
+    })
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([s3Location]))
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => expect(screen.getByText(s3Location.name)).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('button', { name: /^edit$/i })[0])
+    await waitFor(() => screen.getByRole('heading', { name: /edit storage location/i }))
+
+    // S3 fields should be pre-populated
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('https://s3.example.com')).toBeInTheDocument()
+    })
+    // The bucket field should have value 'my-bucket'
+    const allTextboxes = screen.getAllByRole('textbox')
+    const bucketInput = allTextboxes.find((el) => (el as HTMLInputElement).value === 'my-bucket')
+    expect(bucketInput).toBeTruthy()
+  })
+
+  it('edit NFS location with null mount_options renders empty placeholder', async () => {
+    setupAdmin()
+    // null values in stored config trigger the ?? '' defensive fallback in field inputs
+    const nfsLocation = makeStorageLocation({
+      id: 'nfs-edit-id',
+      type: 'nfs',
+      connection_config: {
+        host: null as unknown as string,
+        export_path: null as unknown as string,
+        mount_options: null as unknown as string,
+      },
+    })
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([nfsLocation]))
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => expect(screen.getByText(nfsLocation.name)).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('button', { name: /^edit$/i })[0])
+    await waitFor(() => screen.getByRole('heading', { name: /edit storage location/i }))
+
+    // NFS fields should appear; mount_options input should be present with empty value
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('nfsserver.lab.local')).toBeInTheDocument()
+    })
+  })
+
+  it('edit CIFS storage with null config values pre-populates empty CIFS fields', async () => {
+    setupAdmin()
+    const cifsLocation = makeStorageLocation({
+      id: 'cifs-edit-id',
+      type: 'cifs',
+      connection_config: {
+        host: null as unknown as string,
+        share: null as unknown as string,
+        domain: null as unknown as string,
+        username: null as unknown as string,
+        password: null as unknown as string,
+      },
+    })
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([cifsLocation]))
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => expect(screen.getByText(cifsLocation.name)).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('button', { name: /^edit$/i })[0])
+    await waitFor(() => screen.getByRole('heading', { name: /edit storage location/i }))
+
+    // CIFS fields should appear with null values treated as empty strings
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('fileserver.lab.local')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('data')).toBeInTheDocument()
+    })
+  })
+
+  it('Test Connection disabled state is false for non-pending row with two rows', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([
+          makeStorageLocation({ id: 'row-1', name: 'Storage A' }),
+          makeStorageLocation({ id: 'row-2', name: 'Storage B' }),
+        ])
+      )
+    )
+
+    renderWithProviders(<Storage />)
+    await waitFor(() => {
+      expect(screen.getByText('Storage A')).toBeInTheDocument()
+      expect(screen.getByText('Storage B')).toBeInTheDocument()
+    })
+
+    // Both test buttons should be enabled (not disabled) initially
+    const testButtons = screen.getAllByRole('button', { name: /test connection/i })
+    expect(testButtons).toHaveLength(2)
+    expect(testButtons[0]).not.toBeDisabled()
+    expect(testButtons[1]).not.toBeDisabled()
+  })
+
+  it('only the clicked row Test Connection button becomes disabled while pending', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json([
+          makeStorageLocation({ id: 'row-a', name: 'Storage A' }),
+          makeStorageLocation({ id: 'row-b', name: 'Storage B' }),
+        ])
+      )
+    )
+    // Make the test hang so we can observe the pending state
+    let resolveTest: () => void
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations/:id/test`, async () => {
+        await new Promise<void>((res) => {
+          resolveTest = res
+        })
+        return HttpResponse.json({ status: 'ok', type: 'posix', name: 'Storage A' })
+      })
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => {
+      expect(screen.getByText('Storage A')).toBeInTheDocument()
+    })
+
+    const [btnA, btnB] = screen.getAllByRole('button', { name: /test connection/i })
+    await user.click(btnA)
+
+    // While row-a is pending, row-b's button should still be enabled
+    await waitFor(() => expect(btnA).toBeDisabled())
+    expect(btnB).not.toBeDisabled()
+
+    resolveTest!()
+    await waitFor(() => expect(btnA).not.toBeDisabled())
+  })
+
+  it('edit posix storage with legacy non-null connection_config', async () => {
+    setupAdmin()
+    // Edge case: posix type with non-null connection_config (triggers ?? {} in initConfigFromLocation)
+    const posixWithConfig = makeStorageLocation({
+      id: 'posix-config-id',
+      type: 'posix',
+      connection_config: { some_legacy_key: 'value' } as Record<string, unknown>,
+    })
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([posixWithConfig]))
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => expect(screen.getByText(posixWithConfig.name)).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('button', { name: /^edit$/i })[0])
+    await waitFor(() => screen.getByRole('heading', { name: /edit storage location/i }))
+
+    // No S3/CIFS/NFS fields should appear for posix type
+    expect(screen.queryByPlaceholderText('https://s3.example.com')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('fileserver.lab.local')).not.toBeInTheDocument()
+  })
+
+  it('typing in S3 connection fields updates the config', async () => {
+    setupAdmin()
+    let postedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/api/storage-locations`, async ({ request }) => {
+        postedBody = await request.json()
+        return HttpResponse.json(makeStorageLocation(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    // Change to S3 and fill all required + optional fields
+    await user.selectOptions(screen.getByRole('combobox'), 's3')
+    const textboxes = screen.getAllByRole('textbox')
+    await user.type(textboxes[0], 'My S3') // name
+    await user.type(screen.getByPlaceholderText('/storage/archive'), 's3://bucket')
+    const allInputs = screen.getAllByRole('textbox')
+    await user.type(allInputs[2], 'test-bucket') // bucket
+    await user.type(allInputs[3], 'eu-west-1') // region
+    await user.type(screen.getByPlaceholderText('https://s3.example.com'), 'https://custom.s3') // endpoint_url
+    await user.type(allInputs[5], 'AKIATEST') // access_key_id
+    const pwdInputs = document.querySelectorAll('input[type="password"]')
+    for (const el of Array.from(pwdInputs)) {
+      await user.type(el as HTMLElement, 'supersecret')
+    }
+
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(
+        (postedBody as { connection_config?: { bucket: string } })?.connection_config?.bucket
+      ).toBe('test-bucket')
+    })
+  })
+
+  it('typing in CIFS connection fields updates the config', async () => {
+    setupAdmin()
+    let postedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/api/storage-locations`, async ({ request }) => {
+        postedBody = await request.json()
+        return HttpResponse.json(makeStorageLocation(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    await user.selectOptions(screen.getByRole('combobox'), 'cifs')
+    await user.type(screen.getAllByRole('textbox')[0], 'My CIFS')
+    await user.type(screen.getByPlaceholderText('/storage/archive'), '/mnt/cifs')
+    // Fill CIFS specific fields using placeholder text
+    await user.type(screen.getByPlaceholderText('fileserver.lab.local'), 'cifs.lab.local')
+    await user.type(screen.getByPlaceholderText('data'), 'shared')
+    // Fill username and domain (non-placeholder textboxes — get all and find the right ones)
+    const allInputs = screen.getAllByRole('textbox')
+    // order: name, base_path, host, share, domain, username
+    await user.type(allInputs[4], 'CORP') // domain
+    await user.type(allInputs[5], 'labuser') // username
+    // Password via type="password"
+    const pwdInputs = document.querySelectorAll('input[type="password"]')
+    await user.type(pwdInputs[0] as HTMLElement, 'secret123')
+
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      const config = (postedBody as { connection_config?: { host: string } })?.connection_config
+      expect(config?.host).toBe('cifs.lab.local')
+    })
+  })
+
+  it('typing in NFS mount_options field updates the config', async () => {
+    setupAdmin()
+    let postedBody: unknown
+    server.use(
+      http.post(`${TEST_BASE}/api/storage-locations`, async ({ request }) => {
+        postedBody = await request.json()
+        return HttpResponse.json(makeStorageLocation(), { status: 201 })
+      })
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => screen.getByRole('button', { name: /new storage location/i }))
+    await user.click(screen.getByRole('button', { name: /new storage location/i }))
+
+    await user.selectOptions(screen.getByRole('combobox'), 'nfs')
+    await user.type(screen.getAllByRole('textbox')[0], 'NFS Share')
+    await user.type(screen.getByPlaceholderText('/storage/archive'), '/mnt/nfs')
+    await user.type(screen.getByPlaceholderText('nfsserver.lab.local'), 'nfs.lab.local')
+    await user.type(screen.getByPlaceholderText('/export/data'), '/export/shared')
+    await user.type(screen.getByPlaceholderText('rw,hard,intr'), 'rw,noatime')
+
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      const config = (postedBody as { connection_config?: { mount_options: string } })
+        ?.connection_config
+      expect(config?.mount_options).toBe('rw,noatime')
     })
   })
 })

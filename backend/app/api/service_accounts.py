@@ -11,7 +11,7 @@ from app.models.instrument import ServiceAccount
 from app.models.user import User
 from app.schemas.instrument import ServiceAccountCreate, ServiceAccountRead, ServiceAccountUpdate
 from app.services.audit import log_action
-from app.services.credentials import encrypt_value
+from app.services.credentials import decrypt_value, encrypt_value
 
 router = APIRouter(prefix="/service-accounts", tags=["service-accounts"])
 
@@ -59,6 +59,18 @@ async def get_service_account(
     if not account or account.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Service account not found")
     return account
+
+
+@router.get("/{account_id}/password")
+async def get_service_account_password(
+    account_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_admin),
+):
+    account = await db.get(ServiceAccount, account_id)
+    if not account or account.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Service account not found")
+    return {"password": decrypt_value(account.password_encrypted)}
 
 
 @router.patch("/{account_id}", response_model=ServiceAccountRead)

@@ -638,6 +638,176 @@ describe('Instruments admin page', () => {
     })
   })
 
+  it('edit service account button opens modal with pre-populated values including password', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ name: 'Lab SA', username: 'labuser', domain: 'LAB' })])
+      ),
+      http.get(`${TEST_BASE}/api/service-accounts/:id/password`, () =>
+        HttpResponse.json({ password: 'stored-pass' })
+      )
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('Lab SA')).toBeInTheDocument())
+
+    const editButtons = screen.getAllByRole('button', { name: /^edit$/i })
+    await user.click(editButtons[editButtons.length - 1])
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /edit service account/i })).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      const nameInput = screen.getByLabelText(/^name/i) as HTMLInputElement
+      expect(nameInput.value).toBe('Lab SA')
+      const usernameInput = screen.getByLabelText(/^username/i) as HTMLInputElement
+      expect(usernameInput.value).toBe('labuser')
+      const domainInput = screen.getByLabelText(/^domain/i) as HTMLInputElement
+      expect(domainInput.value).toBe('LAB')
+      const pwInput = screen.getByLabelText(/^password/i) as HTMLInputElement
+      expect(pwInput.value).toBe('stored-pass')
+    })
+  })
+
+  it('edit service account form sends PATCH to correct URL', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-patch-id', name: 'Old SA' })])
+      )
+    )
+
+    let patchedUrl: string | undefined
+    let patchBody: unknown
+    server.use(
+      http.patch(`${TEST_BASE}/api/service-accounts/:id`, async ({ request }) => {
+        patchedUrl = new URL(request.url).pathname
+        patchBody = await request.json()
+        return HttpResponse.json(makeServiceAccount({ name: 'New SA' }))
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('Old SA')).toBeInTheDocument())
+
+    const editButtons = screen.getAllByRole('button', { name: /^edit$/i })
+    await user.click(editButtons[editButtons.length - 1])
+    await waitFor(() => screen.getByRole('heading', { name: /edit service account/i }))
+
+    const nameInput = screen.getByLabelText(/^name/i) as HTMLInputElement
+    await user.clear(nameInput)
+    await user.type(nameInput, 'New SA')
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(patchedUrl).toBe('/api/service-accounts/sa-patch-id')
+      expect(patchBody).toMatchObject({ name: 'New SA' })
+    })
+  })
+
+  it('edit service account form does not send password when cleared', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-nopwd-id', name: 'No Pwd SA' })])
+      ),
+      http.get(`${TEST_BASE}/api/service-accounts/:id/password`, () =>
+        HttpResponse.json({ password: '' })
+      )
+    )
+
+    let patchBody: unknown
+    server.use(
+      http.patch(`${TEST_BASE}/api/service-accounts/:id`, async ({ request }) => {
+        patchBody = await request.json()
+        return HttpResponse.json(makeServiceAccount())
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('No Pwd SA')).toBeInTheDocument())
+
+    const editButtons = screen.getAllByRole('button', { name: /^edit$/i })
+    await user.click(editButtons[editButtons.length - 1])
+    await waitFor(() => screen.getByRole('heading', { name: /edit service account/i }))
+
+    // Password field is empty — save without touching it
+    await waitFor(() => {
+      const pwInput = screen.getByLabelText(/^password/i) as HTMLInputElement
+      expect(pwInput.value).toBe('')
+    })
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(patchBody).not.toHaveProperty('password')
+    })
+  })
+
+  it('edit service account form sends password when filled', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ id: 'sa-pwd-id', name: 'Pwd SA' })])
+      ),
+      http.get(`${TEST_BASE}/api/service-accounts/:id/password`, () =>
+        HttpResponse.json({ password: '' })
+      )
+    )
+
+    let patchBody: unknown
+    server.use(
+      http.patch(`${TEST_BASE}/api/service-accounts/:id`, async ({ request }) => {
+        patchBody = await request.json()
+        return HttpResponse.json(makeServiceAccount())
+      })
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('Pwd SA')).toBeInTheDocument())
+
+    const editButtons = screen.getAllByRole('button', { name: /^edit$/i })
+    await user.click(editButtons[editButtons.length - 1])
+    await waitFor(() => screen.getByRole('heading', { name: /edit service account/i }))
+
+    // Wait for form to load, then type the new password
+    await waitFor(() => screen.getByLabelText(/^password/i))
+    await user.type(screen.getByLabelText(/^password/i), 'newpassword')
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(patchBody).toHaveProperty('password', 'newpassword')
+    })
+  })
+
+  it('edit service account modal shows error on API failure', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/service-accounts`, () =>
+        HttpResponse.json([makeServiceAccount({ name: 'Error SA' })])
+      )
+    )
+    server.use(
+      http.patch(`${TEST_BASE}/api/service-accounts/:id`, () =>
+        HttpResponse.json({ detail: 'Update failed' }, { status: 422 })
+      )
+    )
+
+    const { user } = renderWithProviders(<Instruments />)
+    await waitFor(() => expect(screen.getByText('Error SA')).toBeInTheDocument())
+
+    const editButtons = screen.getAllByRole('button', { name: /^edit$/i })
+    await user.click(editButtons[editButtons.length - 1])
+    await waitFor(() => screen.getByRole('heading', { name: /edit service account/i }))
+
+    await user.click(screen.getByRole('button', { name: /^save$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/update failed/i)).toBeInTheDocument()
+    })
+  })
+
   it('delete service account does not send DELETE when user cancels dialog', async () => {
     setupAdmin()
 
@@ -711,6 +881,25 @@ describe('Instruments admin page', () => {
     await waitFor(() => {
       expect(screen.getByRole('textbox', { name: /^name/i })).not.toHaveAttribute('aria-invalid')
     })
+  })
+
+  it('password eye toggle reveals and hides password in service account form', async () => {
+    setupAdmin()
+    const { user } = renderWithProviders(<Instruments />)
+
+    await waitFor(() => screen.getByRole('button', { name: /new service account/i }))
+    await user.click(screen.getByRole('button', { name: /new service account/i }))
+
+    const pwInput = screen.getByLabelText(/^password/i) as HTMLInputElement
+    expect(pwInput.type).toBe('password')
+
+    // Eye button only appears once something is typed
+    await user.type(pwInput, 'mypassword')
+    await user.click(screen.getByRole('button', { name: /show password/i }))
+    expect(pwInput.type).toBe('text')
+
+    await user.click(screen.getByRole('button', { name: /hide password/i }))
+    expect(pwInput.type).toBe('password')
   })
 
   it('required service account fields get aria-invalid after failed submit attempt', async () => {

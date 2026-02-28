@@ -16,7 +16,13 @@
   "freq_weekly": "Semanalmente",
   "freq_not_sure": "No estoy seguro / flexible",
   "submit": "Enviar Solicitud",
+  "submitting": "Enviando…",
+  "submit_error": "Error al enviar la solicitud. Por favor, inténtelo de nuevo.",
   "success_title": "Solicitud Enviada",
   "success_message": "Su solicitud para <bold>{{instrument_name}}</bold> ha sido enviada. Un administrador la revisará y se pondrá en contacto con usted.",
-  "submit_another": "Enviar Otra Solicitud"
+  "submit_another": "Enviar Otra Solicitud",
+  "my_requests_title": "Mis solicitudes",
+  "my_requests_description": "Ver y gestionar sus solicitudes de recolección de instrumentos",
+  "no_requests": "No hay solicitudes enviadas aún.",
+  "request_instrument_btn": "Solicitar Instrumento"
 }

@@ -46,12 +46,12 @@ describe('AppLayout', () => {
     })
   })
 
-  it('non-admin sees Request Instrument link', async () => {
+  it('non-admin sees My Requests link', async () => {
     setupUser()
     renderWithProviders(<AppLayout />)
 
     await waitFor(() => {
-      expect(screen.getAllByRole('link', { name: /request instrument/i }).length).toBeGreaterThan(0)
+      expect(screen.getAllByRole('link', { name: /my requests/i }).length).toBeGreaterThan(0)
     })
   })
 

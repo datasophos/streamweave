@@ -16,7 +16,13 @@
   "freq_weekly": "Hebdomadairement",
   "freq_not_sure": "Pas certain / flexible",
   "submit": "Soumettre la Demande",
+  "submitting": "Envoi en cours…",
+  "submit_error": "Échec de la soumission. Veuillez réessayer.",
   "success_title": "Demande Soumise",
   "success_message": "Votre demande pour <bold>{{instrument_name}}</bold> a été soumise. Un administrateur l'examinera et vous contactera.",
-  "submit_another": "Soumettre une Autre Demande"
+  "submit_another": "Soumettre une Autre Demande",
+  "my_requests_title": "Mes demandes",
+  "my_requests_description": "Voir et gérer vos demandes de collecte d'instruments",
+  "no_requests": "Aucune demande soumise pour l'instant.",
+  "request_instrument_btn": "Demander un Instrument"
 }

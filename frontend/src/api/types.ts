@@ -320,6 +320,54 @@ export interface HealthResponse {
   status: string
 }
 
+// Instrument requests
+export type InstrumentRequestStatus = 'pending' | 'approved' | 'rejected'
+
+export interface InstrumentRequestRecord {
+  id: UUID
+  requester_id: UUID
+  requester_email: string | null
+  name: string
+  location: string
+  harvest_frequency: string
+  description: string | null
+  justification: string
+  status: InstrumentRequestStatus
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface InstrumentRequestCreate {
+  name: string
+  location: string
+  harvest_frequency: string
+  description?: string
+  justification: string
+}
+
+export interface InstrumentRequestUpdate {
+  status: InstrumentRequestStatus
+  admin_notes?: string
+}
+
+// Notifications
+export interface NotificationRecord {
+  id: UUID
+  recipient_id: UUID
+  type: string
+  title: string
+  message: string
+  link: string | null
+  read: boolean
+  dismissed_at: string | null
+  created_at: string
+}
+
+export interface UnreadCount {
+  count: number
+}
+
 // Audit log
 export type AuditAction = 'create' | 'update' | 'delete' | 'restore'
 

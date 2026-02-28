@@ -12,6 +12,7 @@ import { Schedules } from '@/pages/admin/Schedules'
 import { Hooks } from '@/pages/admin/Hooks'
 import { Users } from '@/pages/admin/Users'
 import { AuditLog } from '@/pages/admin/AuditLog'
+import { InstrumentRequests } from '@/pages/admin/InstrumentRequests'
 import { MyFiles } from '@/pages/user/MyFiles'
 import { Transfers } from '@/pages/user/Transfers'
 import { InstrumentRequest } from '@/pages/user/InstrumentRequest'
@@ -118,6 +119,14 @@ export function App() {
           element={
             <RequireAdmin>
               <AuditLog />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/instrument-requests"
+          element={
+            <RequireAdmin>
+              <InstrumentRequests />
             </RequireAdmin>
           }
         />

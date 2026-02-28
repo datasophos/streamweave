@@ -16,7 +16,13 @@
   "freq_weekly": "每周",
   "freq_not_sure": "不确定 / 灵活",
   "submit": "提交申请",
+  "submitting": "提交中…",
+  "submit_error": "提交失败，请重试。",
   "success_title": "申请已提交",
   "success_message": "您对<bold>{{instrument_name}}</bold>的申请已提交。管理员将审核并与您联系。",
-  "submit_another": "再次提交申请"
+  "submit_another": "再次提交申请",
+  "my_requests_title": "我的申请",
+  "my_requests_description": "查看和管理您的仪器采集申请",
+  "no_requests": "尚未提交任何申请。",
+  "request_instrument_btn": "申请仪器"
 }

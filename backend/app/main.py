@@ -7,7 +7,9 @@ from app.api.audit import router as audit_router
 from app.api.files import router as files_router
 from app.api.groups import router as groups_router
 from app.api.hooks import router as hooks_router
+from app.api.instrument_requests import router as instrument_requests_router
 from app.api.instruments import router as instruments_router
+from app.api.notifications import router as notifications_router
 from app.api.projects import router as projects_router
 from app.api.schedules import router as schedules_router
 from app.api.service_accounts import router as service_accounts_router
@@ -56,6 +58,8 @@ def create_app() -> FastAPI:
     app.include_router(access_router, prefix="/api")
     app.include_router(transfers_router, prefix="/api")
     app.include_router(audit_router, prefix="/api")
+    app.include_router(instrument_requests_router, prefix="/api")
+    app.include_router(notifications_router, prefix="/api")
 
     @app.get("/health")
     async def health():

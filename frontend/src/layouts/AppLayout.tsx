@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
+import { NotificationBell } from '@/components/NotificationBell'
 
 const adminNavDefs = [
   { to: '/admin/instruments', key: 'admin_instruments' },
@@ -9,6 +10,7 @@ const adminNavDefs = [
   { to: '/admin/schedules', key: 'admin_schedules' },
   { to: '/admin/hooks', key: 'admin_hooks' },
   { to: '/admin/users', key: 'admin_users' },
+  { to: '/admin/instrument-requests', key: 'admin_instrument_requests' },
   { to: '/admin/audit-log', key: 'admin_audit_log' },
 ] as const
 
@@ -177,7 +179,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           ))}
           {!isAdmin && (
             <NavLink to="/request" className={mobileLinkClass}>
-              {t('request_instrument')}
+              {t('my_requests')}
             </NavLink>
           )}
         </nav>
@@ -257,7 +259,7 @@ export function AppLayout() {
                 ))}
                 {!isAdmin && (
                   <NavLink to="/request" className={linkClass}>
-                    {t('request_instrument')}
+                    {t('my_requests')}
                   </NavLink>
                 )}
               </nav>
@@ -276,6 +278,7 @@ export function AppLayout() {
                   {t('admin')}
                 </span>
               )}
+              <NotificationBell />
               <Divider />
               <NavLink to="/settings" className={linkClass}>
                 <svg
@@ -299,6 +302,11 @@ export function AppLayout() {
               >
                 {t('sign_out')}
               </button>
+            </div>
+
+            {/* Mobile notification bell — only visible at narrow widths */}
+            <div className="md:hidden">
+              <NotificationBell />
             </div>
 
             {/* Hamburger — mobile only */}

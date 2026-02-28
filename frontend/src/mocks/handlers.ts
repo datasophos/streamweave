@@ -9,6 +9,8 @@ import type {
   HarvestSchedule,
   ServiceAccount,
   User,
+  InstrumentRequestRecord,
+  NotificationRecord,
 } from '@/api/types'
 
 // ---------------------------------------------------------------------------
@@ -126,6 +128,39 @@ export const makeFileRecord = (overrides: Partial<FileRecord> = {}): FileRecord 
   first_discovered_at: '2026-01-15T11:00:00Z',
   metadata_: null,
   owner_id: 'user-uuid-1',
+  ...overrides,
+})
+
+export const makeInstrumentRequest = (
+  overrides: Partial<InstrumentRequestRecord> = {}
+): InstrumentRequestRecord => ({
+  id: 'req-uuid-1',
+  requester_id: 'user-uuid-1',
+  requester_email: 'user@example.com',
+  name: 'Bruker NMR',
+  location: 'Lab 3B',
+  harvest_frequency: 'daily',
+  description: null,
+  justification: 'Research purposes.',
+  status: 'pending',
+  admin_notes: null,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+  ...overrides,
+})
+
+export const makeNotification = (
+  overrides: Partial<NotificationRecord> = {}
+): NotificationRecord => ({
+  id: 'notif-uuid-1',
+  recipient_id: 'user-uuid-1',
+  type: 'test',
+  title: 'Test Notification',
+  message: 'This is a test notification.',
+  link: null,
+  read: false,
+  dismissed_at: null,
+  created_at: '2026-01-01T00:00:00Z',
   ...overrides,
 })
 
@@ -262,6 +297,30 @@ export const handlers = [
 
   // Transfers
   http.get(`${TEST_BASE}/api/transfers`, () => HttpResponse.json([makeTransfer()])),
+
+  // Instrument Requests
+  http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+    HttpResponse.json([makeInstrumentRequest()])
+  ),
+  http.post(`${TEST_BASE}/api/instrument-requests`, () =>
+    HttpResponse.json(makeInstrumentRequest(), { status: 201 })
+  ),
+  http.patch(`${TEST_BASE}/api/instrument-requests/:id`, ({ params }) =>
+    HttpResponse.json(makeInstrumentRequest({ id: params.id as string, status: 'approved' }))
+  ),
+
+  // Notifications
+  http.get(`${TEST_BASE}/api/notifications`, () => HttpResponse.json([])),
+  http.get(`${TEST_BASE}/api/notifications/unread-count`, () => HttpResponse.json({ count: 0 })),
+  http.post(`${TEST_BASE}/api/notifications/:id/read`, ({ params }) =>
+    HttpResponse.json(makeNotification({ id: params.id as string, read: true }))
+  ),
+  http.post(`${TEST_BASE}/api/notifications/read-all`, () => HttpResponse.json({ ok: true })),
+  http.post(`${TEST_BASE}/api/notifications/:id/dismiss`, ({ params }) =>
+    HttpResponse.json(
+      makeNotification({ id: params.id as string, dismissed_at: new Date().toISOString() })
+    )
+  ),
 
   // Health
   http.get(`${TEST_BASE}/health`, () => HttpResponse.json({ status: 'ok' })),

@@ -16,7 +16,13 @@
   "freq_weekly": "Weekly",
   "freq_not_sure": "Not sure / flexible",
   "submit": "Submit Request",
+  "submitting": "Submitting…",
+  "submit_error": "Failed to submit request. Please try again.",
   "success_title": "Request Submitted",
   "success_message": "Your request for <bold>{{instrument_name}}</bold> has been submitted. An administrator will review it and be in touch.",
-  "submit_another": "Submit Another Request"
+  "submit_another": "Submit Another Request",
+  "my_requests_title": "My Requests",
+  "my_requests_description": "View and manage your instrument harvest requests",
+  "no_requests": "No requests submitted yet.",
+  "request_instrument_btn": "Request Instrument"
 }

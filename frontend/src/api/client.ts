@@ -137,6 +137,21 @@ export const healthApi = {
   check: () => apiClient.get('/health'),
 }
 
+export const instrumentRequestsApi = {
+  list: () => apiClient.get('/api/instrument-requests'),
+  get: (id: string) => apiClient.get(`/api/instrument-requests/${id}`),
+  create: (data: unknown) => apiClient.post('/api/instrument-requests', data),
+  review: (id: string, data: unknown) => apiClient.patch(`/api/instrument-requests/${id}`, data),
+}
+
+export const notificationsApi = {
+  list: () => apiClient.get('/api/notifications'),
+  unreadCount: () => apiClient.get('/api/notifications/unread-count'),
+  markRead: (id: string) => apiClient.post(`/api/notifications/${id}/read`),
+  markAllRead: () => apiClient.post('/api/notifications/read-all'),
+  dismiss: (id: string) => apiClient.post(`/api/notifications/${id}/dismiss`),
+}
+
 export const auditApi = {
   list: (params?: {
     entity_type?: string

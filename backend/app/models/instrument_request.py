@@ -29,6 +29,7 @@ class InstrumentRequest(UUIDPrimaryKey, Base):
         Enum(InstrumentRequestStatus), default=InstrumentRequestStatus.pending
     )
     admin_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requester_email: Mapped[str | None] = mapped_column(String(320), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

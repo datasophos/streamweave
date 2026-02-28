@@ -1,0 +1,21 @@
+{
+  "title": "Groupes",
+  "description": "Gérer les groupes d'utilisateurs pour le contrôle d'accès.",
+  "new_group": "Nouveau groupe",
+  "no_groups": "Aucun groupe trouvé.",
+  "col_name": "Nom",
+  "col_description": "Description",
+  "form_name": "Nom",
+  "form_description": "Description",
+  "save": "Enregistrer",
+  "saving": "Enregistrement…",
+  "cancel": "Annuler",
+  "members": "Membres",
+  "modal_create": "Créer un groupe",
+  "modal_edit": "Modifier le groupe : {{name}}",
+  "modal_members": "Membres de {{name}}",
+  "confirm_delete": "Supprimer le groupe « {{name}} » ?",
+  "no_members": "Aucun membre pour l'instant.",
+  "select_user": "Sélectionner un utilisateur…",
+  "add_member": "Ajouter"
+}

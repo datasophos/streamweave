@@ -121,12 +121,30 @@ export const usersApi = {
   restore: (id: string) => apiClient.post(`/api/admin/users/${id}/restore`),
 }
 
+export const groupsApi = {
+  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/groups', { params }),
+  get: (id: string) => apiClient.get(`/api/groups/${id}`),
+  create: (data: unknown) => apiClient.post('/api/groups', data),
+  update: (id: string, data: unknown) => apiClient.patch(`/api/groups/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/api/groups/${id}`),
+  restore: (id: string) => apiClient.post(`/api/groups/${id}/restore`),
+  listMembers: (id: string) => apiClient.get(`/api/groups/${id}/members`),
+  addMember: (id: string, data: unknown) => apiClient.post(`/api/groups/${id}/members`, data),
+  removeMember: (groupId: string, userId: string) =>
+    apiClient.delete(`/api/groups/${groupId}/members/${userId}`),
+}
+
 export const projectsApi = {
-  list: () => apiClient.get('/api/projects'),
+  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/projects', { params }),
   get: (id: string) => apiClient.get(`/api/projects/${id}`),
   create: (data: unknown) => apiClient.post('/api/projects', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/projects/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/projects/${id}`),
+  restore: (id: string) => apiClient.post(`/api/projects/${id}/restore`),
+  listMembers: (id: string) => apiClient.get(`/api/projects/${id}/members`),
+  addMember: (id: string, data: unknown) => apiClient.post(`/api/projects/${id}/members`, data),
+  removeMember: (projectId: string, memberId: string) =>
+    apiClient.delete(`/api/projects/${projectId}/members/${memberId}`),
 }
 
 export const meApi = {

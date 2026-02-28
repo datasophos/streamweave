@@ -16,5 +16,7 @@
   "delete_warning": "此项目将被禁用，管理员可在之后恢复。",
   "deleted": "已删除",
   "restore": "恢复",
-  "show_deleted": "显示已删除"
+  "show_deleted": "显示已删除",
+  "remove": "Remove",
+  "active": "Active"
 }

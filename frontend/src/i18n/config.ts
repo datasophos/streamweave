@@ -14,6 +14,8 @@ import files_en from './locales/en/files.json'
 import transfers_en from './locales/en/transfers.json'
 import request_en from './locales/en/request.json'
 import settings_en from './locales/en/settings.json'
+import groups_en from './locales/en/groups.json'
+import projects_en from './locales/en/projects.json'
 import common_es from './locales/es/common.json'
 import nav_es from './locales/es/nav.json'
 import dashboard_es from './locales/es/dashboard.json'
@@ -27,6 +29,8 @@ import files_es from './locales/es/files.json'
 import transfers_es from './locales/es/transfers.json'
 import request_es from './locales/es/request.json'
 import settings_es from './locales/es/settings.json'
+import groups_es from './locales/es/groups.json'
+import projects_es from './locales/es/projects.json'
 import common_fr from './locales/fr/common.json'
 import nav_fr from './locales/fr/nav.json'
 import dashboard_fr from './locales/fr/dashboard.json'
@@ -40,6 +44,8 @@ import files_fr from './locales/fr/files.json'
 import transfers_fr from './locales/fr/transfers.json'
 import request_fr from './locales/fr/request.json'
 import settings_fr from './locales/fr/settings.json'
+import groups_fr from './locales/fr/groups.json'
+import projects_fr from './locales/fr/projects.json'
 import common_fr_ca from './locales/fr-CA/common.json'
 import nav_fr_ca from './locales/fr-CA/nav.json'
 import dashboard_fr_ca from './locales/fr-CA/dashboard.json'
@@ -53,6 +59,8 @@ import files_fr_ca from './locales/fr-CA/files.json'
 import transfers_fr_ca from './locales/fr-CA/transfers.json'
 import request_fr_ca from './locales/fr-CA/request.json'
 import settings_fr_ca from './locales/fr-CA/settings.json'
+import groups_fr_ca from './locales/fr-CA/groups.json'
+import projects_fr_ca from './locales/fr-CA/projects.json'
 import common_zh from './locales/zh/common.json'
 import nav_zh from './locales/zh/nav.json'
 import dashboard_zh from './locales/zh/dashboard.json'
@@ -66,6 +74,8 @@ import files_zh from './locales/zh/files.json'
 import transfers_zh from './locales/zh/transfers.json'
 import request_zh from './locales/zh/request.json'
 import settings_zh from './locales/zh/settings.json'
+import groups_zh from './locales/zh/groups.json'
+import projects_zh from './locales/zh/projects.json'
 
 i18n
   .use(LanguageDetector)
@@ -95,6 +105,8 @@ i18n
       'transfers',
       'request',
       'settings',
+      'groups',
+      'projects',
     ],
     resources: {
       en: {
@@ -111,6 +123,8 @@ i18n
         transfers: transfers_en,
         request: request_en,
         settings: settings_en,
+        groups: groups_en,
+        projects: projects_en,
       },
       es: {
         common: common_es,
@@ -126,6 +140,8 @@ i18n
         transfers: transfers_es,
         request: request_es,
         settings: settings_es,
+        groups: groups_es,
+        projects: projects_es,
       },
       fr: {
         common: common_fr,
@@ -141,6 +157,8 @@ i18n
         transfers: transfers_fr,
         request: request_fr,
         settings: settings_fr,
+        groups: groups_fr,
+        projects: projects_fr,
       },
       'fr-CA': {
         common: common_fr_ca,
@@ -156,6 +174,8 @@ i18n
         transfers: transfers_fr_ca,
         request: request_fr_ca,
         settings: settings_fr_ca,
+        groups: groups_fr_ca,
+        projects: projects_fr_ca,
       },
       zh: {
         common: common_zh,
@@ -171,6 +191,8 @@ i18n
         transfers: transfers_zh,
         request: request_zh,
         settings: settings_zh,
+        groups: groups_zh,
+        projects: projects_zh,
       },
     },
     interpolation: { escapeValue: false },

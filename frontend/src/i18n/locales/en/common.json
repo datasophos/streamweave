@@ -16,5 +16,7 @@
   "delete_warning": "This item will be disabled. An admin can restore it later.",
   "deleted": "Deleted",
   "restore": "Restore",
-  "show_deleted": "Show deleted"
+  "show_deleted": "Show deleted",
+  "remove": "Remove",
+  "active": "Active"
 }

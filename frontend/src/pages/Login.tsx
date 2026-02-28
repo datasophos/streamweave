@@ -28,12 +28,26 @@ export function Login() {
   const demoUsers = [
     { key: 'admin', label: 'Admin', email: adminEmail, password: adminPassword },
     { key: 'chemist', label: 'Chemist', email: 'chemist@example.com', password: 'devpass123!' },
-    { key: 'proteomics', label: 'Proteomics', email: 'proteomics@example.com', password: 'devpass123!' },
-    { key: 'em_operator', label: 'EM Operator', email: 'em-operator@example.com', password: 'devpass123!' },
+    {
+      key: 'proteomics',
+      label: 'Proteomics',
+      email: 'proteomics@example.com',
+      password: 'devpass123!',
+    },
+    {
+      key: 'em_operator',
+      label: 'EM Operator',
+      email: 'em-operator@example.com',
+      password: 'devpass123!',
+    },
   ]
 
-  const [email, setEmail] = useState(demoMode ? adminEmail : (import.meta.env.VITE_ADMIN_EMAIL ?? ''))
-  const [password, setPassword] = useState(demoMode ? adminPassword : (import.meta.env.VITE_ADMIN_PASSWORD ?? ''))
+  const [email, setEmail] = useState(
+    demoMode ? adminEmail : (import.meta.env.VITE_ADMIN_EMAIL ?? '')
+  )
+  const [password, setPassword] = useState(
+    demoMode ? adminPassword : (import.meta.env.VITE_ADMIN_PASSWORD ?? '')
+  )
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -124,7 +138,10 @@ export function Login() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => { setEmail(dEmail); setPassword(dPass) }}
+                    onClick={() => {
+                      setEmail(dEmail)
+                      setPassword(dPass)
+                    }}
                     className="btn-secondary btn-sm"
                   >
                     {label}

@@ -56,7 +56,7 @@ streamweave/
 │       └── auth/               # fastapi-users configuration
 ├── frontend/
 │   ├── Dockerfile
-│   ├── nginx.conf              # Nginx reverse proxy to API
+│   ├── Caddyfile               # Caddy reverse proxy (production)
 │   ├── src/
 │   │   ├── api/                # Axios client + TypeScript types
 │   │   ├── components/         # Shared UI components

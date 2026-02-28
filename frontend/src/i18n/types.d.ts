@@ -11,6 +11,8 @@ import type files from './locales/en/files.json'
 import type transfers from './locales/en/transfers.json'
 import type request from './locales/en/request.json'
 import type settings from './locales/en/settings.json'
+import type groups from './locales/en/groups.json'
+import type projects from './locales/en/projects.json'
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -29,6 +31,8 @@ declare module 'i18next' {
       transfers: typeof transfers
       request: typeof request
       settings: typeof settings
+      groups: typeof groups
+      projects: typeof projects
     }
   }
 }

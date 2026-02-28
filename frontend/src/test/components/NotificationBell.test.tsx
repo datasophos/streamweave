@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
 import { TEST_BASE, makeUser, makeNotification } from '@/mocks/handlers'
@@ -182,6 +182,86 @@ describe('NotificationBell', () => {
     await waitFor(() => {
       const dismissButtons = screen.getAllByRole('button', { name: /dismiss/i })
       expect(dismissButtons).toHaveLength(2)
+    })
+  })
+
+  it('closes dropdown when clicking outside', async () => {
+    setupAuth()
+    server.use(http.get(`${TEST_BASE}/api/notifications`, () => HttpResponse.json([])))
+    const { user } = renderWithProviders(<NotificationBell />)
+    await user.click(screen.getByRole('button', { name: /notifications/i }))
+    await waitFor(() => screen.getByText('Notifications'))
+    fireEvent.mouseDown(document.body)
+    await waitFor(() => {
+      expect(screen.queryByText('Notifications')).not.toBeInTheDocument()
+    })
+  })
+
+  it('clicking "Mark read" calls mark-read API and invalidates queries', async () => {
+    setupAuth()
+    let markedId: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/notifications`, () =>
+        HttpResponse.json([makeNotification({ id: 'n-unread', read: false })])
+      ),
+      http.post(`${TEST_BASE}/api/notifications/:id/read`, ({ params }) => {
+        markedId = params.id as string
+        return HttpResponse.json(makeNotification({ id: 'n-unread', read: true }))
+      })
+    )
+    const { user } = renderWithProviders(<NotificationBell />)
+    await user.click(screen.getByRole('button', { name: /notifications/i }))
+    await waitFor(() => screen.getByRole('button', { name: /mark as read/i }))
+    await user.click(screen.getByRole('button', { name: /mark as read/i }))
+    await waitFor(() => {
+      expect(markedId).toBe('n-unread')
+    })
+  })
+
+  it('clicking "Mark all read" calls mark-all-read API and invalidates queries', async () => {
+    setupAuth()
+    let markAllCalled = false
+    server.use(
+      http.get(`${TEST_BASE}/api/notifications/unread-count`, () =>
+        HttpResponse.json({ count: 1 })
+      ),
+      http.get(`${TEST_BASE}/api/notifications`, () =>
+        HttpResponse.json([makeNotification({ id: 'n1', read: false })])
+      ),
+      http.post(`${TEST_BASE}/api/notifications/read-all`, () => {
+        markAllCalled = true
+        return HttpResponse.json({ ok: true })
+      })
+    )
+    const { user } = renderWithProviders(<NotificationBell />)
+    await user.click(screen.getByRole('button', { name: /notifications/i }))
+    await waitFor(() => screen.getByRole('button', { name: /mark all read/i }))
+    await user.click(screen.getByRole('button', { name: /mark all read/i }))
+    await waitFor(() => {
+      expect(markAllCalled).toBe(true)
+    })
+  })
+
+  it('clicking "Dismiss" calls dismiss API and invalidates queries', async () => {
+    setupAuth()
+    let dismissedId: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/notifications`, () =>
+        HttpResponse.json([makeNotification({ id: 'n-dismiss', read: false })])
+      ),
+      http.post(`${TEST_BASE}/api/notifications/:id/dismiss`, ({ params }) => {
+        dismissedId = params.id as string
+        return HttpResponse.json(
+          makeNotification({ id: 'n-dismiss', dismissed_at: new Date().toISOString() })
+        )
+      })
+    )
+    const { user } = renderWithProviders(<NotificationBell />)
+    await user.click(screen.getByRole('button', { name: /notifications/i }))
+    await waitFor(() => screen.getByRole('button', { name: /dismiss/i }))
+    await user.click(screen.getByRole('button', { name: /dismiss/i }))
+    await waitFor(() => {
+      expect(dismissedId).toBe('n-dismiss')
     })
   })
 })

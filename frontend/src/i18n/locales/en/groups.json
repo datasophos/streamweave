@@ -1,0 +1,21 @@
+{
+  "title": "Groups",
+  "description": "Manage user groups for access control.",
+  "new_group": "New Group",
+  "no_groups": "No groups found.",
+  "col_name": "Name",
+  "col_description": "Description",
+  "form_name": "Name",
+  "form_description": "Description",
+  "save": "Save",
+  "saving": "Saving…",
+  "cancel": "Cancel",
+  "members": "Members",
+  "modal_create": "Create Group",
+  "modal_edit": "Edit Group: {{name}}",
+  "modal_members": "Members of {{name}}",
+  "confirm_delete": "Delete group \"{{name}}\"?",
+  "no_members": "No members yet.",
+  "select_user": "Select a user…",
+  "add_member": "Add"
+}

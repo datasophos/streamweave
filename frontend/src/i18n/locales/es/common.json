@@ -16,5 +16,7 @@
   "delete_warning": "Este elemento será desactivado. Un administrador puede restaurarlo más tarde.",
   "deleted": "Eliminado",
   "restore": "Restaurar",
-  "show_deleted": "Mostrar eliminados"
+  "show_deleted": "Mostrar eliminados",
+  "remove": "Remove",
+  "active": "Active"
 }

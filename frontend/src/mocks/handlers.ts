@@ -11,6 +11,10 @@ import type {
   User,
   InstrumentRequestRecord,
   NotificationRecord,
+  Group,
+  GroupMember,
+  Project,
+  ProjectMember,
 } from '@/api/types'
 
 // ---------------------------------------------------------------------------
@@ -146,6 +150,40 @@ export const makeInstrumentRequest = (
   admin_notes: null,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  ...overrides,
+})
+
+export const makeGroup = (overrides: Partial<Group> = {}): Group => ({
+  id: 'group-uuid-1',
+  name: 'Lab Group',
+  description: null,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
+  ...overrides,
+})
+
+export const makeGroupMember = (overrides: Partial<GroupMember> = {}): GroupMember => ({
+  group_id: 'group-uuid-1',
+  user_id: 'user-uuid-1',
+  ...overrides,
+})
+
+export const makeProject = (overrides: Partial<Project> = {}): Project => ({
+  id: 'project-uuid-1',
+  name: 'Lab Project',
+  description: null,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+  deleted_at: null,
+  ...overrides,
+})
+
+export const makeProjectMember = (overrides: Partial<ProjectMember> = {}): ProjectMember => ({
+  id: 'pm-uuid-1',
+  project_id: 'project-uuid-1',
+  member_type: 'user',
+  member_id: 'user-uuid-1',
   ...overrides,
 })
 
@@ -297,6 +335,44 @@ export const handlers = [
 
   // Transfers
   http.get(`${TEST_BASE}/api/transfers`, () => HttpResponse.json([makeTransfer()])),
+
+  // Groups
+  http.get(`${TEST_BASE}/api/groups`, () => HttpResponse.json([makeGroup()])),
+  http.post(`${TEST_BASE}/api/groups`, () => HttpResponse.json(makeGroup(), { status: 201 })),
+  http.patch(`${TEST_BASE}/api/groups/:id`, ({ params }) =>
+    HttpResponse.json(makeGroup({ id: params.id as string }))
+  ),
+  http.delete(`${TEST_BASE}/api/groups/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${TEST_BASE}/api/groups/:id/restore`, ({ params }) =>
+    HttpResponse.json(makeGroup({ id: params.id as string }))
+  ),
+  http.get(`${TEST_BASE}/api/groups/:id/members`, () => HttpResponse.json([])),
+  http.post(`${TEST_BASE}/api/groups/:id/members`, () =>
+    HttpResponse.json(makeGroupMember(), { status: 201 })
+  ),
+  http.delete(
+    `${TEST_BASE}/api/groups/:id/members/:userId`,
+    () => new HttpResponse(null, { status: 204 })
+  ),
+
+  // Projects
+  http.get(`${TEST_BASE}/api/projects`, () => HttpResponse.json([makeProject()])),
+  http.post(`${TEST_BASE}/api/projects`, () => HttpResponse.json(makeProject(), { status: 201 })),
+  http.patch(`${TEST_BASE}/api/projects/:id`, ({ params }) =>
+    HttpResponse.json(makeProject({ id: params.id as string }))
+  ),
+  http.delete(`${TEST_BASE}/api/projects/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${TEST_BASE}/api/projects/:id/restore`, ({ params }) =>
+    HttpResponse.json(makeProject({ id: params.id as string }))
+  ),
+  http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([])),
+  http.post(`${TEST_BASE}/api/projects/:id/members`, () =>
+    HttpResponse.json(makeProjectMember(), { status: 201 })
+  ),
+  http.delete(
+    `${TEST_BASE}/api/projects/:id/members/:memberId`,
+    () => new HttpResponse(null, { status: 204 })
+  ),
 
   // Instrument Requests
   http.get(`${TEST_BASE}/api/instrument-requests`, () =>

@@ -203,6 +203,17 @@ describe('InstrumentRequest page', () => {
     })
   })
 
+  it('closes request form modal with Escape key', async () => {
+    setupAuth()
+    const { user } = renderWithProviders(<InstrumentRequest />)
+    await user.click(screen.getByRole('button', { name: /request instrument/i }))
+    await waitFor(() => screen.getByRole('button', { name: /submit request/i }))
+    await user.keyboard('{Escape}')
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /submit request/i })).not.toBeInTheDocument()
+    })
+  })
+
   it('button shows submitting state while pending', async () => {
     setupAuth()
     server.use(

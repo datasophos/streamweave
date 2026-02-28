@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, Microscope } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -528,6 +528,7 @@ export function Instruments() {
       <PageHeader
         title={t('title')}
         description={t('description')}
+        icon={<Microscope size={20} />}
         action={
           <div className="flex gap-2">
             <button
@@ -546,7 +547,7 @@ export function Instruments() {
       <div className="card p-0 overflow-hidden mb-8">
         <div className="px-4 py-4 border-b border-sw-border flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
-            <span>🔬</span>
+            <Microscope size={16} className="text-sw-brand" />
             {t('instruments_section')}
           </h2>
           <Toggle
@@ -566,7 +567,7 @@ export function Instruments() {
       <div className="card p-0 overflow-hidden">
         <div className="px-4 py-4 border-b border-sw-border flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
-            <span>🔑</span>
+            <KeyRound size={16} className="text-sw-brand" />
             {t('service_accounts_section')}
           </h2>
           <Toggle checked={showDeletedSA} onChange={setShowDeletedSA} label={tc('show_deleted')} />

@@ -20,6 +20,7 @@
   "col_prefect": "Prefect",
   "synced": "Synchronisé",
   "not_synced": "Non synchronisé",
+  "view_in_prefect": "Voir dans Prefect",
   "save": "Enregistrer",
   "saving": "Enregistrement…",
   "cancel": "Annuler"

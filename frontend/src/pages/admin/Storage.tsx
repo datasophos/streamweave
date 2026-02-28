@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { HardDrive } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -449,6 +450,7 @@ export function Storage() {
       <PageHeader
         title={t('title')}
         description={t('description')}
+        icon={<HardDrive size={20} />}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
             {t('new_storage_location')}

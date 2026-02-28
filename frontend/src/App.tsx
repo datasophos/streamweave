@@ -11,6 +11,8 @@ import { Storage } from '@/pages/admin/Storage'
 import { Schedules } from '@/pages/admin/Schedules'
 import { Hooks } from '@/pages/admin/Hooks'
 import { Users } from '@/pages/admin/Users'
+import { Groups } from '@/pages/admin/Groups'
+import { Projects } from '@/pages/admin/Projects'
 import { AuditLog } from '@/pages/admin/AuditLog'
 import { InstrumentRequests } from '@/pages/admin/InstrumentRequests'
 import { MyFiles } from '@/pages/user/MyFiles'
@@ -111,6 +113,22 @@ export function App() {
           element={
             <RequireAdmin>
               <Users />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/groups"
+          element={
+            <RequireAdmin>
+              <Groups />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/projects"
+          element={
+            <RequireAdmin>
+              <Projects />
             </RequireAdmin>
           }
         />

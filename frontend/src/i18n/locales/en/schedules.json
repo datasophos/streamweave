@@ -20,6 +20,7 @@
   "col_prefect": "Prefect",
   "synced": "Synced",
   "not_synced": "Not synced",
+  "view_in_prefect": "View in Prefect",
   "save": "Save",
   "saving": "Saving…",
   "cancel": "Cancel"

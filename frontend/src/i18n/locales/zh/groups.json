@@ -1,0 +1,21 @@
+{
+  "title": "用户组",
+  "description": "管理用于访问控制的用户组。",
+  "new_group": "新建用户组",
+  "no_groups": "未找到用户组。",
+  "col_name": "名称",
+  "col_description": "描述",
+  "form_name": "名称",
+  "form_description": "描述",
+  "save": "保存",
+  "saving": "保存中…",
+  "cancel": "取消",
+  "members": "成员",
+  "modal_create": "创建用户组",
+  "modal_edit": "编辑用户组：{{name}}",
+  "modal_members": "{{name}} 的成员",
+  "confirm_delete": "删除用户组 {{name}}？",
+  "no_members": "暂无成员。",
+  "select_user": "选择用户…",
+  "add_member": "添加"
+}

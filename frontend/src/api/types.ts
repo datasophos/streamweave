@@ -263,11 +263,29 @@ export interface Project {
   description: string | null
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface ProjectCreate {
   name: string
   description?: string
+}
+
+export interface ProjectUpdate {
+  name?: string
+  description?: string
+}
+
+export interface ProjectMember {
+  id: UUID
+  project_id: UUID
+  member_type: 'user' | 'group'
+  member_id: UUID
+}
+
+export interface ProjectMemberAdd {
+  member_type: 'user' | 'group'
+  member_id: UUID
 }
 
 export interface Group {
@@ -276,11 +294,26 @@ export interface Group {
   description: string | null
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }
 
 export interface GroupCreate {
   name: string
   description?: string
+}
+
+export interface GroupUpdate {
+  name?: string
+  description?: string
+}
+
+export interface GroupMember {
+  group_id: UUID
+  user_id: UUID
+}
+
+export interface GroupMemberAdd {
+  user_id: UUID
 }
 
 // Auth types

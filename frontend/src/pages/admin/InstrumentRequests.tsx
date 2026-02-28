@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ClipboardList } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { useInstrumentRequests, useReviewInstrumentRequest } from '@/hooks/useInstrumentRequests'
 import type { InstrumentRequestRecord } from '@/api/types'
@@ -43,8 +44,15 @@ function RequestDetailModal({
   }, [onClose])
 
   const handleSubmit = async () => {
-    await review.mutateAsync({ id: request.id, data: { status, admin_notes: notes || undefined } })
-    onClose()
+    try {
+      await review.mutateAsync({
+        id: request.id,
+        data: { status, admin_notes: notes || undefined },
+      })
+      onClose()
+    } catch {
+      // error is surfaced via review.isError
+    }
   }
 
   return (
@@ -171,6 +179,7 @@ export function InstrumentRequests() {
       <PageHeader
         title="Instrument Requests"
         description="Review user requests to add instruments to the harvest system."
+        icon={<ClipboardList size={20} />}
       />
 
       {viewing && <RequestDetailModal request={viewing} onClose={() => setViewing(null)} />}

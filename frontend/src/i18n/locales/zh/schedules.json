@@ -20,6 +20,7 @@
   "col_prefect": "Prefect",
   "synced": "已同步",
   "not_synced": "未同步",
+  "view_in_prefect": "在 Prefect 中查看",
   "save": "保存",
   "saving": "保存中…",
   "cancel": "取消"

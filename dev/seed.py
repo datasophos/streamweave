@@ -3,7 +3,7 @@
 Dev seed script — creates realistic example data via the StreamWeave API.
 
 Designed to be idempotent: existing resources (matched by name) are skipped.
-Run order matters: service accounts → storage → instruments → schedules → hooks.
+Run order matters: service accounts → storage → instruments → schedules → hooks → users → groups → projects.
 
 Environment variables (all have defaults matching docker-compose.dev.yml):
   API_URL         http://api:8000
@@ -208,7 +208,7 @@ def seed(token: str) -> None:
         "name": "Bruker AVANCE III 600 MHz NMR",
         "description": "600 MHz solution NMR for small-molecule and protein characterization",
         "location": "Chemistry Building, Room 102",
-        "cifs_host": "nmr-bruker",
+        "cifs_host": "samba-instruments",
         "cifs_share": "nmr",
         "cifs_base_path": "/",
         "service_account_id": str(nmr_sa["id"]),
@@ -220,7 +220,7 @@ def seed(token: str) -> None:
         "name": "Waters Acquity UPLC-MS",
         "description": "Ultra-performance liquid chromatography with mass spectrometry detection",
         "location": "Analytical Core, Room 210",
-        "cifs_host": "hplc-waters",
+        "cifs_host": "samba-instruments",
         "cifs_share": "hplc",
         "cifs_base_path": "/",
         "service_account_id": str(hplc_sa["id"]),
@@ -232,7 +232,7 @@ def seed(token: str) -> None:
         "name": "Thermo Orbitrap Exploris 480",
         "description": "High-resolution Orbitrap mass spectrometer for proteomics",
         "location": "Proteomics Core, Room 315",
-        "cifs_host": "ms-orbitrap",
+        "cifs_host": "samba-instruments",
         "cifs_share": "ms",
         "cifs_base_path": "/",
         "service_account_id": str(ms_sa["id"]),
@@ -244,7 +244,7 @@ def seed(token: str) -> None:
         "name": "FEI Titan Themis 300 TEM",
         "description": "Aberration-corrected transmission electron microscope",
         "location": "Electron Microscopy Facility, Basement",
-        "cifs_host": "tem-titan",
+        "cifs_host": "samba-instruments",
         "cifs_share": "tem",
         "cifs_base_path": "/",
         "transfer_adapter": "rclone",
@@ -274,10 +274,10 @@ def seed(token: str) -> None:
         })
         print(f"  ✓  Schedule for '{name}' created ({cron})", flush=True)
 
-    create_schedule(token, str(nmr["id"]), str(posix_store["id"]),  "0 * * * *",    "NMR → local POSIX (hourly)")
-    create_schedule(token, str(nmr["id"]), str(s3_store["id"]),     "0 2 * * *",    "NMR → S3 (nightly)")
-    create_schedule(token, str(hplc["id"]), str(posix_store["id"]), "*/30 * * * *", "HPLC → local POSIX (every 30 min)")
-    create_schedule(token, str(ms["id"]),  str(cifs_store["id"]),   "0 */4 * * *",  "Orbitrap → CIFS (every 4 h)")
+    create_schedule(token, str(nmr["id"]), str(posix_store["id"]),  "0 1 * * *",    "NMR → local POSIX (nightly at 1AM)")
+    create_schedule(token, str(nmr["id"]), str(s3_store["id"]),     "0 2 * * *",    "NMR → S3 (nightly at 2AM)")
+    create_schedule(token, str(hplc["id"]), str(posix_store["id"]), "0 4 * * *", "HPLC → local POSIX (nightly at 4AM)")
+    create_schedule(token, str(ms["id"]),  str(cifs_store["id"]),   "0 0 * * *",  "Orbitrap → CIFS (nightly at midnight)")
 
     # ------------------------------------------------------------------
     # Hooks
@@ -306,7 +306,7 @@ def seed(token: str) -> None:
     }, "Hook")
 
     create_if_absent(token, "/api/hooks", "/api/hooks", {
-        "name": "File size filter — skip temp files",
+        "name": "Skip zero-byte and temp files",
         "description": "Drops zero-byte and .tmp files before transfer",
         "trigger": "pre_transfer",
         "implementation": "builtin",
@@ -341,9 +341,102 @@ def seed(token: str) -> None:
             raw = exc.read()
             print(f"  ✗  User '{email}' — {exc.code}: {raw.decode()[:120]}", flush=True)
 
-    create_user_if_absent(token, "chemist@example.com",    "devpass123!", "Chemist")
-    create_user_if_absent(token, "proteomics@example.com", "devpass123!", "Proteomics researcher")
-    create_user_if_absent(token, "em-operator@example.com","devpass123!", "EM operator")
+    create_user_if_absent(token, "chemist@example.com",        "devpass123!", "Chemist")
+    create_user_if_absent(token, "proteomics@example.com",     "devpass123!", "Proteomics researcher")
+    create_user_if_absent(token, "em-operator@example.com",    "devpass123!", "EM operator")
+    create_user_if_absent(token, "bioinformatics@example.com", "devpass123!", "Bioinformatics analyst")
+
+    all_users = _request("GET", "/api/admin/users", token=token)
+
+    def get_user_id(email: str) -> str:
+        for u in all_users:
+            if u["email"] == email:
+                return str(u["id"])
+        raise RuntimeError(f"User '{email}' not found in /api/admin/users")
+
+    # ------------------------------------------------------------------
+    # Groups
+    # ------------------------------------------------------------------
+    print("\n── Groups ──", flush=True)
+
+    def add_group_member_if_absent(token: str, group_id: str, user_id: str, group_name: str) -> None:
+        members = _request("GET", f"/api/groups/{group_id}/members", token=token)
+        if any(m["user_id"] == user_id for m in members):
+            return
+        _request("POST", f"/api/groups/{group_id}/members", body={"user_id": user_id}, token=token)
+        print(f"    + member added to '{group_name}'", flush=True)
+
+    chem_group = create_if_absent(token, "/api/groups", "/api/groups", {
+        "name": "Chemistry & Chemical Biology",
+        "description": "Organic and inorganic chemistry researchers using NMR and HPLC",
+    }, "Group")
+    add_group_member_if_absent(token, str(chem_group["id"]), get_user_id("chemist@example.com"),        chem_group["name"])
+    add_group_member_if_absent(token, str(chem_group["id"]), get_user_id("bioinformatics@example.com"), chem_group["name"])
+
+    prot_group = create_if_absent(token, "/api/groups", "/api/groups", {
+        "name": "Proteomics Core",
+        "description": "Mass spectrometry and proteomics platform users",
+    }, "Group")
+    add_group_member_if_absent(token, str(prot_group["id"]), get_user_id("proteomics@example.com"),     prot_group["name"])
+    add_group_member_if_absent(token, str(prot_group["id"]), get_user_id("bioinformatics@example.com"), prot_group["name"])
+
+    em_group = create_if_absent(token, "/api/groups", "/api/groups", {
+        "name": "EM Facility",
+        "description": "Electron microscopy facility operators and approved users",
+    }, "Group")
+    add_group_member_if_absent(token, str(em_group["id"]), get_user_id("em-operator@example.com"), em_group["name"])
+
+    analytical_group = create_if_absent(token, "/api/groups", "/api/groups", {
+        "name": "Analytical Core",
+        "description": "Cross-departmental analytical instrumentation users",
+    }, "Group")
+    add_group_member_if_absent(token, str(analytical_group["id"]), get_user_id("chemist@example.com"),     analytical_group["name"])
+    add_group_member_if_absent(token, str(analytical_group["id"]), get_user_id("proteomics@example.com"),  analytical_group["name"])
+    add_group_member_if_absent(token, str(analytical_group["id"]), get_user_id("em-operator@example.com"), analytical_group["name"])
+
+    # ------------------------------------------------------------------
+    # Projects
+    # ------------------------------------------------------------------
+    print("\n── Projects ──", flush=True)
+
+    def add_project_member_if_absent(
+        token: str, project_id: str, member_type: str, member_id: str, project_name: str
+    ) -> None:
+        members = _request("GET", f"/api/projects/{project_id}/members", token=token)
+        if any(m["member_id"] == member_id and m["member_type"] == member_type for m in members):
+            return
+        _request("POST", f"/api/projects/{project_id}/members",
+                 body={"member_type": member_type, "member_id": member_id}, token=token)
+        print(f"    + {member_type} added to '{project_name}'", flush=True)
+
+    kinase = create_if_absent(token, "/api/projects", "/api/projects", {
+        "name": "Kinase Inhibitor Fragment Screen",
+        "description": "High-throughput NMR fragment screening of kinase inhibitor candidates",
+    }, "Project")
+    add_project_member_if_absent(token, str(kinase["id"]), "user",  get_user_id("chemist@example.com"), kinase["name"])
+    add_project_member_if_absent(token, str(kinase["id"]), "group", str(chem_group["id"]),              kinase["name"])
+
+    her2 = create_if_absent(token, "/api/projects", "/api/projects", {
+        "name": "HER2 Phosphoproteome Profiling",
+        "description": "Quantitative phosphoproteomics of HER2-positive breast cancer cell lines",
+    }, "Project")
+    add_project_member_if_absent(token, str(her2["id"]), "user",  get_user_id("proteomics@example.com"), her2["name"])
+    add_project_member_if_absent(token, str(her2["id"]), "group", str(prot_group["id"]),                 her2["name"])
+
+    aunp = create_if_absent(token, "/api/projects", "/api/projects", {
+        "name": "Gold Nanoparticle Structure Determination",
+        "description": "Atomic-resolution TEM imaging and structural analysis of AuNP catalysts",
+    }, "Project")
+    add_project_member_if_absent(token, str(aunp["id"]), "user",  get_user_id("em-operator@example.com"), aunp["name"])
+    add_project_member_if_absent(token, str(aunp["id"]), "group", str(em_group["id"]),                    aunp["name"])
+
+    multiomics = create_if_absent(token, "/api/projects", "/api/projects", {
+        "name": "Multi-omics Cancer Biomarker Discovery",
+        "description": "Integrated NMR metabolomics and proteomics for cancer biomarker identification",
+    }, "Project")
+    add_project_member_if_absent(token, str(multiomics["id"]), "user",  get_user_id("bioinformatics@example.com"), multiomics["name"])
+    add_project_member_if_absent(token, str(multiomics["id"]), "group", str(chem_group["id"]),                     multiomics["name"])
+    add_project_member_if_absent(token, str(multiomics["id"]), "group", str(prot_group["id"]),                     multiomics["name"])
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { CalendarClock, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -177,7 +177,17 @@ export function Schedules() {
       header: t('col_prefect'),
       render: (row: HarvestSchedule) =>
         row.prefect_deployment_id ? (
-          <span className="badge-green">{t('synced')}</span>
+          <div className="flex items-center gap-2">
+            <span className="badge-green">{t('synced')}</span>
+            <a
+              href={`/prefect/deployments/deployment/${row.prefect_deployment_id}`}
+              title={t('view_in_prefect')}
+              className="text-sw-fg-faint hover:text-sw-brand transition-colors"
+              aria-label={t('view_in_prefect')}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </div>
         ) : (
           <span className="badge-yellow">{t('not_synced')}</span>
         ),
@@ -224,6 +234,7 @@ export function Schedules() {
       <PageHeader
         title={t('title')}
         description={t('description')}
+        icon={<CalendarClock size={20} />}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
             {t('new_schedule')}

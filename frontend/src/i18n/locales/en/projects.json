@@ -1,0 +1,23 @@
+{
+  "title": "Projects",
+  "description": "Manage projects grouping users and groups together.",
+  "new_project": "New Project",
+  "no_projects": "No projects found.",
+  "col_name": "Name",
+  "col_description": "Description",
+  "form_name": "Name",
+  "form_description": "Description",
+  "save": "Save",
+  "saving": "Saving…",
+  "cancel": "Cancel",
+  "members": "Members",
+  "modal_create": "Create Project",
+  "modal_edit": "Edit Project: {{name}}",
+  "modal_members": "Members of {{name}}",
+  "confirm_delete": "Delete project \"{{name}}\"?",
+  "no_members": "No members yet.",
+  "select_member": "Select…",
+  "add_member": "Add",
+  "member_type_user": "User",
+  "member_type_group": "Group"
+}

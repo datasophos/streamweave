@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ScrollText } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/components/PageHeader'
 import { auditApi } from '@/api/client'
@@ -85,6 +86,7 @@ export function AuditLog() {
       <PageHeader
         title="Audit Log"
         description="A record of all admin actions on managed entities."
+        icon={<ScrollText size={20} />}
       />
 
       {/* Filters */}

@@ -1,0 +1,23 @@
+{
+  "title": "Proyectos",
+  "description": "Administrar proyectos que agrupan usuarios y grupos.",
+  "new_project": "Nuevo proyecto",
+  "no_projects": "No se encontraron proyectos.",
+  "col_name": "Nombre",
+  "col_description": "Descripción",
+  "form_name": "Nombre",
+  "form_description": "Descripción",
+  "save": "Guardar",
+  "saving": "Guardando…",
+  "cancel": "Cancelar",
+  "members": "Miembros",
+  "modal_create": "Crear proyecto",
+  "modal_edit": "Editar proyecto: {{name}}",
+  "modal_members": "Miembros de {{name}}",
+  "confirm_delete": "¿Eliminar el proyecto «{{name}}»?",
+  "no_members": "Sin miembros aún.",
+  "select_member": "Seleccionar…",
+  "add_member": "Agregar",
+  "member_type_user": "Usuario",
+  "member_type_group": "Grupo"
+}

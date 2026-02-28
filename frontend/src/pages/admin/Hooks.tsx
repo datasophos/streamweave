@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Webhook } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -287,6 +288,7 @@ export function Hooks() {
       <PageHeader
         title={t('title')}
         description={t('description')}
+        icon={<Webhook size={20} />}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
             {t('new_hook')}

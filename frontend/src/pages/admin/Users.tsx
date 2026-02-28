@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Users as UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -164,6 +165,7 @@ export function Users() {
       <PageHeader
         title={t('title')}
         description={t('description')}
+        icon={<UsersIcon size={20} />}
         action={
           <button className="btn-primary" onClick={() => setModal({ kind: 'create' })}>
             {t('new_user')}

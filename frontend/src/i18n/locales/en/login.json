@@ -6,5 +6,6 @@
   "password": "Password",
   "signing_in": "Signing in…",
   "invalid_credentials": "Invalid credentials.",
-  "bad_credentials": "Incorrect email or password. Please contact your system administrator for assistance."
+  "bad_credentials": "Incorrect email or password. Please contact your system administrator for assistance.",
+  "demo_heading": "Demo users"
 }

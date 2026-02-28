@@ -12,7 +12,9 @@ import {
   hooksApi,
   transfersApi,
   usersApi,
+  groupsApi,
   projectsApi,
+  instrumentRequestsApi,
 } from '@/api/client'
 
 describe('apiClient request interceptor', () => {
@@ -275,5 +277,215 @@ describe('authApi.requestVerification', () => {
 
     await authApi.requestVerification('user@test.com')
     expect((capturedBody as { email: string }).email).toBe('user@test.com')
+  })
+})
+
+describe('groupsApi methods', () => {
+  it('groupsApi.list calls GET /api/groups', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/groups`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json([])
+      })
+    )
+    await groupsApi.list()
+    expect(url).toBe('/api/groups')
+  })
+
+  it('groupsApi.get calls GET /api/groups/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/groups/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await groupsApi.get('grp-1')
+    expect(url).toBe('/api/groups/grp-1')
+  })
+
+  it('groupsApi.create calls POST /api/groups', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/groups`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({}, { status: 201 })
+      })
+    )
+    await groupsApi.create({ name: 'Test' })
+    expect(url).toBe('/api/groups')
+  })
+
+  it('groupsApi.update calls PATCH /api/groups/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.patch(`${TEST_BASE}/api/groups/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await groupsApi.update('grp-1', { name: 'Updated' })
+    expect(url).toBe('/api/groups/grp-1')
+  })
+
+  it('groupsApi.delete calls DELETE /api/groups/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.delete(`${TEST_BASE}/api/groups/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    await groupsApi.delete('grp-1')
+    expect(url).toBe('/api/groups/grp-1')
+  })
+
+  it('groupsApi.restore calls POST /api/groups/:id/restore', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/groups/:id/restore`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await groupsApi.restore('grp-1')
+    expect(url).toBe('/api/groups/grp-1/restore')
+  })
+
+  it('groupsApi.listMembers calls GET /api/groups/:id/members', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/groups/:id/members`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json([])
+      })
+    )
+    await groupsApi.listMembers('grp-1')
+    expect(url).toBe('/api/groups/grp-1/members')
+  })
+
+  it('groupsApi.addMember calls POST /api/groups/:id/members', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/groups/:id/members`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({}, { status: 201 })
+      })
+    )
+    await groupsApi.addMember('grp-1', { user_id: 'u-1' })
+    expect(url).toBe('/api/groups/grp-1/members')
+  })
+
+  it('groupsApi.removeMember calls DELETE /api/groups/:id/members/:userId', async () => {
+    let url: string | undefined
+    server.use(
+      http.delete(`${TEST_BASE}/api/groups/:id/members/:userId`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    await groupsApi.removeMember('grp-1', 'u-1')
+    expect(url).toBe('/api/groups/grp-1/members/u-1')
+  })
+})
+
+describe('projectsApi member and restore methods', () => {
+  it('projectsApi.restore calls POST /api/projects/:id/restore', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/projects/:id/restore`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await projectsApi.restore('proj-1')
+    expect(url).toBe('/api/projects/proj-1/restore')
+  })
+
+  it('projectsApi.listMembers calls GET /api/projects/:id/members', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/projects/:id/members`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json([])
+      })
+    )
+    await projectsApi.listMembers('proj-1')
+    expect(url).toBe('/api/projects/proj-1/members')
+  })
+
+  it('projectsApi.addMember calls POST /api/projects/:id/members', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/projects/:id/members`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({}, { status: 201 })
+      })
+    )
+    await projectsApi.addMember('proj-1', { member_type: 'user', member_id: 'u-1' })
+    expect(url).toBe('/api/projects/proj-1/members')
+  })
+
+  it('projectsApi.removeMember calls DELETE /api/projects/:id/members/:memberId', async () => {
+    let url: string | undefined
+    server.use(
+      http.delete(`${TEST_BASE}/api/projects/:id/members/:memberId`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return new HttpResponse(null, { status: 204 })
+      })
+    )
+    await projectsApi.removeMember('proj-1', 'm-1')
+    expect(url).toBe('/api/projects/proj-1/members/m-1')
+  })
+})
+
+describe('instrumentRequestsApi methods', () => {
+  it('instrumentRequestsApi.list calls GET /api/instrument-requests', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json([])
+      })
+    )
+    await instrumentRequestsApi.list()
+    expect(url).toBe('/api/instrument-requests')
+  })
+
+  it('instrumentRequestsApi.get calls GET /api/instrument-requests/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await instrumentRequestsApi.get('req-1')
+    expect(url).toBe('/api/instrument-requests/req-1')
+  })
+
+  it('instrumentRequestsApi.create calls POST /api/instrument-requests', async () => {
+    let url: string | undefined
+    server.use(
+      http.post(`${TEST_BASE}/api/instrument-requests`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({}, { status: 201 })
+      })
+    )
+    await instrumentRequestsApi.create({ name: 'NMR' })
+    expect(url).toBe('/api/instrument-requests')
+  })
+
+  it('instrumentRequestsApi.review calls PATCH /api/instrument-requests/:id', async () => {
+    let url: string | undefined
+    server.use(
+      http.patch(`${TEST_BASE}/api/instrument-requests/:id`, ({ request }) => {
+        url = new URL(request.url).pathname
+        return HttpResponse.json({})
+      })
+    )
+    await instrumentRequestsApi.review('req-1', { status: 'approved' })
+    expect(url).toBe('/api/instrument-requests/req-1')
   })
 })

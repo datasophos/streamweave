@@ -1,17 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import {
+  CalendarClock,
+  ClipboardList,
+  FolderKanban,
+  HardDrive,
+  Microscope,
+  ScrollText,
+  Users,
+  UsersRound,
+  Webhook,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/contexts/AuthContext'
 import { NotificationBell } from '@/components/NotificationBell'
 
 const adminNavDefs = [
-  { to: '/admin/instruments', key: 'admin_instruments' },
-  { to: '/admin/storage', key: 'admin_storage' },
-  { to: '/admin/schedules', key: 'admin_schedules' },
-  { to: '/admin/hooks', key: 'admin_hooks' },
-  { to: '/admin/users', key: 'admin_users' },
-  { to: '/admin/instrument-requests', key: 'admin_instrument_requests' },
-  { to: '/admin/audit-log', key: 'admin_audit_log' },
+  { to: '/admin/instruments', key: 'admin_instruments', Icon: Microscope },
+  { to: '/admin/storage', key: 'admin_storage', Icon: HardDrive },
+  { to: '/admin/schedules', key: 'admin_schedules', Icon: CalendarClock },
+  { to: '/admin/hooks', key: 'admin_hooks', Icon: Webhook },
+  { to: '/admin/users', key: 'admin_users', Icon: Users },
+  { to: '/admin/groups', key: 'admin_groups', Icon: UsersRound },
+  { to: '/admin/projects', key: 'admin_projects', Icon: FolderKanban },
+  { to: '/admin/instrument-requests', key: 'admin_instrument_requests', Icon: ClipboardList },
+  { to: '/admin/audit-log', key: 'admin_audit_log', Icon: ScrollText },
 ] as const
 
 const userNavDefs = [
@@ -99,24 +112,45 @@ function AdminDropdown() {
       {open && (
         <div
           ref={dropdownRef}
-          className="fixed w-44 bg-sw-surface border border-sw-border rounded-lg shadow-lg py-1 z-50"
+          className="fixed w-48 bg-sw-surface border border-sw-border rounded-lg shadow-lg py-1 z-50"
           style={{ top: pos.top, left: pos.left }}
         >
-          {adminNavDefs.map((item) => (
+          {adminNavDefs.map(({ to, key, Icon }) => (
             <NavLink
-              key={item.to}
-              to={item.to}
+              key={to}
+              to={to}
               className={({ isActive }) =>
-                `block px-3 py-1.5 text-sm transition-colors ${
+                `flex items-center gap-2.5 px-3 py-1.5 text-sm transition-colors ${
                   isActive
                     ? 'text-sw-brand bg-sw-brand-bg font-medium'
                     : 'text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg'
                 }`
               }
             >
-              {t(item.key)}
+              <Icon size={14} className="shrink-0 opacity-70" />
+              {t(key)}
             </NavLink>
           ))}
+          <div className="my-1 border-t border-sw-border-sub" />
+          <a
+            href="/prefect/"
+
+            className="flex items-center justify-between px-3 py-1.5 text-sm text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg transition-colors"
+          >
+            {t('admin_prefect_dashboard')}
+            <svg
+              className="w-3.5 h-3.5 shrink-0 ml-1 text-sw-fg-faint"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M10 2h4m0 0v4m0-4L7 9" />
+            </svg>
+          </a>
         </div>
       )}
     </>
@@ -161,11 +195,33 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
               <div className="pt-2 pb-1 px-3 text-xs font-semibold text-sw-fg-faint uppercase tracking-wider">
                 {t('admin')}
               </div>
-              {adminNavDefs.map((item) => (
-                <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
-                  {t(item.key)}
+              {adminNavDefs.map(({ to, key, Icon }) => (
+                <NavLink key={to} to={to} className={mobileLinkClass}>
+                  <span className="flex items-center gap-2.5">
+                    <Icon size={14} className="shrink-0 opacity-70" />
+                    {t(key)}
+                  </span>
                 </NavLink>
               ))}
+              <a
+                href="/prefect/"
+    
+                className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded text-sw-fg-muted hover:bg-sw-hover hover:text-sw-fg transition-colors"
+              >
+                {t('admin_prefect_dashboard')}
+                <svg
+                  className="w-3.5 h-3.5 shrink-0 text-sw-fg-faint"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M10 2h4m0 0v4m0-4L7 9" />
+                </svg>
+              </a>
             </>
           )}
 

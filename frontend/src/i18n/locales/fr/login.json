@@ -6,5 +6,6 @@
   "password": "Mot de passe",
   "signing_in": "Connexion en cours…",
   "invalid_credentials": "Identifiants invalides.",
-  "bad_credentials": "Adresse e-mail ou mot de passe incorrect. Veuillez contacter votre administrateur système pour obtenir de l'aide."
+  "bad_credentials": "Adresse e-mail ou mot de passe incorrect. Veuillez contacter votre administrateur système pour obtenir de l'aide.",
+  "demo_heading": "Demo users"
 }

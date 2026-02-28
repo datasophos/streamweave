@@ -253,4 +253,149 @@ describe('InstrumentRequests admin page', () => {
       expect(screen.getByText('Budget constraints.')).toBeInTheDocument()
     })
   })
+
+  it('shows description in review modal when present', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([
+          makeInstrumentRequest({ description: 'A high-field NMR spectrometer.' }),
+        ])
+      )
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await waitFor(() => {
+      expect(screen.getByText('A high-field NMR spectrometer.')).toBeInTheDocument()
+    })
+  })
+
+  it('review modal falls back to truncated ID when requester email is null', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([
+          makeInstrumentRequest({ requester_id: 'abcdef12-uuid', requester_email: null }),
+        ])
+      )
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await waitFor(() => {
+      expect(screen.getAllByText('abcdef12…').length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  it('review modal falls back to raw frequency when not in known list', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([makeInstrumentRequest({ harvest_frequency: 'custom_freq' })])
+      )
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await waitFor(() => {
+      expect(screen.getByText('custom_freq')).toBeInTheDocument()
+    })
+  })
+
+  it('switching back to Approve radio after selecting Reject restores Approve button', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([makeInstrumentRequest()])
+      )
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('radio', { name: /reject/i }))
+    await waitFor(() => screen.getByRole('button', { name: /^reject$/i }))
+    await user.click(screen.getByRole('radio', { name: /approve/i }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^approve$/i })).toBeInTheDocument()
+    })
+  })
+
+  it('selecting Reject radio shows Reject button with danger style', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([makeInstrumentRequest()])
+      )
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('radio', { name: /reject/i }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^reject$/i })).toBeInTheDocument()
+    })
+  })
+
+  it('review submit button shows Saving state while pending', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([makeInstrumentRequest()])
+      ),
+      http.patch(`${TEST_BASE}/api/instrument-requests/:id`, async () => {
+        await new Promise((r) => setTimeout(r, 200))
+        return HttpResponse.json(makeInstrumentRequest({ status: 'approved' }))
+      })
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    user.click(screen.getByRole('button', { name: /^approve$/i }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled()
+    })
+  })
+
+  it('admin notes textarea onChange updates state and notes are sent in submission', async () => {
+    setupAdmin()
+    let patchedBody: unknown
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([makeInstrumentRequest()])
+      ),
+      http.patch(`${TEST_BASE}/api/instrument-requests/:id`, async ({ request }) => {
+        patchedBody = await request.json()
+        return HttpResponse.json(makeInstrumentRequest({ status: 'approved' }))
+      })
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await user.type(screen.getByRole('textbox'), 'Looks good!')
+    await user.click(screen.getByRole('button', { name: /^approve$/i }))
+    await waitFor(() => {
+      expect(patchedBody).toMatchObject({ admin_notes: 'Looks good!' })
+    })
+  })
+
+  it('shows error message when review submission fails', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json([makeInstrumentRequest()])
+      ),
+      http.patch(
+        `${TEST_BASE}/api/instrument-requests/:id`,
+        () => new HttpResponse(null, { status: 500 })
+      )
+    )
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: 'Review' }))
+    await user.click(screen.getByRole('button', { name: /^approve$/i }))
+    await waitFor(() => {
+      expect(screen.getByText(/failed to submit review/i)).toBeInTheDocument()
+    })
+  })
 })

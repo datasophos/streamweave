@@ -4,8 +4,9 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeHookConfig } from '@/mocks/handlers'
+import { TEST_BASE, makeBuiltinHook, makeHookConfig } from '@/mocks/handlers'
 import {
+  useBuiltinHooks,
   useHookConfigs,
   useCreateHookConfig,
   useUpdateHookConfig,
@@ -19,6 +20,26 @@ function wrapper(queryClient: QueryClient) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   }
 }
+
+describe('useBuiltinHooks', () => {
+  it('returns builtin hooks from /api/hooks/builtins', async () => {
+    const qc = makeTestQueryClient()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+        HttpResponse.json([
+          makeBuiltinHook({ name: 'file_filter', display_name: 'File Filter' }),
+          makeBuiltinHook({ name: 'metadata_enrichment', display_name: 'Metadata Enrichment' }),
+        ])
+      )
+    )
+
+    const { result } = renderHook(() => useBuiltinHooks(), { wrapper: wrapper(qc) })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data).toHaveLength(2)
+    expect(result.current.data![0].name).toBe('file_filter')
+    expect(result.current.data![1].display_name).toBe('Metadata Enrichment')
+  })
+})
 
 describe('useHookConfigs', () => {
   it('returns hook configs from API', async () => {

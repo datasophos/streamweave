@@ -7,6 +7,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorMessage } from '@/components/ErrorMessage'
 import { Toggle } from '@/components/Toggle'
 import {
+  useBuiltinHooks,
   useHookConfigs,
   useCreateHookConfig,
   useUpdateHookConfig,
@@ -37,6 +38,7 @@ function HookForm({
 }) {
   const { t } = useTranslation('hooks')
   const { data: instruments = [] } = useInstruments()
+  const { data: builtins = [] } = useBuiltinHooks()
   const [form, setForm] = useState<HookConfigCreate>({
     name: initial?.name ?? '',
     description: initial?.description ?? '',
@@ -101,17 +103,40 @@ function HookForm({
             <option value="http_webhook">{t('impl_webhook')}</option>
           </select>
         </div>
-        {form.implementation === 'builtin' && (
-          <div className="col-span-2">
-            <label className="label">{t('form_builtin_name')}</label>
-            <input
-              className="input"
-              value={form.builtin_name}
-              onChange={(e) => set('builtin_name', e.target.value)}
-              placeholder="e.g. nemo_status_check"
-            />
-          </div>
-        )}
+        {form.implementation === 'builtin' &&
+          (() => {
+            const selected = builtins.find((b) => b.name === form.builtin_name)
+            const triggerMismatch =
+              selected &&
+              selected.trigger !== 'both' &&
+              ((selected.trigger === 'pre' && form.trigger !== 'pre_transfer') ||
+                (selected.trigger === 'post' && form.trigger !== 'post_transfer'))
+            return (
+              <div className="col-span-2 space-y-1">
+                <label className="label">{t('form_builtin_name')}</label>
+                <select
+                  className="input"
+                  value={form.builtin_name}
+                  onChange={(e) => set('builtin_name', e.target.value)}
+                >
+                  <option value="">{t('builtin_select_placeholder')}</option>
+                  {builtins.map((b) => (
+                    <option key={b.name} value={b.name}>
+                      {b.display_name}
+                    </option>
+                  ))}
+                </select>
+                {selected && <p className="text-xs text-sw-fg-3">{selected.description}</p>}
+                {triggerMismatch && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    {t('builtin_trigger_mismatch', {
+                      expected: selected.trigger === 'pre' ? t('trigger_pre') : t('trigger_post'),
+                    })}
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         {form.implementation === 'python_script' && (
           <div className="col-span-2">
             <label className="label">{t('form_script_path')}</label>

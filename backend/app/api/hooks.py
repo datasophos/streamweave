@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import asdict
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -6,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.hooks.registry import BUILTIN_HOOK_META
 from app.models.audit import AuditAction
 from app.models.hook import HookConfig
 from app.models.user import User
@@ -13,6 +15,12 @@ from app.schemas.hook import HookConfigCreate, HookConfigRead, HookConfigUpdate
 from app.services.audit import log_action
 
 router = APIRouter(prefix="/hooks", tags=["hooks"])
+
+
+@router.get("/builtins")
+async def list_builtin_hooks(_: User = Depends(require_admin)) -> list[dict]:
+    """Return metadata for all registered built-in hooks."""
+    return [asdict(meta) for meta in BUILTIN_HOOK_META.values()]
 
 
 @router.get("", response_model=list[HookConfigRead])

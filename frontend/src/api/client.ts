@@ -96,6 +96,7 @@ export const schedulesApi = {
 export const hooksApi = {
   list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/hooks', { params }),
   get: (id: string) => apiClient.get(`/api/hooks/${id}`),
+  builtins: () => apiClient.get('/api/hooks/builtins'),
   create: (data: unknown) => apiClient.post('/api/hooks', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/hooks/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/hooks/${id}`),

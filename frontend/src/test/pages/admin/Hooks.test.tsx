@@ -3,7 +3,13 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeAdminUser, makeHookConfig, makeInstrument } from '@/mocks/handlers'
+import {
+  TEST_BASE,
+  makeAdminUser,
+  makeBuiltinHook,
+  makeHookConfig,
+  makeInstrument,
+} from '@/mocks/handlers'
 import { Hooks } from '@/pages/admin/Hooks'
 
 function setupAdmin() {
@@ -250,9 +256,10 @@ describe('Hooks admin page', () => {
     // Uncheck enabled
     await user.click(screen.getByRole('checkbox', { name: /^enabled$/i }))
 
-    // Type in builtin name
-    const builtinInput = screen.getByPlaceholderText(/nemo_status_check/i)
-    await user.type(builtinInput, 'my_builtin')
+    // Select a builtin hook from the dropdown
+    // combos[0]=trigger, combos[1]=implementation, combos[2]=builtin select
+    await waitFor(() => expect(screen.getByText('File Filter')).toBeInTheDocument())
+    await user.selectOptions(combos[2], 'file_filter')
 
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
@@ -262,7 +269,7 @@ describe('Hooks admin page', () => {
         description: 'A full description',
         trigger: 'pre_transfer',
         enabled: false,
-        builtin_name: 'my_builtin',
+        builtin_name: 'file_filter',
       })
     })
   })
@@ -398,8 +405,8 @@ describe('Hooks admin page', () => {
     await user.type(textboxes[0], 'Scoped Hook')
 
     const combos = screen.getAllByRole('combobox')
-    // Instrument select is combos[2] (trigger, implementation, instrument)
-    await user.selectOptions(combos[2], 'inst-uuid-1')
+    // combos[0]=trigger, combos[1]=implementation, combos[2]=builtin select, combos[3]=instrument
+    await user.selectOptions(combos[3], 'inst-uuid-1')
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
     await waitFor(() => {
@@ -499,10 +506,11 @@ describe('Hooks admin page', () => {
     await user.type(textboxes[0], 'Global Hook')
 
     // Select an instrument, then clear it back to the "— Global —" option
+    // combos[0]=trigger, combos[1]=implementation, combos[2]=builtin select, combos[3]=instrument
     const combos = screen.getAllByRole('combobox')
-    await user.selectOptions(combos[2], 'inst-uuid-1')
+    await user.selectOptions(combos[3], 'inst-uuid-1')
     // Select the "— Global —" option by its visible text
-    await user.selectOptions(combos[2], '— Global —')
+    await user.selectOptions(combos[3], '— Global —')
 
     await user.click(screen.getByRole('button', { name: /^save$/i }))
 
@@ -593,6 +601,135 @@ describe('Hooks admin page', () => {
 
     await waitFor(() => {
       expect(restoredUrl).toBe('/api/hooks/hook-restore-id/restore')
+    })
+  })
+
+  it('builtin dropdown shows options from /api/hooks/builtins', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+        HttpResponse.json([
+          makeBuiltinHook({ name: 'file_filter', display_name: 'File Filter' }),
+          makeBuiltinHook({ name: 'access_assignment', display_name: 'Access Assignment' }),
+        ])
+      )
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => screen.getByRole('button', { name: /new hook/i }))
+    await user.click(screen.getByRole('button', { name: /new hook/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'File Filter' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Access Assignment' })).toBeInTheDocument()
+    })
+  })
+
+  it('selecting a builtin shows its description', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+        HttpResponse.json([
+          makeBuiltinHook({
+            name: 'file_filter',
+            display_name: 'File Filter',
+            description: 'Filter files based on patterns.',
+            trigger: 'pre',
+          }),
+        ])
+      )
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => screen.getByRole('button', { name: /new hook/i }))
+    await user.click(screen.getByRole('button', { name: /new hook/i }))
+
+    await waitFor(() => screen.getByRole('option', { name: 'File Filter' }))
+    const combos = screen.getAllByRole('combobox')
+    await user.selectOptions(combos[2], 'file_filter')
+
+    await waitFor(() => {
+      expect(screen.getByText('Filter files based on patterns.')).toBeInTheDocument()
+    })
+  })
+
+  it('shows trigger mismatch warning when builtin trigger does not match hook trigger', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+        HttpResponse.json([
+          makeBuiltinHook({ name: 'file_filter', display_name: 'File Filter', trigger: 'pre' }),
+        ])
+      )
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => screen.getByRole('button', { name: /new hook/i }))
+    await user.click(screen.getByRole('button', { name: /new hook/i }))
+
+    // Default trigger is post_transfer; file_filter is 'pre' — should show mismatch
+    await waitFor(() => screen.getByRole('option', { name: 'File Filter' }))
+    const combos = screen.getAllByRole('combobox')
+    await user.selectOptions(combos[2], 'file_filter')
+
+    await waitFor(() => {
+      expect(screen.getByText(/warning.*pre-transfer/i)).toBeInTheDocument()
+    })
+  })
+
+  it('shows post-trigger mismatch warning when post builtin used with pre trigger', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+        HttpResponse.json([
+          makeBuiltinHook({
+            name: 'metadata_enrichment',
+            display_name: 'Metadata Enrichment',
+            trigger: 'post',
+          }),
+        ])
+      )
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => screen.getByRole('button', { name: /new hook/i }))
+    await user.click(screen.getByRole('button', { name: /new hook/i }))
+
+    // Change trigger to pre_transfer (mismatch with post-only builtin)
+    const combos = screen.getAllByRole('combobox')
+    await user.selectOptions(combos[0], 'pre_transfer')
+
+    await waitFor(() => screen.getByRole('option', { name: 'Metadata Enrichment' }))
+    await user.selectOptions(screen.getAllByRole('combobox')[2], 'metadata_enrichment')
+
+    await waitFor(() => {
+      expect(screen.getByText(/warning.*post-transfer/i)).toBeInTheDocument()
+    })
+  })
+
+  it('no trigger mismatch warning when trigger matches builtin', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+        HttpResponse.json([
+          makeBuiltinHook({ name: 'file_filter', display_name: 'File Filter', trigger: 'pre' }),
+        ])
+      )
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => screen.getByRole('button', { name: /new hook/i }))
+    await user.click(screen.getByRole('button', { name: /new hook/i }))
+
+    // Change trigger to pre_transfer first
+    const combos = screen.getAllByRole('combobox')
+    await user.selectOptions(combos[0], 'pre_transfer')
+
+    await waitFor(() => screen.getByRole('option', { name: 'File Filter' }))
+    await user.selectOptions(screen.getAllByRole('combobox')[2], 'file_filter')
+
+    await waitFor(() => {
+      expect(screen.queryByText(/warning/i)).not.toBeInTheDocument()
     })
   })
 

@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import type {
+  BuiltinHook,
   HookConfig,
   Instrument,
   FileRecord,
@@ -80,6 +81,15 @@ export const makeSchedule = (overrides: Partial<HarvestSchedule> = {}): HarvestS
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
   deleted_at: null,
+  ...overrides,
+})
+
+export const makeBuiltinHook = (overrides: Partial<BuiltinHook> = {}): BuiltinHook => ({
+  name: 'file_filter',
+  display_name: 'File Filter',
+  description: 'Filter files based on include/exclude fnmatch patterns.',
+  trigger: 'pre',
+  config_schema: {},
   ...overrides,
 })
 
@@ -215,6 +225,21 @@ export const handlers = [
   http.delete(`${TEST_BASE}/api/schedules/:id`, () => new HttpResponse(null, { status: 204 })),
 
   // Hooks
+  http.get(`${TEST_BASE}/api/hooks/builtins`, () =>
+    HttpResponse.json([
+      makeBuiltinHook({ name: 'file_filter', display_name: 'File Filter', trigger: 'pre' }),
+      makeBuiltinHook({
+        name: 'metadata_enrichment',
+        display_name: 'Metadata Enrichment',
+        trigger: 'post',
+      }),
+      makeBuiltinHook({
+        name: 'access_assignment',
+        display_name: 'Access Assignment',
+        trigger: 'post',
+      }),
+    ])
+  ),
   http.get(`${TEST_BASE}/api/hooks`, () => HttpResponse.json([makeHookConfig()])),
   http.post(`${TEST_BASE}/api/hooks`, () => HttpResponse.json(makeHookConfig(), { status: 201 })),
   http.patch(`${TEST_BASE}/api/hooks/:id`, ({ params }) =>

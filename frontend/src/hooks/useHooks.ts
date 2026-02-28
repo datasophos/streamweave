@@ -1,8 +1,18 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { hooksApi } from '@/api/client'
-import type { HookConfig, HookConfigCreate, HookConfigUpdate } from '@/api/types'
+import type { BuiltinHook, HookConfig, HookConfigCreate, HookConfigUpdate } from '@/api/types'
 
 const KEY = ['hooks']
+
+export function useBuiltinHooks() {
+  return useQuery({
+    queryKey: [...KEY, 'builtins'],
+    queryFn: async () => {
+      const resp = await hooksApi.builtins()
+      return resp.data as BuiltinHook[]
+    },
+  })
+}
 
 export function useHookConfigs(includeDeleted = false) {
   return useQuery({

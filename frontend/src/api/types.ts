@@ -166,6 +166,14 @@ export interface HarvestScheduleUpdate {
 export type HookTrigger = 'pre_transfer' | 'post_transfer'
 export type HookImplementation = 'builtin' | 'python_script' | 'http_webhook'
 
+export interface BuiltinHook {
+  name: string
+  display_name: string
+  description: string
+  trigger: 'pre' | 'post' | 'both'
+  config_schema: Record<string, unknown>
+}
+
 export interface HookConfig {
   id: UUID
   name: string

@@ -118,3 +118,36 @@ class TestHooksCRUD:
     async def test_non_admin_rejected(self, client, regular_headers):
         resp = await client.get("/api/hooks", headers=regular_headers)
         assert resp.status_code == 403
+
+
+class TestBuiltinHooks:
+    @pytest.mark.asyncio
+    async def test_list_builtins_returns_all_registered(self, client, admin_headers):
+        resp = await client.get("/api/hooks/builtins", headers=admin_headers)
+        assert resp.status_code == 200
+        data = resp.json()
+        names = {item["name"] for item in data}
+        assert names == {"file_filter", "metadata_enrichment", "access_assignment"}
+
+    @pytest.mark.asyncio
+    async def test_builtin_has_expected_fields(self, client, admin_headers):
+        resp = await client.get("/api/hooks/builtins", headers=admin_headers)
+        assert resp.status_code == 200
+        for item in resp.json():
+            assert "name" in item
+            assert "display_name" in item
+            assert "description" in item
+            assert "trigger" in item
+            assert "config_schema" in item
+            assert item["trigger"] in ("pre", "post", "both")
+
+    @pytest.mark.asyncio
+    async def test_file_filter_is_pre_trigger(self, client, admin_headers):
+        resp = await client.get("/api/hooks/builtins", headers=admin_headers)
+        ff = next(i for i in resp.json() if i["name"] == "file_filter")
+        assert ff["trigger"] == "pre"
+
+    @pytest.mark.asyncio
+    async def test_non_admin_rejected(self, client, regular_headers):
+        resp = await client.get("/api/hooks/builtins", headers=regular_headers)
+        assert resp.status_code == 403

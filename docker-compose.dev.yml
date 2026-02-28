@@ -176,6 +176,7 @@ services:
       VITE_PROXY_TARGET: "http://api:8000"
       VITE_ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       VITE_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-adminpassword}
+      VITE_DEMO_MODE: "true"
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
     depends_on:
       - api

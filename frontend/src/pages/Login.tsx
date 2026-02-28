@@ -22,8 +22,18 @@ export function Login() {
   const from = (location.state as { from?: string })?.from ?? searchParams.get('next') ?? '/'
   const { preferences, setPreference } = usePreferences()
 
-  const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL ?? '')
-  const [password, setPassword] = useState(import.meta.env.VITE_ADMIN_PASSWORD ?? '')
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+  const adminEmail = import.meta.env.VITE_ADMIN_EMAIL ?? 'admin@example.com'
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD ?? 'adminpassword'
+  const demoUsers = [
+    { key: 'admin', label: 'Admin', email: adminEmail, password: adminPassword },
+    { key: 'chemist', label: 'Chemist', email: 'chemist@example.com', password: 'devpass123!' },
+    { key: 'proteomics', label: 'Proteomics', email: 'proteomics@example.com', password: 'devpass123!' },
+    { key: 'em_operator', label: 'EM Operator', email: 'em-operator@example.com', password: 'devpass123!' },
+  ]
+
+  const [email, setEmail] = useState(demoMode ? adminEmail : (import.meta.env.VITE_ADMIN_EMAIL ?? ''))
+  const [password, setPassword] = useState(demoMode ? adminPassword : (import.meta.env.VITE_ADMIN_PASSWORD ?? ''))
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -100,6 +110,29 @@ export function Login() {
               Forgot password?
             </Link>
           </p>
+          {demoMode && (
+            <div className="mt-5">
+              <div className="relative flex items-center">
+                <span className="flex-grow border-t border-sw-border-in" />
+                <span className="mx-3 text-xs text-sw-fg-faint uppercase tracking-wide">
+                  {t('demo_heading')}
+                </span>
+                <span className="flex-grow border-t border-sw-border-in" />
+              </div>
+              <div className="mt-3 flex flex-wrap justify-center gap-2">
+                {demoUsers.map(({ key, label, email: dEmail, password: dPass }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => { setEmail(dEmail); setPassword(dPass) }}
+                    className="btn-secondary btn-sm"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Language chooser */}

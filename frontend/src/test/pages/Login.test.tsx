@@ -1,10 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
 import { TEST_BASE, makeAdminUser } from '@/mocks/handlers'
 import { Login } from '@/pages/Login'
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe('Login page', () => {
   it('renders email, password inputs and submit button', () => {
@@ -139,5 +143,68 @@ describe('Login page', () => {
     await waitFor(() => {
       expect(screen.queryByRole('heading', { name: /sign in/i })).not.toBeInTheDocument()
     })
+  })
+})
+
+describe('Login page — demo mode', () => {
+  it('does not show demo users section when VITE_DEMO_MODE is not set', () => {
+    renderWithProviders(<Login />)
+    expect(screen.queryByText(/demo users/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Admin' })).not.toBeInTheDocument()
+  })
+
+  it('shows all four demo user buttons when VITE_DEMO_MODE=true', () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    renderWithProviders(<Login />)
+    expect(screen.getByText(/demo users/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Admin' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Chemist' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Proteomics' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'EM Operator' })).toBeInTheDocument()
+  })
+
+  it('pre-fills admin credentials on render when VITE_DEMO_MODE=true', () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    vi.stubEnv('VITE_ADMIN_EMAIL', 'admin@example.com')
+    vi.stubEnv('VITE_ADMIN_PASSWORD', 'adminpassword')
+    renderWithProviders(<Login />)
+    expect(screen.getByLabelText(/email address/i)).toHaveValue('admin@example.com')
+    expect(screen.getByLabelText(/password/i)).toHaveValue('adminpassword')
+  })
+
+  it('clicking Chemist fills chemist credentials', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    const { user } = renderWithProviders(<Login />)
+    await user.click(screen.getByRole('button', { name: 'Chemist' }))
+    expect(screen.getByLabelText(/email address/i)).toHaveValue('chemist@example.com')
+    expect(screen.getByLabelText(/password/i)).toHaveValue('devpass123!')
+  })
+
+  it('clicking Proteomics fills proteomics credentials', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    const { user } = renderWithProviders(<Login />)
+    await user.click(screen.getByRole('button', { name: 'Proteomics' }))
+    expect(screen.getByLabelText(/email address/i)).toHaveValue('proteomics@example.com')
+    expect(screen.getByLabelText(/password/i)).toHaveValue('devpass123!')
+  })
+
+  it('clicking EM Operator fills em-operator credentials', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    const { user } = renderWithProviders(<Login />)
+    await user.click(screen.getByRole('button', { name: 'EM Operator' }))
+    expect(screen.getByLabelText(/email address/i)).toHaveValue('em-operator@example.com')
+    expect(screen.getByLabelText(/password/i)).toHaveValue('devpass123!')
+  })
+
+  it('clicking Admin fills admin credentials', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true')
+    vi.stubEnv('VITE_ADMIN_EMAIL', 'admin@example.com')
+    vi.stubEnv('VITE_ADMIN_PASSWORD', 'adminpassword')
+    const { user } = renderWithProviders(<Login />)
+    // Switch to a different user first, then back to admin
+    await user.click(screen.getByRole('button', { name: 'Chemist' }))
+    await user.click(screen.getByRole('button', { name: 'Admin' }))
+    expect(screen.getByLabelText(/email address/i)).toHaveValue('admin@example.com')
+    expect(screen.getByLabelText(/password/i)).toHaveValue('adminpassword')
   })
 })

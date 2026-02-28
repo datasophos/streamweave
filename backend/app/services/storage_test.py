@@ -56,7 +56,7 @@ async def test_s3(config: dict, base_path: str) -> tuple[bool, str]:
     if region:
         args += ["--s3-region", region]
     if endpoint_url:
-        args += ["--s3-endpoint", endpoint_url]
+        args += ["--s3-endpoint", endpoint_url, "--s3-provider", "Other"]
 
     rc, _, stderr = await _rclone_run(args)
     if rc != 0:

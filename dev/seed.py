@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import time
 import urllib.error
@@ -78,6 +79,44 @@ def wait_for_api(retries: int = 30, delay: float = 2.0) -> None:
     sys.exit(1)
 
 
+def wait_for_s3(endpoint: str, retries: int = 30, delay: float = 2.0) -> None:
+    print(f"Waiting for S3 at {endpoint} …", flush=True)
+    for attempt in range(1, retries + 1):
+        try:
+            urllib.request.urlopen(f"{endpoint}/", timeout=3)
+            print("S3 is ready.", flush=True)
+            return
+        except urllib.error.HTTPError:
+            # Any HTTP error response means the server is up
+            print("S3 is ready.", flush=True)
+            return
+        except Exception:
+            pass
+        print(f"  attempt {attempt}/{retries} — retrying in {delay}s …", flush=True)
+        time.sleep(delay)
+    print("WARNING: S3 did not become healthy in time. Continuing anyway.", file=sys.stderr)
+
+
+def create_s3_bucket(bucket: str, endpoint: str, access_key: str, secret_key: str) -> None:
+    """Create an S3 bucket via rclone mkdir (idempotent)."""
+    result = subprocess.run(
+        [
+            "rclone", "mkdir",
+            f":s3:{bucket}",
+            "--s3-access-key-id", access_key,
+            "--s3-secret-access-key", secret_key,
+            "--s3-endpoint", endpoint,
+            "--s3-provider", "Other",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        print(f"  ✓  S3 bucket '{bucket}' created/exists", flush=True)
+    else:
+        print(f"  ⚠  S3 bucket '{bucket}' create failed: {result.stderr.strip()[:120]}", flush=True)
+
+
 def create_if_absent(token: str, list_path: str, create_path: str, payload: dict, label: str) -> dict:
     """Create a resource only if no existing item has the same name."""
     existing = _request("GET", list_path, token=token)
@@ -130,6 +169,7 @@ def seed(token: str) -> None:
         "base_path": "/storage/posix-archive",
         "enabled": True,
     }, "StorageLocation")
+    os.makedirs("/storage/posix-archive", exist_ok=True)
 
     s3_store = create_if_absent(token, "/api/storage-locations", "/api/storage-locations", {
         "name": "S3 dev bucket",
@@ -144,6 +184,7 @@ def seed(token: str) -> None:
             "secret_access_key": "devsecret",
         },
     }, "StorageLocation")
+    create_s3_bucket("instruments", "http://s3-dev:9000", "devkey", "devsecret")
 
     cifs_store = create_if_absent(token, "/api/storage-locations", "/api/storage-locations", {
         "name": "Samba archive share",
@@ -311,6 +352,7 @@ def seed(token: str) -> None:
 
 if __name__ == "__main__":
     wait_for_api()
+    wait_for_s3("http://s3-dev:9000")
     print("\nLogging in as admin …", flush=True)
     token = login()
     print("Seeding dev data …", flush=True)

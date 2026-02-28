@@ -55,6 +55,12 @@ services:
       redis:
         condition: service_healthy
     command: prefect server start
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   api:
     build:
@@ -72,7 +78,7 @@ services:
       postgres:
         condition: service_healthy
       prefect-server:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - harvest_data:/storage
     command: >
@@ -94,7 +100,7 @@ services:
       postgres:
         condition: service_healthy
       prefect-server:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - harvest_data:/storage
     networks:

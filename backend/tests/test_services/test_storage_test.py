@@ -105,6 +105,28 @@ async def test_s3_with_endpoint_url():
     call_args = mock_exec.call_args[0]
     assert "--s3-endpoint" in call_args
     assert "https://s3.example.com" in call_args
+    assert "--s3-provider" in call_args
+    assert "Other" in call_args
+
+
+@pytest.mark.asyncio
+async def test_s3_no_s3_provider_without_endpoint():
+    """--s3-provider should not be added for plain AWS (no endpoint_url)."""
+    config = {
+        "bucket": "my-bucket",
+        "region": "us-east-1",
+        "access_key_id": "AKIA",
+        "secret_access_key": "enc-secret",
+    }
+    mock_exec = _async_mock_exec(_make_rclone_proc(0))
+    with (
+        patch("app.services.storage_test.decrypt_value", return_value="plaintext-secret"),
+        patch("asyncio.create_subprocess_exec", new=mock_exec),
+    ):
+        ok, _ = await svc.test_s3(config, "s3://my-bucket/data")
+    assert ok is True
+    call_args = mock_exec.call_args[0]
+    assert "--s3-provider" not in call_args
 
 
 @pytest.mark.asyncio

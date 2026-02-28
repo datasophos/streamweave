@@ -101,7 +101,7 @@ services:
       postgres:
         condition: service_healthy
       prefect-server:
-        condition: service_started
+        condition: service_healthy
       mailpit:
         condition: service_started
     volumes:
@@ -130,8 +130,11 @@ services:
     depends_on:
       api:
         condition: service_healthy
+      s3-dev:
+        condition: service_started
     volumes:
       - ./dev:/seed
+      - harvest_data:/storage
     command: python /seed/seed.py
     restart: "no"
 
@@ -148,7 +151,7 @@ services:
       postgres:
         condition: service_healthy
       prefect-server:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - harvest_data:/storage

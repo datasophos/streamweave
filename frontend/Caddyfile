@@ -18,6 +18,19 @@
 		reverse_proxy api:8000
 	}
 
+	# FastAPI interactive docs (outside /api/* prefix)
+	handle /swagger* {
+		reverse_proxy api:8000
+	}
+
+	handle /redoc* {
+		reverse_proxy api:8000
+	}
+
+	handle /openapi.json {
+		reverse_proxy api:8000
+	}
+
 	# Prefect orchestration UI — admin-only via forward_auth.
 	# The Prefect server is configured with PREFECT_UI_SERVE_BASE=/prefect/ and
 	# PREFECT_UI_API_URL=/prefect/api, so the UI HTML and assets are served at /prefect/*

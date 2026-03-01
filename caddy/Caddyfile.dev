@@ -33,7 +33,7 @@ https://streamweave.local {
 	}
 
 	# FastAPI interactive docs (outside /api/* prefix)
-	handle /docs* {
+	handle /swagger* {
 		reverse_proxy api:8000
 	}
 

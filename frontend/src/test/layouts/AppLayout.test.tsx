@@ -436,9 +436,13 @@ describe('AppLayout', () => {
     await user.click(screen.getByRole('button', { name: /user menu/i }))
 
     await waitFor(() => {
-      const apiDocsLink = screen.getByRole('link', { name: /api docs/i })
-      expect(apiDocsLink).toHaveAttribute('href', '/redoc')
-      expect(apiDocsLink).toHaveAttribute('target', '_blank')
+      const redocLink = screen.getByRole('link', { name: 'ReDoc' })
+      expect(redocLink).toHaveAttribute('href', '/redoc')
+      expect(redocLink).toHaveAttribute('target', '_blank')
+
+      const swaggerLink = screen.getByRole('link', { name: 'Swagger UI' })
+      expect(swaggerLink).toHaveAttribute('href', '/swagger')
+      expect(swaggerLink).toHaveAttribute('target', '_blank')
 
       const docsLink = screen.getByRole('link', { name: /documentation/i })
       expect(docsLink).toHaveAttribute('href', 'https://datasophos.github.io/streamweave/')

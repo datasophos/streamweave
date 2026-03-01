@@ -238,6 +238,8 @@ export const handlers = [
     HttpResponse.json({ access_token: 'test-token', token_type: 'bearer' })
   ),
   http.post(`${TEST_BASE}/auth/jwt/logout`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${TEST_BASE}/auth/cookie/login`, () => new HttpResponse(null, { status: 200 })),
+  http.post(`${TEST_BASE}/auth/cookie/logout`, () => new HttpResponse(null, { status: 200 })),
   http.post(`${TEST_BASE}/auth/forgot-password`, () => new HttpResponse(null, { status: 202 })),
   http.post(`${TEST_BASE}/auth/reset-password`, () =>
     HttpResponse.json({ detail: 'RESET_PASSWORD_INVALID_PASSWORD' }, { status: 400 })

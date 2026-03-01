@@ -6,12 +6,13 @@ from app.hooks.base import HookAction, HookContext
 from app.hooks.builtin.file_filter import FileFilterHook
 
 
-def _ctx(filename: str, source_path: str = "") -> HookContext:
+def _ctx(filename: str, source_path: str = "", size_bytes: int = 1024) -> HookContext:
     return HookContext(
         source_path=source_path or filename,
         filename=filename,
         instrument_id="test-id",
         instrument_name="test",
+        size_bytes=size_bytes,
     )
 
 
@@ -75,6 +76,40 @@ class TestRedirectRules:
         )
         result = await hook.execute(_ctx("sample.raw"))
         assert result.action == HookAction.redirect
+
+
+class TestMinSizeBytes:
+    @pytest.mark.asyncio
+    async def test_skips_zero_byte_file(self):
+        hook = FileFilterHook(config={"min_size_bytes": 1})
+        result = await hook.execute(_ctx("empty.dat", size_bytes=0))
+        assert result.action == HookAction.skip
+
+    @pytest.mark.asyncio
+    async def test_skips_file_below_minimum(self):
+        hook = FileFilterHook(config={"min_size_bytes": 100})
+        result = await hook.execute(_ctx("small.dat", size_bytes=50))
+        assert result.action == HookAction.skip
+
+    @pytest.mark.asyncio
+    async def test_allows_file_at_minimum(self):
+        hook = FileFilterHook(config={"min_size_bytes": 100})
+        result = await hook.execute(_ctx("ok.dat", size_bytes=100))
+        assert result.action == HookAction.proceed
+
+    @pytest.mark.asyncio
+    async def test_no_min_size_allows_zero_byte(self):
+        hook = FileFilterHook(config={})
+        result = await hook.execute(_ctx("empty.dat", size_bytes=0))
+        assert result.action == HookAction.proceed
+
+    @pytest.mark.asyncio
+    async def test_min_size_checked_before_patterns(self):
+        """min_size_bytes fires before exclude_patterns; both reasons to skip are independent."""
+        hook = FileFilterHook(config={"min_size_bytes": 1, "exclude_patterns": ["*.tmp"]})
+        result = await hook.execute(_ctx("empty.tmp", size_bytes=0))
+        assert result.action == HookAction.skip
+        assert "0 B" in result.message
 
 
 class TestNoConfig:

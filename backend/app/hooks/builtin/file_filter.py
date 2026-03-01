@@ -13,12 +13,21 @@ class FileFilterHook(BaseHook):
     Config:
         exclude_patterns: list[str] — fnmatch patterns; matched files are skipped
         include_patterns: list[str] — fnmatch patterns; if set, only matching files proceed
+        min_size_bytes: int — skip files strictly smaller than this size (0-byte files: use 1)
         redirect_rules: list[dict] — [{"pattern": "*.raw", "destination": "/alt/path"}]
     """
 
     async def execute(self, context: HookContext) -> HookResult:
         filename = context.filename
         source_path = context.source_path
+
+        # Check minimum size first
+        min_size = self.config.get("min_size_bytes")
+        if min_size is not None and context.size_bytes < min_size:
+            return HookResult(
+                action=HookAction.skip,
+                message=f"File too small ({context.size_bytes} B < min {min_size} B)",
+            )
 
         # Check redirect rules first
         for rule in self.config.get("redirect_rules", []):

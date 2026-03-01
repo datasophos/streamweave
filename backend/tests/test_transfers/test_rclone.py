@@ -28,10 +28,10 @@ def adapter():
 
 class TestRemotePath:
     def test_root(self, adapter):
-        assert adapter._remote_path() == ":smb:/"
+        assert adapter._remote_path() == ":smb:microscope"
 
     def test_with_subpath(self, adapter):
-        assert adapter._remote_path("data/file.tif") == ":smb:/data/file.tif"
+        assert adapter._remote_path("data/file.tif") == ":smb:microscope/data/file.tif"
 
     def test_custom_base_path(self):
         a = RcloneAdapter(
@@ -41,7 +41,7 @@ class TestRemotePath:
             smb_user="u",
             smb_password="p",
         )
-        assert a._remote_path("file.txt") == ":smb:/export/data/file.txt"
+        assert a._remote_path("file.txt") == ":smb:s/export/data/file.txt"
 
 
 class TestBaseFlags:
@@ -104,7 +104,7 @@ class TestDiscover:
         assert args[0] == "rclone"
         assert args[1] == "lsjson"
         assert "--recursive" in args
-        assert ":smb:/" in args
+        assert ":smb:microscope" in args
 
     @pytest.mark.asyncio
     async def test_discover_failure_raises(self, adapter):
@@ -156,7 +156,7 @@ class TestTransferFile:
             args = mock_run.call_args[0][0]
             assert args[0] == "rclone"
             assert args[1] == "copyto"
-            assert ":smb:/data/file.tif" in args
+            assert ":smb:microscope/data/file.tif" in args
             assert dest in args
 
 

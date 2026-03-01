@@ -7,14 +7,14 @@ import uuid
 from datetime import UTC, datetime
 
 from prefect import flow, get_run_logger, task
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import selectinload
 
 from app.hooks.base import HookAction, HookContext
 from app.hooks.runner import run_hooks
 from app.models.access import FileAccessGrant, GranteeType
 from app.models.file import FileRecord
-from app.models.hook import HookTrigger
+from app.models.hook import HookConfig, HookTrigger
 from app.models.instrument import Instrument
 from app.models.schedule import HarvestSchedule
 from app.models.transfer import FileTransfer, TransferStatus
@@ -132,17 +132,29 @@ async def transfer_single_file_task(
     logger.info("Processing %s from %s", source_path, instrument_name)
 
     async with get_db_session() as session:
-        # Load instrument with hooks and service account
+        # Load instrument with service account
         result = await session.execute(
             select(Instrument)
-            .options(
-                selectinload(Instrument.service_account),
-                selectinload(Instrument.hooks),
-            )
+            .options(selectinload(Instrument.service_account))
             .where(Instrument.id == inst_uuid)
         )
         instrument = result.scalar_one()
-        hook_configs = instrument.hooks
+
+        # Load hooks for this instrument plus any global hooks (instrument_id IS NULL).
+        # Using the FK relationship alone would miss global hooks.
+        hook_result = await session.execute(
+            select(HookConfig)
+            .where(
+                HookConfig.enabled == True,  # noqa: E712
+                HookConfig.deleted_at.is_(None),
+                or_(
+                    HookConfig.instrument_id == inst_uuid,
+                    HookConfig.instrument_id.is_(None),
+                ),
+            )
+            .order_by(HookConfig.priority)
+        )
+        hook_configs = hook_result.scalars().all()
 
         # Load storage location for destination path
         from app.models.storage import StorageLocation

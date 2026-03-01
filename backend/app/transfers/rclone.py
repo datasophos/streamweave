@@ -59,11 +59,13 @@ class RcloneAdapter(TransferAdapter):
         return self._obscured_password
 
     def _remote_path(self, path: str = "") -> str:
-        """Build the rclone remote path string: :smb:path."""
-        base = self.smb_base_path
+        """Build the rclone remote path string: :smb:share[/base][/path]."""
+        parts = [self.smb_share]
+        if self.smb_base_path != "/":
+            parts.append(self.smb_base_path.lstrip("/"))
         if path:
-            base = f"{base}/{path}" if base != "/" else f"/{path}"
-        return f":smb:{base}"
+            parts.append(path)
+        return ":smb:" + "/".join(parts)
 
     def _base_flags(self) -> list[str]:
         return [

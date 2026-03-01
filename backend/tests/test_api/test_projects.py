@@ -93,6 +93,7 @@ class TestProjectMembers:
         data = resp.json()
         assert data["member_type"] == "user"
         assert data["member_id"] == str(regular_user.id)
+        assert data["email"] == regular_user.email
 
     @pytest.mark.asyncio
     async def test_add_group_member(self, client, admin_headers, project, group):
@@ -102,13 +103,20 @@ class TestProjectMembers:
             headers=admin_headers,
         )
         assert resp.status_code == 201
-        assert resp.json()["member_type"] == "group"
+        data = resp.json()
+        assert data["member_type"] == "group"
+        assert data["email"] is None
 
     @pytest.mark.asyncio
-    async def test_list_members(self, client, admin_headers, project, regular_user):
+    async def test_list_members(self, client, admin_headers, project, regular_user, group):
         await client.post(
             f"/api/projects/{project.id}/members",
             json={"member_type": "user", "member_id": str(regular_user.id)},
+            headers=admin_headers,
+        )
+        await client.post(
+            f"/api/projects/{project.id}/members",
+            json={"member_type": "group", "member_id": str(group.id)},
             headers=admin_headers,
         )
         resp = await client.get(
@@ -116,7 +124,12 @@ class TestProjectMembers:
             headers=admin_headers,
         )
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        members = resp.json()
+        assert len(members) == 2
+        user_member = next(m for m in members if m["member_type"] == "user")
+        group_member = next(m for m in members if m["member_type"] == "group")
+        assert user_member["email"] == regular_user.email
+        assert group_member["email"] is None
 
     @pytest.mark.asyncio
     async def test_add_duplicate_member(self, client, admin_headers, project, regular_user):

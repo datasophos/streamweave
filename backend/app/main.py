@@ -20,6 +20,7 @@ from app.api.users import (
     admin_users_router,
     auth_router,
     cookie_auth_router,
+    me_router,
     register_router,
     reset_password_router,
     users_router,
@@ -48,6 +49,7 @@ def create_app() -> FastAPI:
     app.include_router(reset_password_router, prefix="/auth", tags=["auth"])
     app.include_router(users_router, prefix="/users", tags=["users"])
     app.include_router(admin_users_router, prefix="/api", tags=["users"])
+    app.include_router(me_router, prefix="/api", tags=["users"])
 
     # Resource routes
     app.include_router(instruments_router, prefix="/api")

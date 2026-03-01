@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
 from app.models.audit import AuditAction
-from app.models.project import Project, ProjectMembership
+from app.models.project import MemberType, Project, ProjectMembership
 from app.models.user import User
 from app.schemas.project import (
     ProjectCreate,
@@ -124,7 +124,25 @@ async def list_project_members(
     result = await db.execute(
         select(ProjectMembership).where(ProjectMembership.project_id == project_id)
     )
-    return result.scalars().all()
+    memberships = result.scalars().all()
+
+    user_ids = [m.member_id for m in memberships if m.member_type == MemberType.user]
+    if user_ids:
+        user_rows = await db.execute(select(User).where(User.id.in_(user_ids)))  # type: ignore[attr-defined]
+        email_by_id = {u.id: u.email for u in user_rows.scalars()}
+    else:
+        email_by_id = {}
+
+    return [
+        ProjectMemberRead(
+            id=m.id,
+            project_id=m.project_id,
+            member_type=m.member_type,
+            member_id=m.member_id,
+            email=email_by_id.get(m.member_id),
+        )
+        for m in memberships
+    ]
 
 
 @router.post(
@@ -161,7 +179,20 @@ async def add_project_member(
     db.add(membership)
     await db.commit()
     await db.refresh(membership)
-    return membership
+
+    email = None
+    if data.member_type == MemberType.user:
+        user = await db.get(User, data.member_id)
+        if user:
+            email = user.email
+
+    return ProjectMemberRead(
+        id=membership.id,
+        project_id=membership.project_id,
+        member_type=membership.member_type,
+        member_id=membership.member_id,
+        email=email,
+    )
 
 
 @router.delete(

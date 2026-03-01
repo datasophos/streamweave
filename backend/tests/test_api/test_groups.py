@@ -89,7 +89,9 @@ class TestGroupMembers:
             headers=admin_headers,
         )
         assert resp.status_code == 201
-        assert resp.json()["user_id"] == str(regular_user.id)
+        data = resp.json()
+        assert data["user_id"] == str(regular_user.id)
+        assert data["email"] == regular_user.email
 
         # List members
         resp = await client.get(
@@ -97,7 +99,9 @@ class TestGroupMembers:
             headers=admin_headers,
         )
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        members = resp.json()
+        assert len(members) == 1
+        assert members[0]["email"] == regular_user.email
 
     @pytest.mark.asyncio
     async def test_add_duplicate_member(self, client, admin_headers, group, regular_user):
@@ -147,6 +151,15 @@ class TestGroupMembers:
         resp = await client.post(
             f"/api/groups/{uuid.uuid4()}/members",
             json={"user_id": str(regular_user.id)},
+            headers=admin_headers,
+        )
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_add_nonexistent_user_to_group(self, client, admin_headers, group):
+        resp = await client.post(
+            f"/api/groups/{group.id}/members",
+            json={"user_id": str(uuid.uuid4())},
             headers=admin_headers,
         )
         assert resp.status_code == 404

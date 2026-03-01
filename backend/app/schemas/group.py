@@ -21,6 +21,7 @@ class GroupMemberAdd(BaseModel):
 class GroupMemberRead(BaseModel):
     group_id: uuid.UUID
     user_id: uuid.UUID
+    email: str
 
     model_config = {"from_attributes": True}
 

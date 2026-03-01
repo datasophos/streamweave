@@ -26,6 +26,7 @@ class ProjectMemberRead(BaseModel):
     project_id: uuid.UUID
     member_type: MemberType
     member_id: uuid.UUID
+    email: str | None = None
 
     model_config = {"from_attributes": True}
 

@@ -122,8 +122,17 @@ async def list_group_members(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     result = await db.execute(select(GroupMembership).where(GroupMembership.group_id == group_id))
-    members = result.scalars().all()
-    return members
+    memberships = result.scalars().all()
+    user_ids = [m.user_id for m in memberships]
+    if user_ids:
+        user_rows = await db.execute(select(User).where(User.id.in_(user_ids)))  # type: ignore[attr-defined]
+        email_by_id = {u.id: u.email for u in user_rows.scalars()}
+    else:
+        email_by_id = {}
+    return [
+        GroupMemberRead(group_id=m.group_id, user_id=m.user_id, email=email_by_id[m.user_id])
+        for m in memberships
+    ]
 
 
 @router.post(
@@ -141,6 +150,10 @@ async def add_group_member(
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
 
+    user = await db.get(User, data.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     # Check for duplicate
     existing = await db.get(GroupMembership, (group_id, data.user_id))
     if existing:
@@ -149,7 +162,7 @@ async def add_group_member(
     membership = GroupMembership(group_id=group_id, user_id=data.user_id)
     db.add(membership)
     await db.commit()
-    return membership
+    return GroupMemberRead(group_id=group_id, user_id=data.user_id, email=user.email)
 
 
 @router.delete(

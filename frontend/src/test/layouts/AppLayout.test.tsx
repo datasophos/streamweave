@@ -130,8 +130,8 @@ describe('AppLayout', () => {
     await user.click(hamburger)
 
     await waitFor(() => {
-      // After opening, there are 2 sign out buttons (desktop + mobile)
-      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(2)
+      // After opening, only mobile sign out is in DOM (desktop sign out is in user menu dropdown)
+      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(1)
     })
   })
 
@@ -165,9 +165,9 @@ describe('AppLayout', () => {
     const { user } = renderWithProviders(<AppLayout />)
 
     await user.click(screen.getByRole('button', { name: /toggle menu/i }))
-    // Wait for mobile menu to open (2 sign out buttons)
+    // Wait for mobile menu to open (1 mobile sign out button)
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(2)
+      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(1)
     })
 
     // Click the mobile backdrop (the fixed inset overlay)
@@ -175,8 +175,8 @@ describe('AppLayout', () => {
     await user.click(backdrop)
 
     await waitFor(() => {
-      // After close, back to 1 sign out button (desktop only)
-      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(1)
+      // After close, no sign out buttons in DOM (desktop sign out is in closed user menu dropdown)
+      expect(screen.queryAllByRole('button', { name: /sign out/i }).length).toBe(0)
     })
   })
 
@@ -188,9 +188,11 @@ describe('AppLayout', () => {
 
     const { user } = renderWithProviders(<AppLayout />)
 
-    // Use the desktop sign out button (hidden on mobile but still in DOM)
-    const signOutButtons = await screen.findAllByRole('button', { name: /sign out/i })
-    await user.click(signOutButtons[0])
+    // Open user menu dropdown first, then click sign out
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+    await waitFor(() => screen.getByRole('button', { name: /sign out/i }))
+    await user.click(screen.getByRole('button', { name: /sign out/i }))
 
     await waitFor(() => {
       expect(localStorage.getItem('access_token')).toBeNull()
@@ -225,12 +227,12 @@ describe('AppLayout', () => {
     // Open mobile menu
     await user.click(screen.getByRole('button', { name: /toggle menu/i }))
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(2)
+      expect(screen.getAllByRole('button', { name: /sign out/i }).length).toBe(1)
     })
 
-    // Click the mobile menu sign out (second sign out button in DOM)
+    // Click the only sign out button (mobile menu)
     const signOutButtons = screen.getAllByRole('button', { name: /sign out/i })
-    await user.click(signOutButtons[1])
+    await user.click(signOutButtons[0])
 
     await waitFor(() => {
       expect(localStorage.getItem('access_token')).toBeNull()
@@ -256,17 +258,24 @@ describe('AppLayout', () => {
 
   it('shows user email in desktop nav when user is loaded', async () => {
     setupUser()
-    renderWithProviders(<AppLayout />)
+    const { user } = renderWithProviders(<AppLayout />)
+
+    // Open user menu dropdown to see email
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
 
     await waitFor(() => {
-      // Email appears in the desktop user area (hidden on small screens but in DOM)
       expect(screen.getByText('user@test.com')).toBeInTheDocument()
     })
   })
 
   it('desktop nav has Settings link', async () => {
     setupUser()
-    renderWithProviders(<AppLayout />)
+    const { user } = renderWithProviders(<AppLayout />)
+
+    // Settings is inside the user menu dropdown
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
 
     await waitFor(() => {
       const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
@@ -276,7 +285,11 @@ describe('AppLayout', () => {
 
   it('Settings link points to /settings', async () => {
     setupUser()
-    renderWithProviders(<AppLayout />)
+    const { user } = renderWithProviders(<AppLayout />)
+
+    // Settings is inside the user menu dropdown
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
 
     await waitFor(() => {
       const settingsLink = screen.getAllByRole('link', { name: /settings/i })[0]
@@ -292,7 +305,144 @@ describe('AppLayout', () => {
 
     await waitFor(() => {
       const settingsLinks = screen.getAllByRole('link', { name: /settings/i })
-      expect(settingsLinks.length).toBeGreaterThanOrEqual(2) // desktop + mobile
+      expect(settingsLinks.length).toBeGreaterThanOrEqual(1) // mobile settings link
+    })
+  })
+
+  it('user menu button is rendered', async () => {
+    setupUser()
+    renderWithProviders(<AppLayout />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /user menu/i })).toBeInTheDocument()
+    })
+  })
+
+  it('user menu dropdown opens when button clicked', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('user@test.com')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /settings/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
+      expect(screen.getByText('Help')).toBeInTheDocument()
+    })
+  })
+
+  it('user menu dropdown closes when button clicked again', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+    await waitFor(() => screen.getByRole('button', { name: /sign out/i }))
+
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('user menu dropdown closes when clicking outside', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+    await waitFor(() => screen.getByRole('button', { name: /sign out/i }))
+
+    await user.click(document.body)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('user menu dropdown closes on Esc key', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+    await waitFor(() => screen.getByRole('button', { name: /sign out/i }))
+
+    await user.keyboard('{Escape}')
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('admin badge shown only for admin users', async () => {
+    setupAdmin()
+    renderWithProviders(<AppLayout />)
+
+    await waitFor(() => {
+      // The badge is a <span> (not a button) in the desktop user area
+      const badge = document.querySelector('span.rounded-full')
+      expect(badge).toBeInTheDocument()
+      expect(badge?.textContent).toBe('Admin')
+    })
+  })
+
+  it('non-admin does not see admin badge in desktop area', async () => {
+    setupUser()
+    renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    expect(document.querySelector('span.rounded-full')).not.toBeInTheDocument()
+  })
+
+  it('user menu closes when Settings link is clicked', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+    await waitFor(() => screen.getByRole('link', { name: /settings/i }))
+
+    await user.click(screen.getByRole('link', { name: /settings/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /sign out/i })).not.toBeInTheDocument()
+    })
+  })
+
+  it('user menu settings link shows active style when on /settings', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />, {
+      routerProps: { initialEntries: ['/settings'] },
+    })
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+
+    await waitFor(() => {
+      const settingsLink = screen.getByRole('link', { name: /settings/i })
+      expect(settingsLink.className).toContain('text-sw-brand')
+    })
+  })
+
+  it('user menu help links have correct hrefs', async () => {
+    setupUser()
+    const { user } = renderWithProviders(<AppLayout />)
+
+    await waitFor(() => screen.getByRole('button', { name: /user menu/i }))
+    await user.click(screen.getByRole('button', { name: /user menu/i }))
+
+    await waitFor(() => {
+      const apiDocsLink = screen.getByRole('link', { name: /api docs/i })
+      expect(apiDocsLink).toHaveAttribute('href', '/redoc')
+      expect(apiDocsLink).toHaveAttribute('target', '_blank')
+
+      const docsLink = screen.getByRole('link', { name: /documentation/i })
+      expect(docsLink).toHaveAttribute('href', 'https://datasophos.github.io/streamweave/')
+      expect(docsLink).toHaveAttribute('target', '_blank')
     })
   })
 })

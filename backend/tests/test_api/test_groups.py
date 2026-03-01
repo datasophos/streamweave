@@ -104,6 +104,15 @@ class TestGroupMembers:
         assert members[0]["email"] == regular_user.email
 
     @pytest.mark.asyncio
+    async def test_list_members_empty(self, client, admin_headers, group):
+        resp = await client.get(
+            f"/api/groups/{group.id}/members",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    @pytest.mark.asyncio
     async def test_add_duplicate_member(self, client, admin_headers, group, regular_user):
         await client.post(
             f"/api/groups/{group.id}/members",

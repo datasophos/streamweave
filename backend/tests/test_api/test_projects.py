@@ -132,6 +132,15 @@ class TestProjectMembers:
         assert group_member["email"] is None
 
     @pytest.mark.asyncio
+    async def test_list_members_empty(self, client, admin_headers, project):
+        resp = await client.get(
+            f"/api/projects/{project.id}/members",
+            headers=admin_headers,
+        )
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    @pytest.mark.asyncio
     async def test_add_duplicate_member(self, client, admin_headers, project, regular_user):
         payload = {"member_type": "user", "member_id": str(regular_user.id)}
         await client.post(

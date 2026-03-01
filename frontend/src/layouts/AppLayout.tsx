@@ -158,6 +158,190 @@ function AdminDropdown() {
   )
 }
 
+function UserMenuDropdown() {
+  const { t } = useTranslation('nav')
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState({ top: 0, right: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const openDropdown = () => {
+    if (buttonRef.current) {
+      const r = buttonRef.current.getBoundingClientRect()
+      setPos({ top: r.bottom + 4, right: window.innerWidth - r.right })
+    }
+    setOpen(true)
+  }
+
+  const handleLogout = async () => {
+    setOpen(false)
+    await logout()
+    navigate('/login')
+  }
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      )
+        setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open])
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        onClick={() => (open ? setOpen(false) : openDropdown())}
+        aria-label={t('user_menu')}
+        aria-haspopup="true"
+        aria-expanded={open}
+        className="flex items-center gap-0.5 p-1.5 rounded text-sw-fg-muted hover:text-sw-fg hover:bg-sw-hover transition-colors shrink-0"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path
+            fillRule="evenodd"
+            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <svg
+          className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`}
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            d="M4.5 6.5l3.5 3.5 3.5-3.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          ref={dropdownRef}
+          className="fixed w-52 bg-sw-surface border border-sw-border rounded-lg shadow-lg py-1 z-50"
+          style={{ top: pos.top, right: pos.right }}
+        >
+          <div className="px-3 py-2 text-sm text-sw-fg-muted truncate border-b border-sw-border-sub mb-1">
+            {user?.email}
+          </div>
+          <NavLink
+            to="/settings"
+            onClick={() => setOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-2.5 px-3 py-1.5 text-sm transition-colors ${
+                isActive
+                  ? 'text-sw-brand bg-sw-brand-bg font-medium'
+                  : 'text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg'
+              }`
+            }
+          >
+            <svg
+              className="w-3.5 h-3.5 shrink-0 opacity-70"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                clipRule="evenodd"
+              />
+            </svg>
+            {t('settings')}
+          </NavLink>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 text-sm text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg transition-colors"
+          >
+            <svg
+              className="w-3.5 h-3.5 shrink-0 opacity-70"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path
+                d="M13 7l3 3m0 0l-3 3m3-3H8m4-7H5a1 1 0 00-1 1v12a1 1 0 001 1h7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {t('sign_out')}
+          </button>
+          <div className="my-1 border-t border-sw-border-sub" />
+          <div className="px-3 py-1 text-xs font-semibold text-sw-fg-faint uppercase tracking-wider">
+            {t('help')}
+          </div>
+          <a
+            href="/redoc"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3 py-1.5 text-sm text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg transition-colors"
+          >
+            {t('api_docs')}
+            <svg
+              className="w-3.5 h-3.5 shrink-0 ml-1 text-sw-fg-faint"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M10 2h4m0 0v4m0-4L7 9" />
+            </svg>
+          </a>
+          <a
+            href="https://datasophos.github.io/streamweave/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3 py-1.5 text-sm text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg transition-colors"
+          >
+            {t('documentation')}
+            <svg
+              className="w-3.5 h-3.5 shrink-0 ml-1 text-sw-fg-faint"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M10 2h4m0 0v4m0-4L7 9" />
+            </svg>
+          </a>
+        </div>
+      )}
+    </>
+  )
+}
+
 function MobileMenu({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation('nav')
   const { user, logout, isAdmin } = useAuth()
@@ -266,8 +450,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 
 export function AppLayout() {
   const { t } = useTranslation('nav')
-  const { user, logout, isAdmin } = useAuth()
-  const navigate = useNavigate()
+  const { isAdmin } = useAuth()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -275,11 +458,6 @@ export function AppLayout() {
   useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname])
-
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-sw-bg">
@@ -327,45 +505,22 @@ export function AppLayout() {
             <div className="flex-1 md:hidden" />
 
             {/* Desktop user area */}
-            <div className="hidden md:flex items-center gap-3 shrink-0">
-              <span className="text-sm text-sw-fg-muted max-w-[160px] truncate hidden xl:block">
-                {user?.email}
-              </span>
+            <div className="hidden md:flex items-center gap-2 shrink-0">
               {isAdmin && (
                 <span className="text-xs font-medium text-sw-brand bg-sw-brand-bg border border-sw-brand-bd rounded-full px-2 py-0.5 whitespace-nowrap">
                   {t('admin')}
                 </span>
               )}
               <NotificationBell />
-              <Divider />
-              <NavLink to="/settings" className={linkClass}>
-                <svg
-                  className="w-4 h-4 inline-block mr-1 -mt-0.5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {t('settings')}
-              </NavLink>
-              <Divider />
-              <button
-                onClick={handleLogout}
-                className="text-sm text-sw-fg-muted hover:text-sw-fg transition-colors whitespace-nowrap"
-              >
-                {t('sign_out')}
-              </button>
             </div>
 
             {/* Mobile notification bell — only visible at narrow widths */}
             <div className="md:hidden">
               <NotificationBell />
             </div>
+
+            {/* User menu — always visible */}
+            <UserMenuDropdown />
 
             {/* Hamburger — mobile only */}
             <button
@@ -414,7 +569,7 @@ export function AppLayout() {
             className="flex items-center gap-1.5 text-xs text-sw-fg-faint hover:text-sw-fg-muted transition-colors"
           >
             <span>Built for</span>
-            <span className="text-lg leading-none">👩‍🔬</span>
+            <span className="text-lg relative -top-0.5">👩‍🔬</span>
             <span>by</span>
             <img
               src="/datasophos_wordmark.svg"

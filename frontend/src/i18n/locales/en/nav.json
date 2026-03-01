@@ -21,5 +21,9 @@
   "section_my_work": "My Work",
   "footer": "StreamWeave — Scientific data harvesting, simplified",
   "toggle_menu": "Toggle menu",
-  "administrator": "Administrator"
+  "administrator": "Administrator",
+  "user_menu": "User menu",
+  "help": "Help",
+  "api_docs": "API docs",
+  "documentation": "Documentation"
 }

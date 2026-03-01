@@ -48,6 +48,12 @@ def create_app() -> FastAPI:
     app.include_router(verify_router, prefix="/auth", tags=["auth"])
     app.include_router(reset_password_router, prefix="/auth", tags=["auth"])
     app.include_router(users_router, prefix="/users", tags=["users"])
+    # Remove GET /users/me — /api/me is the canonical endpoint (includes groups + projects)
+    app.routes[:] = [
+        r
+        for r in app.routes
+        if not (getattr(r, "path", "") == "/users/me" and "GET" in getattr(r, "methods", set()))
+    ]
     app.include_router(admin_users_router, prefix="/api", tags=["users"])
     app.include_router(me_router, prefix="/api", tags=["users"])
 

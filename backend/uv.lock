@@ -1914,6 +1914,18 @@ wheels = [
 ]
 
 [[package]]
+name = "mkdocs-open-in-new-tab"
+version = "1.0.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mkdocs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0a/0e/f72a506a21bdb27b807124e00c688226848a388d1fd3980b80ae3cc27203/mkdocs_open_in_new_tab-1.0.8.tar.gz", hash = "sha256:3e0dad08cc9938b0b13097be8e0aa435919de1eeb2d1a648e66b5dee8d57e048", size = 5791, upload-time = "2024-11-18T13:15:13.977Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/94/44f3c868495481c868d08eea065c82803f1affd8553d3383b782f497613c/mkdocs_open_in_new_tab-1.0.8-py3-none-any.whl", hash = "sha256:051d767a4467b12d89827e1fea0ec660b05b027c726317fe4fceee5456e36ad2", size = 7717, upload-time = "2024-11-18T13:15:12.286Z" },
+]
+
+[[package]]
 name = "nbclient"
 version = "0.10.4"
 source = { registry = "https://pypi.org/simple" }
@@ -3467,6 +3479,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "fastapi-users", extra = ["sqlalchemy"] },
     { name = "httpx" },
+    { name = "mkdocs-open-in-new-tab" },
     { name = "prefect" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -3499,6 +3512,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "fastapi-users", extras = ["sqlalchemy"], specifier = ">=14,<15" },
     { name = "httpx", specifier = ">=0.28,<1" },
+    { name = "mkdocs-open-in-new-tab", specifier = ">=1.0.8" },
     { name = "prefect", specifier = ">=3.0,<4" },
     { name = "pydantic", specifier = ">=2.10,<3" },
     { name = "pydantic-settings", specifier = ">=2.7,<3" },

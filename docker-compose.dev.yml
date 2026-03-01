@@ -2,7 +2,7 @@ services:
   # Caddy reverse proxy with local HTTPS at https://streamweave.local
   # Prerequisites (once per machine):
   #   echo '127.0.0.1 streamweave.local' | sudo tee -a /etc/hosts
-  #   See docs/getting-started/development.md for CA trust instructions per OS.
+  #   bash scripts/setup-dev-certs.sh   # generates cert via mkcert
   caddy:
     image: caddy:alpine
     ports:

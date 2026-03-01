@@ -39,6 +39,7 @@ exclude_docs: |
 
 plugins:
   - search
+  - open-in-new-tab
   - mkdocs-jupyter:
       execute: false
       include_source: true

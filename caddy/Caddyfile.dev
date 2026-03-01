@@ -1,14 +1,15 @@
 # StreamWeave development Caddy configuration
-# Uses a pre-generated dev CA bundled in caddy/certs/.
+# Uses a locally-generated TLS certificate for streamweave.local.
 #
 # First-time setup (do once per machine):
 #
 #   1. Add the hostname to /etc/hosts:
 #        echo '127.0.0.1 streamweave.local' | sudo tee -a /etc/hosts
 #
-#   2. Trust the dev CA certificate (caddy/certs/ca.crt) in your OS trust store.
-#      See docs/getting-started/development.md for per-OS instructions.
+#   2. Generate the certificate with mkcert (installs & trusts the CA automatically):
+#        bash scripts/setup-dev-certs.sh
 #
+# See docs/getting-started/development.md for full instructions.
 # The app is then available at https://streamweave.local
 
 https://streamweave.local {

@@ -28,6 +28,7 @@ dependencies = [
     "prefect>=3.0,<4",
     "xxhash>=3.4,<4",
     "aiosmtplib>=5.1.0",
+    "mkdocs-open-in-new-tab>=1.0.8",
 ]
 
 [dependency-groups]

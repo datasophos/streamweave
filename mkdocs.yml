@@ -26,6 +26,7 @@ theme:
   favicon: _static/streamweave_logo.svg
   features:
     - content.code.copy
+    - content.tabs.link
     - navigation.sections
     - navigation.top
     - toc.follow
@@ -53,6 +54,8 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
   - tables
   - toc:
       permalink: true
@@ -61,7 +64,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - Quick Start: getting-started/quickstart.md
-      - Simulated Lab: getting-started/simlab.md
+      - Local Development: getting-started/development.md
   - Architecture: architecture.md
   - API Reference: api.md
   - Backend API Demo: backend-demo.ipynb

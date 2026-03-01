@@ -78,6 +78,7 @@ yarn.lock
 # Dev TLS certificates (generated locally via mkcert — never commit private keys)
 caddy/certs/*.crt
 caddy/certs/*.key
+caddy/certs/*.pem
 
 # MkDocs
 site/

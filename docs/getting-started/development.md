@@ -49,12 +49,14 @@ The dev stack is served at `https://streamweave.local`. Because `.local` mDNS on
     bash scripts/setup-dev-certs.sh
     ```
 
-    The script runs `mkcert -install` (trusts the CA) and writes
-    `caddy/certs/streamweave.local.crt` / `.key` for Caddy to use.
+    The script runs `mkcert -install` (trusts the CA), writes
+    `caddy/certs/streamweave.local.crt` / `.key` for Caddy to use, and
+    copies the mkcert root CA to `caddy/certs/rootCA.pem` for use by
+    Python httpx clients.
 
 === "Windows (run as Administrator)"
 
-    Install mkcert via Chocolatey or Scoop, then run the two commands manually:
+    Install mkcert via Chocolatey or Scoop, then run the commands manually:
 
     ```powershell
     choco install mkcert   # or: scoop install mkcert
@@ -62,9 +64,11 @@ The dev stack is served at `https://streamweave.local`. Because `.local` mDNS on
 
     ```powershell
     mkcert -install
+    New-Item -ItemType Directory -Force -Path caddy\certs | Out-Null
     mkcert -cert-file caddy\certs\streamweave.local.crt `
            -key-file  caddy\certs\streamweave.local.key `
            streamweave.local
+    Copy-Item "$(mkcert -CAROOT)\rootCA.pem" caddy\certs\rootCA.pem
     ```
 
 Restart your browser once after the first `mkcert -install`.

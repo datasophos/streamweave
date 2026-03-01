@@ -33,6 +33,10 @@ mkcert \
     -key-file  "$CERT_DIR/streamweave.local.key" \
     streamweave.local
 
+CAROOT="$(mkcert -CAROOT)"
+echo "==> Copying mkcert root CA ($CAROOT/rootCA.pem) for use by httpx clients..."
+cp "$CAROOT/rootCA.pem" "$CERT_DIR/rootCA.pem"
+
 echo ""
 echo "Done! Certs written to caddy/certs/."
 echo ""

@@ -1,0 +1,53 @@
+{$CADDY_HOSTNAME:-:80} {
+	encode gzip
+
+	# API, auth, and user management routes → FastAPI backend
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+
+	handle /auth/* {
+		reverse_proxy api:8000
+	}
+
+	handle /users/* {
+		reverse_proxy api:8000
+	}
+
+	handle /health {
+		reverse_proxy api:8000
+	}
+
+	# Prefect orchestration UI — admin-only via forward_auth.
+	# The Prefect server is configured with PREFECT_UI_SERVE_BASE=/prefect/ and
+	# PREFECT_UI_API_URL=/prefect/api, so the UI HTML and assets are served at /prefect/*
+	# and the browser makes API calls to /prefect/api/*.
+	# Caddy must rewrite /prefect/api/* → /api/* before forwarding, because Prefect's
+	# own API is always rooted at /api internally.
+	# Required env vars on prefect-server:
+	#   PREFECT_UI_SERVE_BASE=/prefect/
+	#   PREFECT_UI_API_URL=/prefect/api
+	handle_path /prefect/api/* {
+		forward_auth api:8000 {
+			uri /api/auth/check-admin
+			copy_headers Authorization
+		}
+		rewrite * /api{uri}
+		reverse_proxy prefect-server:4200
+	}
+
+	handle /prefect/* {
+		forward_auth api:8000 {
+			uri /api/auth/check-admin
+			copy_headers Authorization
+		}
+		reverse_proxy prefect-server:4200
+	}
+
+	# SPA fallback — React Router handles all other paths
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

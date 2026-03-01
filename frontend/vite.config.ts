@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    allowedHosts: true,
     proxy: Object.fromEntries(
       ['/api', '/auth', '/users', '/health'].map((prefix) => [
         prefix,

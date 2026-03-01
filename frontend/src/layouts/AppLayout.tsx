@@ -134,7 +134,6 @@ function AdminDropdown() {
           <div className="my-1 border-t border-sw-border-sub" />
           <a
             href="/prefect/"
-
             className="flex items-center justify-between px-3 py-1.5 text-sm text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg transition-colors"
           >
             {t('admin_prefect_dashboard')}
@@ -205,7 +204,6 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
               ))}
               <a
                 href="/prefect/"
-    
                 className="flex items-center justify-between px-3 py-2 text-sm font-medium rounded text-sw-fg-muted hover:bg-sw-hover hover:text-sw-fg transition-colors"
               >
                 {t('admin_prefect_dashboard')}

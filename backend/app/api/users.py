@@ -6,7 +6,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
-from app.auth.setup import auth_backend, cookie_auth_backend, fastapi_users  # noqa: F401 (re-exported)
+from app.auth.setup import (  # noqa: F401 (re-exported)
+    auth_backend,
+    cookie_auth_backend,
+    fastapi_users,
+)
 from app.models.audit import AuditAction
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate

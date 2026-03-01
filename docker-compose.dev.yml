@@ -1,12 +1,29 @@
 services:
+  # Caddy reverse proxy with local HTTPS at https://streamweave.local
+  # Prerequisites (once per machine):
+  #   echo '127.0.0.1 streamweave.local' | sudo tee -a /etc/hosts
+  #   See docs/getting-started/development.md for CA trust instructions per OS.
+  caddy:
+    image: caddy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+      - ./caddy/certs:/etc/caddy/certs:ro
+      - caddy_config:/config
+    depends_on:
+      - api
+      - frontend
+
   mailpit:
     image: axllent/mailpit:latest
+    command: --webroot /mail/
     ports:
-      - "8025:8025"   # Web UI
-      - "1025:1025"   # SMTP
+      - "1025:1025"   # SMTP (still needed for host-side testing tools)
 
   # S3-compatible object storage backed by rclone (Apache 2.0)
-  # Endpoint: http://localhost:9000  Access key: devkey  Secret: devsecret
+  # Proxied at https://streamweave.local/s3  Access key: devkey  Secret: devsecret
   s3-dev:
     image: rclone/rclone:latest
     command: >
@@ -14,58 +31,47 @@ services:
       --addr :9000
       --auth-key devkey,devsecret
       --vfs-cache-mode full
-    ports:
-      - "9000:9000"
     volumes:
       - s3_data:/data
 
-  # ── Instrument data sources (one Samba server per instrument) ────────────
-  # Each serves local sample_data/ as a CIFS share — mimics real lab instruments.
-  # Instruments point their cifs_host at these containers.
+  # ── Instrument data sources ───────────────────────────────────────────────
+  # instruments-init copies read-only sample_data/ bind-mounts into named
+  # volumes so the demo notebook can write transient files without touching the
+  # host filesystem.  samba-instruments then serves all 4 volumes as shares.
 
-  nmr-bruker:
-    image: dperson/samba:latest
-    environment:
-      USER: "devuser;devpass"
-      SHARE: "nmr;/data;yes;no;no;devuser"
-      WORKGROUP: WORKGROUP
+  instruments-init:
+    image: busybox
     volumes:
-      - ./dev/instruments/nmr-bruker/sample_data:/data:ro
+      - ./dev/instruments/nmr-bruker/sample_data:/source/nmr:ro
+      - ./dev/instruments/hplc-waters/sample_data:/source/hplc:ro
+      - ./dev/instruments/ms-orbitrap/sample_data:/source/ms:ro
+      - ./dev/instruments/tem-titan/sample_data:/source/tem:ro
+      - nmr_live_data:/data/nmr
+      - hplc_live_data:/data/hplc
+      - ms_live_data:/data/ms
+      - tem_live_data:/data/tem
+    command: sh -c "for d in nmr hplc ms tem; do rm -rf /data/$$d/* /data/$$d/.[!.]* 2>/dev/null; cp -r /source/$$d/. /data/$$d/; done"
+    restart: "no"
+
+  samba-instruments:
+    image: dperson/samba:latest
+    command: >
+      -u "devuser;devpass"
+      -s "nmr;/data/nmr;yes;no;no;devuser"
+      -s "hplc;/data/hplc;yes;no;no;devuser"
+      -s "ms;/data/ms;yes;no;no;devuser"
+      -s "tem;/data/tem;yes;no;no;devuser"
+      -p
+    volumes:
+      - nmr_live_data:/data/nmr
+      - hplc_live_data:/data/hplc
+      - ms_live_data:/data/ms
+      - tem_live_data:/data/tem
     ports:
       - "4461:445"
-
-  hplc-waters:
-    image: dperson/samba:latest
-    environment:
-      USER: "devuser;devpass"
-      SHARE: "hplc;/data;yes;no;no;devuser"
-      WORKGROUP: WORKGROUP
-    volumes:
-      - ./dev/instruments/hplc-waters/sample_data:/data:ro
-    ports:
-      - "4462:445"
-
-  ms-orbitrap:
-    image: dperson/samba:latest
-    environment:
-      USER: "devuser;devpass"
-      SHARE: "ms;/data;yes;no;no;devuser"
-      WORKGROUP: WORKGROUP
-    volumes:
-      - ./dev/instruments/ms-orbitrap/sample_data:/data:ro
-    ports:
-      - "4463:445"
-
-  tem-titan:
-    image: dperson/samba:latest
-    environment:
-      USER: "devuser;devpass"
-      SHARE: "tem;/data;yes;no;no;devuser"
-      WORKGROUP: WORKGROUP
-    volumes:
-      - ./dev/instruments/tem-titan/sample_data:/data:ro
-    ports:
-      - "4464:445"
+    depends_on:
+      instruments-init:
+        condition: service_completed_successfully
 
   # ── Archive destination ───────────────────────────────────────────────────
   # Separate Samba share used as the CIFS storage location target.
@@ -97,6 +103,7 @@ services:
       SMTP_TLS: "false"
       SMTP_ENABLED: "true"
       SMTP_FROM: noreply@streamweave.local
+      BCRYPT_ROUNDS: 6
     depends_on:
       postgres:
         condition: service_healthy
@@ -156,18 +163,18 @@ services:
       - ./backend:/app
       - harvest_data:/storage
 
-  # Frontend dev server with hot-reload (proxies /api, /auth, /users to api:8000)
+  # Frontend dev server with hot-reload.
+  # Caddy proxies HTTPS → this Vite server; no need to expose port 3000 directly.
   # Override the production multi-stage Dockerfile with a trivial inline build so
-  # the dev image is actually node:22-alpine (not the nginx production image).
+  # the dev image is actually node:22-alpine (not the Caddy production image).
   # Using a project-scoped name avoids shadowing the public node:22-alpine image.
+  # ports: [] clears the 80/443 bindings from docker-compose.yml so Caddy owns them.
   frontend:
     build:
       context: ./frontend
       dockerfile_inline: "FROM node:22-alpine"
     image: streamweave-frontend-dev
     working_dir: /app
-    ports:
-      - "3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -185,3 +192,8 @@ volumes:
   harvest_data:
   s3_data:
   samba_data:
+  caddy_config:
+  nmr_live_data:
+  hplc_live_data:
+  ms_live_data:
+  tem_live_data:

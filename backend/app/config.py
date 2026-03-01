@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     # Auth
     secret_key: str = "change-me"
     jwt_lifetime_seconds: int = 3600
+    # Set False only in development/testing environments where HTTPS is not enforced at the app level
+    cookie_secure: bool = True
+    # bcrypt work factor — lower in dev/test to avoid multi-second login delays inside Docker
+    bcrypt_rounds: int = 12
 
     # Encryption
     streamweave_encryption_key: str = "change-me"

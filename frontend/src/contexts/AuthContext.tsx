@@ -45,12 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const resp = await authApi.login(email, password)
     localStorage.setItem('access_token', resp.data.access_token)
+    // Set the httpOnly cookie so Caddy can gate the Prefect dashboard via forward_auth.
+    // Failure is non-fatal — Prefect access just won't work until next login.
+    authApi.cookieLogin(email, password).catch(() => undefined)
     await fetchMe()
   }
 
   const logout = async () => {
     try {
-      await authApi.logout()
+      await Promise.all([authApi.logout(), authApi.cookieLogout()])
     } catch {
       // ignore errors on logout
     }

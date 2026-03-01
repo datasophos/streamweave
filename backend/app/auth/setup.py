@@ -2,9 +2,14 @@ import uuid
 
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin
+from fastapi_users.password import PasswordHelper
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
+from pwdlib.hashers.bcrypt import BcryptHasher
 from fastapi_users.authentication import (
     AuthenticationBackend,
     BearerTransport,
+    CookieTransport,
     JWTStrategy,
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
@@ -80,8 +85,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         )
 
 
+_password_helper = PasswordHelper(
+    PasswordHash([Argon2Hasher(), BcryptHasher(rounds=settings.bcrypt_rounds)])
+)
+
+
 async def get_user_manager(user_db=Depends(get_user_db)):
-    yield UserManager(user_db)
+    yield UserManager(user_db, _password_helper)
 
 
 def get_jwt_strategy() -> JWTStrategy:
@@ -96,7 +106,21 @@ auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
-fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
+cookie_transport = CookieTransport(
+    cookie_name="streamweave_auth",
+    cookie_max_age=settings.jwt_lifetime_seconds,
+    cookie_httponly=True,
+    cookie_secure=settings.cookie_secure,
+    cookie_samesite="lax",
+)
+
+cookie_auth_backend = AuthenticationBackend(
+    name="cookie",
+    transport=cookie_transport,
+    get_strategy=get_jwt_strategy,
+)
+
+fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend, cookie_auth_backend])
 
 current_active_user = fastapi_users.current_user(active=True)
 current_superuser = fastapi_users.current_user(active=True, superuser=True)

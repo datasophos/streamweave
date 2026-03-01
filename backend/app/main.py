@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.api.access import router as access_router
 from app.api.audit import router as audit_router
+from app.api.auth_check import router as auth_check_router
 from app.api.files import router as files_router
 from app.api.groups import router as groups_router
 from app.api.hooks import router as hooks_router
@@ -18,6 +19,7 @@ from app.api.transfers import router as transfers_router
 from app.api.users import (
     admin_users_router,
     auth_router,
+    cookie_auth_router,
     register_router,
     reset_password_router,
     users_router,
@@ -40,6 +42,7 @@ def create_app() -> FastAPI:
 
     # Auth routes
     app.include_router(auth_router, prefix="/auth/jwt", tags=["auth"])
+    app.include_router(cookie_auth_router, prefix="/auth/cookie", tags=["auth"])
     app.include_router(register_router, prefix="/auth", tags=["auth"])
     app.include_router(verify_router, prefix="/auth", tags=["auth"])
     app.include_router(reset_password_router, prefix="/auth", tags=["auth"])
@@ -60,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(audit_router, prefix="/api")
     app.include_router(instrument_requests_router, prefix="/api")
     app.include_router(notifications_router, prefix="/api")
+    app.include_router(auth_check_router)
 
     @app.get("/health")
     async def health():

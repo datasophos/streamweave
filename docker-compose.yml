@@ -41,12 +41,11 @@ services:
 
   prefect-server:
     image: prefecthq/prefect:3-latest
-    ports:
-      - "4200:4200"
     environment:
       PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://prefect:prefect@prefect-postgres:5432/prefect
       PREFECT_SERVER_API_HOST: 0.0.0.0
-      PREFECT_UI_API_URL: http://localhost:4200/api
+      PREFECT_UI_SERVE_BASE: "/prefect/"
+      PREFECT_UI_API_URL: "/prefect/api"
       PREFECT_SERVER_ANALYTICS_ENABLED: "false"
       PREFECT_SERVER_UI_SHOW_PROMOTIONAL_CONTENT: "false"
     depends_on:
@@ -103,24 +102,19 @@ services:
         condition: service_healthy
     volumes:
       - harvest_data:/storage
-    networks:
-      - default
-      - simlab
 
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "80:80"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - api
-
-networks:
-  simlab:
-    name: streamweave-simlab
-    external: true
 
 volumes:
   pgdata:
   prefect_pgdata:
   harvest_data:
+  caddy_data:
+  caddy_config:

@@ -41,6 +41,18 @@ export const authApi = {
     })
   },
   logout: () => apiClient.post('/auth/jwt/logout'),
+  // Cookie-based auth lets Caddy's forward_auth gate the Prefect dashboard.
+  // withCredentials ensures the browser sends/receives the httpOnly cookie.
+  cookieLogin: (email: string, password: string) => {
+    const form = new URLSearchParams()
+    form.append('username', email)
+    form.append('password', password)
+    return apiClient.post('/auth/cookie/login', form, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      withCredentials: true,
+    })
+  },
+  cookieLogout: () => apiClient.post('/auth/cookie/logout', null, { withCredentials: true }),
   register: (data: { email: string; password: string; role?: string }) =>
     apiClient.post('/auth/register', data),
   me: () => apiClient.get('/users/me'),

@@ -12,6 +12,10 @@ if "STREAMWEAVE_ENCRYPTION_KEY" not in os.environ:
     os.environ["STREAMWEAVE_ENCRYPTION_KEY"] = Fernet.generate_key().decode()
 
 from app.config import settings  # noqa: E402
+
+# Tests use plain HTTP (base_url="http://test"), so the Secure cookie flag must be off
+# or httpx will not send the cookie back on subsequent requests.
+settings.cookie_secure = False
 from app.database import get_async_session
 from app.models import Base
 from app.models.user import User, UserRole

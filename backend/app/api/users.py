@@ -6,13 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
-from app.auth.setup import auth_backend, fastapi_users  # noqa: F401 (re-exported)
+from app.auth.setup import auth_backend, cookie_auth_backend, fastapi_users  # noqa: F401 (re-exported)
 from app.models.audit import AuditAction
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.services.audit import log_action
 
 auth_router = fastapi_users.get_auth_router(auth_backend)
+cookie_auth_router = fastapi_users.get_auth_router(cookie_auth_backend)
 register_router = fastapi_users.get_register_router(UserRead, UserCreate)
 users_router = fastapi_users.get_users_router(UserRead, UserUpdate)
 verify_router = fastapi_users.get_verify_router(UserRead)

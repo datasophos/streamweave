@@ -19,14 +19,14 @@ repos:
 
       - id: ty
         name: ty
-        entry: bash -c 'cd backend && uv run ty check app'
+        entry: bash -c 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && cd backend && uv run ty check app'
         language: system
         files: ^backend/.*\.py$
         pass_filenames: false
 
       - id: eslint
         name: eslint
-        entry: bash -c 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && cd frontend && node_modules/.bin/eslint src'
+        entry: bash -c 'export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH" && cd frontend && node_modules/.bin/eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0'
         language: system
         files: ^frontend/src/.*\.(ts|tsx)$
         pass_filenames: false

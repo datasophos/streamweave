@@ -16,9 +16,9 @@ from app.config import settings  # noqa: E402
 # Tests use plain HTTP (base_url="http://test"), so the Secure cookie flag must be off
 # or httpx will not send the cookie back on subsequent requests.
 settings.cookie_secure = False
-from app.database import get_async_session
-from app.models import Base
-from app.models.user import User, UserRole
+from app.database import get_async_session  # noqa: E402
+from app.models import Base  # noqa: E402
+from app.models.user import User, UserRole  # noqa: E402
 
 # Suppress Prefect logging warnings during tests
 os.environ["PREFECT_LOGGING_TO_API_WHEN_MISSING_FLOW"] = "ignore"

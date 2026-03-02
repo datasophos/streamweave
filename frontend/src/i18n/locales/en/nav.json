@@ -25,5 +25,6 @@
   "user_menu": "User menu",
   "help": "Help",
   "api_docs": "API docs",
-  "documentation": "Documentation"
+  "documentation": "Documentation",
+  "report_issue": "Report an issue"
 }

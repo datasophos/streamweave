@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import pkg from '../../package.json'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   CalendarClock,
@@ -376,6 +377,26 @@ function UserMenuDropdown() {
               <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M10 2h4m0 0v4m0-4L7 9" />
             </svg>
           </a>
+          <a
+            href="https://github.com/datasophos/streamweave/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3 py-1.5 text-sm text-sw-fg-2 hover:bg-sw-hover hover:text-sw-fg transition-colors"
+          >
+            {t('report_issue')}
+            <svg
+              className="w-3.5 h-3.5 shrink-0 ml-1 text-sw-fg-faint"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M6 3H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1v-3M10 2h4m0 0v4m0-4L7 9" />
+            </svg>
+          </a>
         </div>
       )}
     </>
@@ -600,7 +621,16 @@ export function AppLayout() {
       <footer className="bg-sw-surface border-t border-sw-border py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <span className="text-xs text-sw-fg-faint">
-            StreamWeave — <span className="italic">Scientific data harvesting, simplified</span>
+            StreamWeave{' '}
+            <a
+              href={`https://github.com/datasophos/streamweave/releases/tag/v${pkg.version}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sw-fg-faint/60 hover:text-sw-fg-muted transition-colors"
+            >
+              v{pkg.version}
+            </a>{' '}
+            — <span className="italic">Scientific data harvesting, simplified</span>
           </span>
           <a
             href="https://datasophos.co"

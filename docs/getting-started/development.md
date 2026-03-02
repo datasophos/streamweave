@@ -17,10 +17,23 @@ The dev stack is served at `https://streamweave.local`. Because `.local` mDNS on
 === "macOS / Linux"
 
     ```bash
-    # check to see if there's already a line for streamweave in the 
+    # check to see if there's already a line for streamweave in the
     # hosts file, and add one if not
     grep -qF '127.0.0.1 streamweave.local' /etc/hosts || echo '127.0.0.1 streamweave.local' | sudo tee -a /etc/hosts
     ```
+
+    !!! warning "macOS: add an IPv6 entry too"
+        On macOS, `.local` domains are handled by mDNS (Bonjour). Without an
+        IPv6 entry, macOS issues a parallel AAAA mDNS query that times out
+        after ~5 seconds on every first connection, making the app feel slow.
+        Add this line to avoid it:
+
+        ```bash
+        # add ipv6 line to /etc/hosts if not already present
+        grep -qF '::1 streamweave.local' /etc/hosts || echo '::1 streamweave.local' | sudo tee -a /etc/hosts
+        # flush DNS cache and restart the resolver
+        sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+        ```
 
 === "Windows (run as Administrator)"
 

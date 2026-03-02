@@ -92,6 +92,11 @@ The frontend will be available at `http://localhost:80`.
 
 ### Dev Deployment (hot reload)
 
+For more details, see the [development deployment](https://datasophos.github.io/streamweave/getting-started/development/) guide, but briefly:
+
+Add `127.0.0.1 streamweave.local` to your `/etc/hosts` and run `scripts/setup-dev-certs.sh` (make sure [mkcert](https://github.com/FiloSottile/mkcert#installation))
+is installed). Then run:
+
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
@@ -100,8 +105,8 @@ A default admin user (`admin@example.com` / `adminpassword`) and regular user ac
 
 Override with `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your `.env`.
 
-- Frontend dev server: `http://localhost:3000`
-- API: `http://localhost:8000`
+- Frontend dev server: `https://streamweave.local`
+- API: `https://streamweave.local/api`
 
 ### Run Tests
 

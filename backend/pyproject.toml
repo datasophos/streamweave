@@ -54,7 +54,7 @@ packages = ["app"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = [
-    "integration: requires full Docker stack + simlab running",
+    "integration: requires full Docker stack running",
 ]
 addopts = "-m 'not integration' --cov=app --cov-report=term-missing --cov-report=lcov:coverage.lcov"
 

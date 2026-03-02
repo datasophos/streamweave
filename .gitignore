@@ -36,6 +36,7 @@ coverage.xml
 *,cover
 coverage.lcov
 coverage/
+e2e-results.xml
 *.db
 .tox/
 .nox/

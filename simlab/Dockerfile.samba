@@ -1,2 +1,0 @@
-FROM dperson/samba
-RUN apk add --no-cache tree

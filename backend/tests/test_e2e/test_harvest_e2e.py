@@ -1,6 +1,6 @@
 """End-to-end integration test for the harvest pipeline.
 
-Requires the full Docker stack + simlab running.
+Requires the full Docker stack running (see scripts/run-e2e.sh).
 Run with: pytest tests/test_e2e/ -m integration
 """
 
@@ -25,7 +25,7 @@ async def admin_token(api_client):
     """Get admin token — assumes admin user created via create-admin script."""
     resp = await api_client.post(
         "/auth/jwt/login",
-        data={"username": "admin@streamweave.local", "password": "admin"},
+        data={"username": "admin@example.com", "password": "adminpassword"},
     )
     if resp.status_code != 200:
         pytest.skip("Admin user not available — run create-admin script first")
@@ -123,6 +123,6 @@ class TestHarvestE2E:
         files = resp.json()
         enriched = [f for f in files if f.get("metadata_") and f["metadata_"].get("experiment")]
         # At least some files should have enriched metadata if they match the pattern
-        # This is best-effort — depends on simlab file structure
+        # This is best-effort — depends on the dev instrument file structure
         if enriched:
             assert enriched[0]["metadata_"]["experiment"].startswith("experiment_")

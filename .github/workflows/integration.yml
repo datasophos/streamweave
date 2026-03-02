@@ -1,0 +1,87 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+
+    env:
+      # Must match the E2E test fixture's expected credentials.
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: adminpassword
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-caching: true
+          python-version: '3.12'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync --all-groups
+
+      - name: Build and start dev stack
+        # Skip Caddy and the hot-reload frontend — only the backend and
+        # instrument data services are needed for integration tests.
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build \
+            postgres redis prefect-postgres prefect-server \
+            mailpit s3-dev instruments-init samba-instruments samba-archive \
+            api worker dev-seed
+
+      - name: Wait for dev-seed to complete
+        # dev-seed starts only after the API becomes healthy (Prefect startup
+        # can take 2–3 minutes). Poll up to 5 min, then block with docker wait.
+        run: |
+          echo "Waiting for dev-seed container to start (up to 5 min)..."
+          SEED_CONTAINER=""
+          for i in $(seq 1 60); do
+            SEED_CONTAINER="$(docker compose -f docker-compose.yml -f docker-compose.dev.yml ps -q dev-seed 2>/dev/null || true)"
+            if [ -n "$SEED_CONTAINER" ]; then
+              echo "dev-seed started: $SEED_CONTAINER"
+              break
+            fi
+            echo "  attempt $i/60 — sleeping 5s"
+            sleep 5
+          done
+
+          if [ -z "$SEED_CONTAINER" ]; then
+            echo "ERROR: dev-seed never started."
+            docker compose -f docker-compose.yml -f docker-compose.dev.yml logs api
+            exit 1
+          fi
+
+          EXIT_CODE="$(docker wait "$SEED_CONTAINER")"
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "ERROR: dev-seed failed (exit $EXIT_CODE)"
+            docker compose -f docker-compose.yml -f docker-compose.dev.yml logs dev-seed
+            exit 1
+          fi
+          echo "Seed complete."
+
+      - name: Run integration tests
+        working-directory: backend
+        run: |
+          uv run pytest tests/test_e2e/ -m integration -v \
+            --override-ini="addopts=" \
+            --junit-xml=e2e-results.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: backend/e2e-results.xml
+
+      - name: Tear down
+        if: always()
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml down --remove-orphans || true

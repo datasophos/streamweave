@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, KeyRound, Microscope } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
+import { Tooltip } from '@/components/Tooltip'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -128,6 +129,7 @@ function InstrumentForm({
         <div>
           <label htmlFor="inst-pid" className="label">
             {t('form_pid')}
+            <Tooltip text={t('form_pid_tip')} id="tip-inst-pid" />
           </label>
           <input
             id="inst-pid"
@@ -139,6 +141,7 @@ function InstrumentForm({
         <div>
           <label htmlFor="inst-cifs-host" className="label">
             {t('form_cifs_host')}
+            <Tooltip text={t('form_cifs_host_tip')} id="tip-inst-cifs-host" />
           </label>
           <input
             id="inst-cifs-host"
@@ -156,6 +159,7 @@ function InstrumentForm({
         <div>
           <label htmlFor="inst-cifs-share" className="label">
             {t('form_cifs_share')}
+            <Tooltip text={t('form_cifs_share_tip')} id="tip-inst-cifs-share" />
           </label>
           <input
             id="inst-cifs-share"
@@ -173,6 +177,7 @@ function InstrumentForm({
         <div>
           <label htmlFor="inst-base-path" className="label">
             {t('form_base_path')}
+            <Tooltip text={t('form_base_path_tip')} id="tip-inst-base-path" />
           </label>
           <input
             id="inst-base-path"
@@ -184,6 +189,7 @@ function InstrumentForm({
         <div>
           <label htmlFor="inst-adapter" className="label">
             {t('form_adapter')}
+            <Tooltip text={t('form_adapter_tip')} id="tip-inst-adapter" />
           </label>
           <select
             id="inst-adapter"
@@ -199,6 +205,7 @@ function InstrumentForm({
         <div>
           <label htmlFor="inst-sa" className="label">
             {t('form_service_account')}
+            <Tooltip text={t('form_service_account_tip')} id="tip-inst-sa" />
           </label>
           <select
             id="inst-sa"
@@ -314,6 +321,7 @@ function ServiceAccountForm({
       <div>
         <label htmlFor="sa-domain" className="label">
           {t('sa_domain')}
+          <Tooltip text={t('sa_domain_tip')} id="tip-sa-domain" />
         </label>
         <input
           id="sa-domain"

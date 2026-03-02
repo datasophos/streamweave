@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HardDrive } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
+import { Tooltip } from '@/components/Tooltip'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -85,7 +86,10 @@ function S3Fields({
         />
       </div>
       <div>
-        <label className="label">{t('s3_region')}</label>
+        <label className="label">
+          {t('s3_region')}
+          <Tooltip text={t('s3_region_tip')} id="tip-s3-region" />
+        </label>
         <input
           className="input"
           required
@@ -94,7 +98,10 @@ function S3Fields({
         />
       </div>
       <div>
-        <label className="label">{t('s3_endpoint_url')}</label>
+        <label className="label">
+          {t('s3_endpoint_url')}
+          <Tooltip text={t('s3_endpoint_url_tip')} id="tip-s3-endpoint" />
+        </label>
         <input
           className="input"
           value={config.endpoint_url}
@@ -160,7 +167,10 @@ function CIFSFields({
         />
       </div>
       <div>
-        <label className="label">{t('cifs_domain')}</label>
+        <label className="label">
+          {t('cifs_domain')}
+          <Tooltip text={t('cifs_domain_tip')} id="tip-cifs-domain" />
+        </label>
         <input
           className="input"
           value={config.domain}
@@ -223,7 +233,10 @@ function NFSFields({
         />
       </div>
       <div>
-        <label className="label">{t('nfs_mount_options')}</label>
+        <label className="label">
+          {t('nfs_mount_options')}
+          <Tooltip text={t('nfs_mount_options_tip')} id="tip-nfs-mount-options" />
+        </label>
         <input
           className="input"
           value={config.mount_options}
@@ -320,7 +333,10 @@ function StorageForm({
         </select>
       </div>
       <div>
-        <label className="label">{t('form_base_path')}</label>
+        <label className="label">
+          {t('form_base_path')}
+          <Tooltip text={t('form_base_path_tip')} id="tip-storage-base-path" />
+        </label>
         <input
           className="input"
           required

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Webhook } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
+import { Tooltip } from '@/components/Tooltip'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -82,7 +83,10 @@ function HookForm({
           />
         </div>
         <div>
-          <label className="label">{t('form_trigger')}</label>
+          <label className="label">
+            {t('form_trigger')}
+            <Tooltip text={t('form_trigger_tip')} id="tip-hook-trigger" />
+          </label>
           <select
             className="input"
             value={form.trigger}
@@ -140,7 +144,10 @@ function HookForm({
           })()}
         {form.implementation === 'python_script' && (
           <div className="col-span-2">
-            <label className="label">{t('form_script_path')}</label>
+            <label className="label">
+              {t('form_script_path')}
+              <Tooltip text={t('form_script_path_tip')} id="tip-hook-script-path" />
+            </label>
             <input
               className="input font-mono"
               value={form.script_path}
@@ -162,7 +169,10 @@ function HookForm({
           </div>
         )}
         <div>
-          <label className="label">{t('form_instrument')}</label>
+          <label className="label">
+            {t('form_instrument')}
+            <Tooltip text={t('form_instrument_tip')} id="tip-hook-instrument" />
+          </label>
           <select
             className="input"
             value={form.instrument_id ?? ''}
@@ -177,7 +187,10 @@ function HookForm({
           </select>
         </div>
         <div>
-          <label className="label">{t('form_priority')}</label>
+          <label className="label">
+            {t('form_priority')}
+            <Tooltip text={t('form_priority_tip')} id="tip-hook-priority" />
+          </label>
           <input
             className="input"
             type="number"

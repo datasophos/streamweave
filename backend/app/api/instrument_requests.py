@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.auth.setup import current_active_user
 from app.models.audit import AuditAction
 from app.models.instrument_request import InstrumentRequest
@@ -54,8 +55,9 @@ async def create_instrument_request(
     return req
 
 
-@router.get("", response_model=list[InstrumentRequestRead])
+@router.get("", response_model=PaginatedResponse[InstrumentRequestRead])
 async def list_instrument_requests(
+    pagination: PaginationParams = Depends(PaginationParams),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(current_active_user),
 ):
@@ -67,8 +69,7 @@ async def list_instrument_requests(
             .where(InstrumentRequest.requester_id == user.id)
             .order_by(InstrumentRequest.created_at.desc())
         )
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    return await paginate(db, stmt, pagination)
 
 
 @router.get("/{request_id}", response_model=InstrumentRequestRead)

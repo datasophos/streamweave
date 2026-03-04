@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.models.audit import AuditAction, AuditLog
 from app.models.user import User
 from app.schemas.audit import AuditLogRead
@@ -15,15 +16,15 @@ from app.schemas.audit import AuditLogRead
 router = APIRouter(prefix="/admin/audit-logs", tags=["audit"])
 
 
-@router.get("", response_model=list[AuditLogRead])
+@router.get("", response_model=PaginatedResponse[AuditLogRead])
 async def list_audit_logs(
     entity_type: str | None = Query(None),
     action: AuditAction | None = Query(None),
     actor_id: uuid.UUID | None = Query(None),
     since: date | None = Query(None),
     until: date | None = Query(None),
-    limit: int = Query(100, le=500),
-    offset: int = Query(0, ge=0),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
@@ -38,6 +39,4 @@ async def list_audit_logs(
         stmt = stmt.where(AuditLog.created_at >= since)
     if until:
         stmt = stmt.where(AuditLog.created_at <= until)
-    stmt = stmt.offset(offset).limit(limit)
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    return await paginate(db, stmt, PaginationParams(skip=skip, limit=limit))

@@ -82,13 +82,13 @@ class TestSchedulesCRUD:
     async def test_list_schedules_empty(self, client, admin_headers):
         resp = await client.get("/api/schedules", headers=admin_headers)
         assert resp.status_code == 200
-        assert resp.json() == []
+        assert resp.json()["items"] == []
 
     @pytest.mark.asyncio
     async def test_list_schedules_with_data(self, client, admin_headers, schedule):
         resp = await client.get("/api/schedules", headers=admin_headers)
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        assert len(resp.json()["items"]) == 1
 
     @pytest.mark.asyncio
     async def test_create_schedule_prefect_fails_gracefully(

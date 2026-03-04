@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.hooks.registry import BUILTIN_HOOK_META
 from app.models.audit import AuditAction
 from app.models.hook import HookConfig
@@ -23,17 +24,17 @@ async def list_builtin_hooks(_: User = Depends(require_admin)) -> list[dict]:
     return [asdict(meta) for meta in BUILTIN_HOOK_META.values()]
 
 
-@router.get("", response_model=list[HookConfigRead])
+@router.get("", response_model=PaginatedResponse[HookConfigRead])
 async def list_hooks(
     include_deleted: bool = Query(False),
+    pagination: PaginationParams = Depends(PaginationParams),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     stmt = select(HookConfig)
     if not include_deleted:
         stmt = stmt.where(HookConfig.deleted_at.is_(None))
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    return await paginate(db, stmt, pagination)
 
 
 @router.post("", response_model=HookConfigRead, status_code=status.HTTP_201_CREATED)

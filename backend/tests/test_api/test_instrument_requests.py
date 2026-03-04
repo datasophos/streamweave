@@ -114,7 +114,7 @@ async def test_list_requests_as_admin_sees_all(
         await client.post("/api/instrument-requests", json=VALID_PAYLOAD, headers=regular_headers)
     response = await client.get("/api/instrument-requests", headers=admin_headers)
     assert response.status_code == 200
-    assert len(response.json()) >= 1
+    assert len(response.json()["items"]) >= 1
 
 
 @pytest.mark.asyncio
@@ -139,7 +139,7 @@ async def test_list_requests_as_user_sees_own(
     # Regular user should only see their own
     response = await client.get("/api/instrument-requests", headers=regular_headers)
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()["items"]
     assert all(r["name"] != "Admin's Request" for r in data)
 
 

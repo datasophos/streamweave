@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.models.audit import AuditAction
 from app.models.project import MemberType, Project, ProjectMembership
 from app.models.user import User
@@ -21,17 +22,17 @@ from app.services.audit import log_action
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
-@router.get("", response_model=list[ProjectRead])
+@router.get("", response_model=PaginatedResponse[ProjectRead])
 async def list_projects(
     include_deleted: bool = Query(False),
+    pagination: PaginationParams = Depends(PaginationParams),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     stmt = select(Project)
     if not include_deleted:
         stmt = stmt.where(Project.deleted_at.is_(None))
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    return await paginate(db, stmt, pagination)
 
 
 @router.post("", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)

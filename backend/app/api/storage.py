@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.auth.setup import current_active_user
 from app.models.audit import AuditAction
 from app.models.storage import StorageLocation
@@ -62,17 +63,23 @@ def _read_location(location: StorageLocation) -> StorageLocationRead:
     return data
 
 
-@router.get("", response_model=list[StorageLocationRead])
+@router.get("", response_model=PaginatedResponse[StorageLocationRead])
 async def list_storage_locations(
     include_deleted: bool = Query(False),
+    pagination: PaginationParams = Depends(PaginationParams),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(current_active_user),
 ):
     stmt = select(StorageLocation)
     if not include_deleted:
         stmt = stmt.where(StorageLocation.deleted_at.is_(None))
-    result = await db.execute(stmt)
-    return [_read_location(loc) for loc in result.scalars().all()]
+    paged = await paginate(db, stmt, pagination)
+    return PaginatedResponse(
+        items=[_read_location(loc) for loc in paged.items],
+        total=paged.total,
+        skip=paged.skip,
+        limit=paged.limit,
+    )
 
 
 @router.post("", response_model=StorageLocationRead, status_code=status.HTTP_201_CREATED)

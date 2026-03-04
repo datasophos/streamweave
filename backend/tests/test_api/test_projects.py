@@ -40,7 +40,7 @@ class TestProjectsCRUD:
     async def test_list_projects(self, client, admin_headers, project):
         resp = await client.get("/api/projects", headers=admin_headers)
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
+        assert len(resp.json()["items"]) == 1
 
     @pytest.mark.asyncio
     async def test_get_project(self, client, admin_headers, project):

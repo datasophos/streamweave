@@ -6,6 +6,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.auth.setup import (  # noqa: F401 (re-exported)
     auth_backend,
     cookie_auth_backend,
@@ -32,17 +33,17 @@ reset_password_router = fastapi_users.get_reset_password_router()
 admin_users_router = APIRouter(prefix="/admin/users", tags=["users"])
 
 
-@admin_users_router.get("", response_model=list[UserRead])
+@admin_users_router.get("", response_model=PaginatedResponse[UserRead])
 async def list_users(
     include_deleted: bool = Query(False),
+    pagination: PaginationParams = Depends(PaginationParams),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     stmt = select(User)
     if not include_deleted:
         stmt = stmt.where(User.deleted_at.is_(None))
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    return await paginate(db, stmt, pagination)
 
 
 @admin_users_router.delete("/{user_id}", status_code=204)

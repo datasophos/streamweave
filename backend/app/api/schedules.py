@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, require_admin
+from app.api.pagination import PaginatedResponse, PaginationParams, paginate
 from app.models.audit import AuditAction
 from app.models.instrument import Instrument
 from app.models.schedule import HarvestSchedule
@@ -19,17 +20,17 @@ router = APIRouter(prefix="/schedules", tags=["schedules"])
 logger = logging.getLogger(__name__)
 
 
-@router.get("", response_model=list[HarvestScheduleRead])
+@router.get("", response_model=PaginatedResponse[HarvestScheduleRead])
 async def list_schedules(
     include_deleted: bool = Query(False),
+    pagination: PaginationParams = Depends(PaginationParams),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(require_admin),
 ):
     stmt = select(HarvestSchedule)
     if not include_deleted:
         stmt = stmt.where(HarvestSchedule.deleted_at.is_(None))
-    result = await db.execute(stmt)
-    return result.scalars().all()
+    return await paginate(db, stmt, pagination)
 
 
 @router.post("", response_model=HarvestScheduleRead, status_code=status.HTTP_201_CREATED)

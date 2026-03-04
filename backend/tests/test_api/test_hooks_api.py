@@ -29,14 +29,14 @@ class TestHooksCRUD:
     async def test_list_hooks_empty(self, client, admin_headers):
         resp = await client.get("/api/hooks", headers=admin_headers)
         assert resp.status_code == 200
-        assert resp.json() == []
+        assert resp.json()["items"] == []
 
     @pytest.mark.asyncio
     async def test_list_hooks_with_data(self, client, admin_headers, hook):
         resp = await client.get("/api/hooks", headers=admin_headers)
         assert resp.status_code == 200
-        assert len(resp.json()) == 1
-        assert resp.json()[0]["name"] == "Test Filter"
+        assert len(resp.json()["items"]) == 1
+        assert resp.json()["items"][0]["name"] == "Test Filter"
 
     @pytest.mark.asyncio
     async def test_create_hook(self, client, admin_headers):

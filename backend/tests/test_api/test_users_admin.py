@@ -14,7 +14,7 @@ class TestAdminUsersEndpoint:
     async def test_list_users_as_admin(self, client, admin_headers, admin_user):
         resp = await client.get("/api/admin/users", headers=admin_headers)
         assert resp.status_code == 200
-        users = resp.json()
+        users = resp.json()["items"]
         assert len(users) >= 1
         emails = [u["email"] for u in users]
         assert "admin@test.com" in emails
@@ -35,7 +35,7 @@ class TestAdminUsersEndpoint:
     ):
         resp = await client.get("/api/admin/users", headers=admin_headers)
         assert resp.status_code == 200
-        users = resp.json()
+        users = resp.json()["items"]
         assert len(users) == 2
         emails = {u["email"] for u in users}
         assert "admin@test.com" in emails
@@ -47,7 +47,7 @@ class TestAdminUsersEndpoint:
         assert resp.status_code == 204
         # Deleted user should not appear in default list
         list_resp = await client.get("/api/admin/users", headers=admin_headers)
-        emails = [u["email"] for u in list_resp.json()]
+        emails = [u["email"] for u in list_resp.json()["items"]]
         assert "user@test.com" not in emails
 
     @pytest.mark.asyncio

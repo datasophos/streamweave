@@ -315,7 +315,7 @@ async def test_list_storage_locations(client: AsyncClient, admin_headers: dict):
     )
     response = await client.get("/api/storage-locations", headers=admin_headers)
     assert response.status_code == 200
-    assert len(response.json()) >= 1
+    assert len(response.json()["items"]) >= 1
 
 
 @pytest.mark.asyncio

@@ -28,7 +28,7 @@ async def test_create_instrument_creates_audit_entry(client: AsyncClient, admin_
         headers=admin_headers,
     )
     assert audit_resp.status_code == 200
-    entries = audit_resp.json()
+    entries = audit_resp.json()["items"]
     assert any(e["action"] == "create" and e["entity_type"] == "instrument" for e in entries)
 
 
@@ -51,7 +51,7 @@ async def test_update_instrument_creates_audit_entry_with_changes(
         "/api/admin/audit-logs?entity_type=instrument&action=update",
         headers=admin_headers,
     )
-    entries = audit_resp.json()
+    entries = audit_resp.json()["items"]
     update_entries = [e for e in entries if e["entity_id"] == inst_id and e["action"] == "update"]
     assert len(update_entries) >= 1
     changes = update_entries[0]["changes"]
@@ -74,7 +74,7 @@ async def test_delete_instrument_creates_audit_entry(client: AsyncClient, admin_
         "/api/admin/audit-logs?entity_type=instrument&action=delete",
         headers=admin_headers,
     )
-    entries = audit_resp.json()
+    entries = audit_resp.json()["items"]
     assert any(e["entity_id"] == inst_id and e["action"] == "delete" for e in entries)
 
 
@@ -93,7 +93,7 @@ async def test_restore_creates_audit_entry(client: AsyncClient, admin_headers: d
         "/api/admin/audit-logs?entity_type=instrument&action=restore",
         headers=admin_headers,
     )
-    entries = audit_resp.json()
+    entries = audit_resp.json()["items"]
     assert any(e["entity_id"] == inst_id and e["action"] == "restore" for e in entries)
 
 
@@ -109,7 +109,7 @@ async def test_audit_log_filters_by_entity_type(client: AsyncClient, admin_heade
         "/api/admin/audit-logs?entity_type=instrument",
         headers=admin_headers,
     )
-    entries = audit_resp.json()
+    entries = audit_resp.json()["items"]
     assert all(e["entity_type"] == "instrument" for e in entries)
 
 
@@ -121,14 +121,14 @@ async def test_audit_log_filters_by_actor_id(client: AsyncClient, admin_headers:
         headers=admin_headers,
     )
     users_resp = await client.get("/api/admin/users", headers=admin_headers)
-    admin_id = users_resp.json()[0]["id"]
+    admin_id = users_resp.json()["items"][0]["id"]
 
     audit_resp = await client.get(
         f"/api/admin/audit-logs?actor_id={admin_id}",
         headers=admin_headers,
     )
     assert audit_resp.status_code == 200
-    entries = audit_resp.json()
+    entries = audit_resp.json()["items"]
     assert len(entries) >= 1
     assert all(e["actor_id"] == admin_id for e in entries)
 
@@ -145,7 +145,7 @@ async def test_audit_log_filters_by_since_future(client: AsyncClient, admin_head
         headers=admin_headers,
     )
     assert audit_resp.status_code == 200
-    assert len(audit_resp.json()) == 0
+    assert len(audit_resp.json()["items"]) == 0
 
 
 @pytest.mark.asyncio
@@ -155,7 +155,7 @@ async def test_audit_log_filters_by_until_past(client: AsyncClient, admin_header
         headers=admin_headers,
     )
     assert audit_resp.status_code == 200
-    assert len(audit_resp.json()) == 0
+    assert len(audit_resp.json()["items"]) == 0
 
 
 @pytest.mark.asyncio
@@ -173,4 +173,4 @@ async def test_audit_log_pagination(client: AsyncClient, admin_headers: dict):
         headers=admin_headers,
     )
     assert audit_resp.status_code == 200
-    assert len(audit_resp.json()) == 1
+    assert len(audit_resp.json()["items"]) == 1

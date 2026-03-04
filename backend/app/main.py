@@ -30,10 +30,15 @@ from app.api.users import (
     users_router,
     verify_router,
 )
+from app.config import settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.torture_mode:
+        from app.dev_seed_torture import seed_torture_data
+
+        await seed_torture_data()
     yield
 
 

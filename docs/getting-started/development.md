@@ -129,6 +129,75 @@ export ADMIN_PASSWORD=mypassword
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
+## TORTURE_MODE: Stress-Testing with Large Datasets
+
+`TORTURE_MODE` pre-loads the database with a large, realistic dataset on startup. Use it when you need to stress-test pagination, UI performance, or query latency with hundreds of instruments and hundreds of thousands of files.
+
+### Activation
+
+Add `TORTURE_MODE=true` to your `.env` file (or to the backend service's `environment` block in `docker-compose.dev.yml`):
+
+```bash
+echo "TORTURE_MODE=true" >> .env
+```
+
+Then start (or restart) the backend. The seeder runs automatically during the FastAPI lifespan startup hook.
+
+### What gets seeded
+
+| Entity | Count (defaults) |
+|--------|-----------------|
+| Storage location | 1 — "TORTURE Archive" |
+| Service accounts | 4 — one per instrument type |
+| Instruments | 200 — 50 each of NMR, HPLC, MS, TEM |
+| Harvest schedules | 200 — one per instrument |
+| File records | ~200 000 — ~1 000 per instrument |
+
+All instruments are named `TORTURE-{TYPE}-{NNN}` (e.g. `TORTURE-NMR-001`). File paths follow realistic directory trees for each instrument type:
+
+| Type | Path pattern |
+|------|-------------|
+| NMR (Bruker) | `/{year}/{mm}/{dd}/{expno:04d}/{fname}` |
+| HPLC (Waters) | `/{year}/{mm}/{set_name}/{fname}` |
+| MS (Thermo) | `/{year}/batch_{batch:04d}/{fname}` |
+| TEM (FEI) | `/{year}/{n:04d}_{session_date}/{fname}` |
+
+### Idempotency
+
+The seeder is safe to run repeatedly. If any instrument whose name starts with `TORTURE-` already exists, the seeder prints a skip message and returns without inserting anything.
+
+### Removing torture data
+
+The seeder has no built-in teardown. To remove torture data, either drop and recreate the database, or run a targeted delete:
+
+```bash
+# Connect to the running backend container and open a Python shell
+docker compose exec backend uv run python - <<'EOF'
+import asyncio
+from sqlalchemy import delete, select
+from app.database import async_session_factory
+from app.models.instrument import Instrument
+
+async def main():
+    async with async_session_factory() as session:
+        result = await session.execute(
+            select(Instrument.id).where(Instrument.name.like("TORTURE-%"))
+        )
+        ids = result.scalars().all()
+        print(f"Deleting {len(ids)} TORTURE instruments…")
+        await session.execute(
+            delete(Instrument).where(Instrument.name.like("TORTURE-%"))
+        )
+        await session.commit()
+        print("Done.")
+
+asyncio.run(main())
+EOF
+```
+
+!!! warning "File records are not cascade-deleted"
+    The `FileRecord` rows reference instruments via a foreign key but have no `ON DELETE CASCADE`. If you need a clean slate, it is simpler to drop and recreate the dev database than to manually delete in dependency order.
+
 ## Hot Reload
 
 - **Frontend**: Vite serves `frontend/src/` directly; changes reload the browser instantly.

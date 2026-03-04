@@ -61,5 +61,8 @@ class Settings(BaseSettings):
     ark_shoulder: str = "fk4"
     default_identifier_type: str = "ark"
 
+    # Development / stress-testing
+    torture_mode: bool = False
+
 
 settings = Settings()

@@ -29,6 +29,7 @@ dependencies = [
     "xxhash>=3.4,<4",
     "aiosmtplib>=5.1.0",
     "mkdocs-open-in-new-tab>=1.0.8",
+    "mkdocs-panzoom-plugin>=0.5.2",
 ]
 
 [dependency-groups]

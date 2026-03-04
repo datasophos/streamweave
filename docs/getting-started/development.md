@@ -107,6 +107,71 @@ On first boot, the `dev-seed` container automatically seeds the database with sa
 
 The CIFS instrument simulators (NMR, HPLC, MS, TEM) are available internally on the Docker network for the worker to harvest from.
 
+## Architecture
+
+```mermaid
+graph LR
+    Browser(["🌐 Browser"])
+
+    subgraph proxy["Reverse proxy"]
+        Caddy["<b>caddy</b><br/>Caddy<br/>:443 / :80<br/><i>streamweave.local</i>"]
+    end
+
+    subgraph app["Application tier"]
+        API["<b>api</b><br/>FastAPI<br/>:8000"]
+        Worker["<b>worker</b><br/>Prefect worker"]
+        Frontend["<b>frontend</b><br/>Vite dev server<br/>:3000"]
+        Prefect["<b>prefect-server</b><br/>Prefect 3<br/>:4200"]
+    end
+
+    subgraph data["Data tier"]
+        PG[("postgres<br/>PostgreSQL 16<br/>:5432")]
+        PrefectPG[("prefect-postgres<br/>PostgreSQL 16")]
+        Redis[("redis<br/>Redis 7<br/>:6379")]
+    end
+
+    subgraph sources["Instrument sources (CIFS)"]
+        Init["<b>instruments-init</b><br/>busybox<br/><i>copies sample data</i>"]
+        Samba["<b>samba-instruments</b><br/>Samba<br/>shares: nmr, hplc, ms, tem"]
+    end
+
+    subgraph destination["Archive destinations"]
+        Archive["<b>samba-archive</b><br/>Samba<br/>share: archive"]
+        S3["<b>s3-dev</b><br/>rclone S3<br/>:9000"]
+    end
+
+    subgraph initc["Init containers (run once)"]
+        Seed["<b>dev-seed</b><br/>seeds DB + storage"]
+    end
+
+    Browser -->|"HTTPS :443"| Caddy
+
+    Caddy -->|"/api/*"| API
+    Caddy -->|"/prefect/*"| Prefect
+    Caddy -->|"everything else"| Frontend
+
+    Frontend -->|"API calls"| API
+
+    API --> PG
+    Worker --> PG
+    API --> Prefect
+    Worker --> Prefect
+    Prefect --> PrefectPG
+    Prefect --> Redis
+
+    Samba -->|"CIFS harvest"| Worker
+    Worker -->|"CIFS transfer"| Archive
+    Worker -->|"S3 transfer"| S3
+
+    Init -->|"copies sample data"| Samba
+
+    Seed --> API
+
+    style app fill:#e0e7ff,stroke:#6366f1,color:#1e1b4b
+    style sources fill:#fef3c7,stroke:#d97706,color:#451a03
+    style destination fill:#fef3c7,stroke:#d97706,color:#451a03
+```
+
 ## Logging In
 
 ### Demo mode shortcuts

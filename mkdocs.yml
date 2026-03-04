@@ -22,6 +22,8 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  font:
+    text: Inter
   logo: _static/streamweave_logo_white.svg
   favicon: _static/streamweave_logo.svg
   features:
@@ -40,6 +42,9 @@ exclude_docs: |
 plugins:
   - search
   - open-in-new-tab
+  - panzoom:
+      full_screen: true
+      key: "none"
   - mkdocs-jupyter:
       execute: false
       include_source: true

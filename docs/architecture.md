@@ -6,11 +6,34 @@ StreamWeave is a data harvesting pipeline for scientific instruments. It connect
 
 ```mermaid
 graph TD
-    Instruments["Instruments<br/>(Samba)"] -- "CIFS/SMB" --> Worker["Worker<br/>(rclone)"]
-    Worker -- "Prefect orchestration" --> API["FastAPI<br/>Backend"]
-    Clients["Clients<br/>(Browser, Scripts)"] -- "REST API" --> API
-    API -- "SQLAlchemy" --> DB["PostgreSQL"]
-    Worker -- "SQLAlchemy" --> DB
+    Users["<b>👤 Users</b>"] --> Browser["<b>🌐 Browser</b><br/>(React SPA)"]
+    Users --> Scripts["<b>📓 Scripts / Jupyter</b>"]
+    Browser --> API
+    Scripts --> API
+
+    subgraph Backend["Backend (FastAPI)"]
+        API["<b>🔌 API Routes</b>"]
+        Auth["<b>🔒 Auth</b><br/>(fastapi-users + JWT)"]
+        API --> Auth
+    end
+
+    API -- "deploy & trigger" --> Prefect["<b>⚙️ Prefect 3</b><br/>Orchestration"]
+    Prefect -- "runs" --> Worker["<b>⬇️ Harvest Worker</b><br/>(rclone)"]
+
+    API --> DB[("<b>🗄️ PostgreSQL</b><br/>─────────────<br/>Instruments · Schedules<br/>Files · Transfers<br/>Users · Access Control<br/>Hooks · Audit Log")]
+    Worker --> DB
+
+    subgraph FileStorage["File Storage Locations"]
+        Instruments["<b>🔬 Scientific Instruments</b><br/>(Samba)"]
+        DestStorage["<b>💾 Destination Storage</b><br/>(POSIX / S3)"]
+    end
+
+    DB -- "encrypted credentials" --> ServiceAccounts["<b>🔑 Service Accounts</b><br/>(per-instrument credentials)"]
+    ServiceAccounts -- "authenticate" --> Worker
+    Instruments -- "CIFS/SMB" --> Worker
+    Worker -- "file copy" --> DestStorage
+
+    style FileStorage fill:#fef9c3,stroke:#ca8a04
 ```
 
 ## Data Flow

@@ -58,6 +58,7 @@ export const makeInstrument = (overrides: Partial<Instrument> = {}): Instrument 
   transfer_adapter: 'rclone',
   transfer_config: null,
   enabled: true,
+  last_harvested_at: null,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
   deleted_at: null,
@@ -268,6 +269,12 @@ export const handlers = [
     HttpResponse.json(makeInstrument({ id: params.id as string }))
   ),
   http.delete(`${TEST_BASE}/api/instruments/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${TEST_BASE}/api/instruments/:id/harvest`, () =>
+    HttpResponse.json({
+      triggered: [{ flow_run_id: 'run-uuid-1', schedule_id: 'sched-uuid-1' }],
+      errors: [],
+    })
+  ),
 
   // Service Accounts
   http.get(`${TEST_BASE}/api/service-accounts`, () => HttpResponse.json([makeServiceAccount()])),

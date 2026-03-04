@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import enum
 import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Enum, ForeignKey, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKey
@@ -50,6 +51,7 @@ class Instrument(UUIDPrimaryKey, TimestampMixin, SoftDeleteMixin, Base):
     )
     transfer_config: Mapped[dict | None] = mapped_column(JSON)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_harvested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     service_account: Mapped[ServiceAccount | None] = relationship(back_populates="instruments")
     schedules: Mapped[list[HarvestSchedule]] = relationship(back_populates="instrument")

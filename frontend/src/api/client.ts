@@ -72,6 +72,7 @@ export const instrumentsApi = {
   update: (id: string, data: unknown) => apiClient.patch(`/api/instruments/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/instruments/${id}`),
   restore: (id: string) => apiClient.post(`/api/instruments/${id}/restore`),
+  harvest: (id: string) => apiClient.post(`/api/instruments/${id}/harvest`),
 }
 
 export const serviceAccountsApi = {

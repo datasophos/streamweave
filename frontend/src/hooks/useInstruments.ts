@@ -75,6 +75,14 @@ export function useRestoreInstrument() {
   })
 }
 
+export function useHarvestInstrument() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => instrumentsApi.harvest(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: INSTRUMENTS_KEY }),
+  })
+}
+
 // Service Accounts
 export function useServiceAccountPassword(id: string) {
   return useQuery({

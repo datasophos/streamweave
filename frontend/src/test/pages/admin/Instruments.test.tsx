@@ -598,23 +598,6 @@ describe('Instruments admin page', () => {
     })
   })
 
-  it('shows raw service_account_id when not in service account map', async () => {
-    setupAdmin()
-    server.use(
-      http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json(paginated([makeInstrument({ service_account_id: 'unknown-sa-uuid-99' })]))
-      ),
-      http.get(`${TEST_BASE}/api/service-accounts`, () => HttpResponse.json([]))
-    )
-
-    renderWithProviders(<Instruments />)
-
-    await waitFor(() => {
-      // saMap is empty, so it falls back to the raw service_account_id
-      expect(screen.getByText('unknown-sa-uuid-99')).toBeInTheDocument()
-    })
-  })
-
   it('delete service account sends DELETE when user confirms in dialog', async () => {
     setupAdmin()
 

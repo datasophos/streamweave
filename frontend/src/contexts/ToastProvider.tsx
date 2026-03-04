@@ -1,12 +1,14 @@
 import { useCallback, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ToastContext } from './ToastContext'
-import type { ToastType } from './ToastContext'
+import type { ToastLink, ToastType } from './ToastContext'
 
 const FADE_DURATION = 150
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<{ id: number; message: string; type: ToastType }[]>([])
+  const [toasts, setToasts] = useState<
+    { id: number; message: string; type: ToastType; link?: ToastLink }[]
+  >([])
   const [exitingIds, setExitingIds] = useState<Set<number>>(new Set())
   const nextId = useRef(0)
 
@@ -30,9 +32,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   )
 
   const showToast = useCallback(
-    (message: string, type: ToastType = 'info') => {
+    (message: string, type: ToastType = 'info', link?: ToastLink) => {
       const id = nextId.current++
-      setToasts((prev) => [...prev, { id, message, type }])
+      setToasts((prev) => [...prev, { id, message, type, link }])
       setTimeout(() => startExit(id), 4000 - FADE_DURATION)
     },
     [startExit]

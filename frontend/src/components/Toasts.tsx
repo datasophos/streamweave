@@ -22,7 +22,19 @@ export function Toasts() {
         const anim = exitingIds.has(toast.id) ? 'animate-toast-out' : 'animate-toast-in'
         return (
           <div key={toast.id} role="alert" className={`${cls} ${anim}`}>
-            <span className="flex-1">{toast.message}</span>
+            <span className="flex-1">
+              {toast.message}
+              {toast.link && (
+                <a
+                  href={toast.link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 underline opacity-80 hover:opacity-100"
+                >
+                  {toast.link.label}
+                </a>
+              )}
+            </span>
             <button
               onClick={() => startExit(toast.id)}
               aria-label="Dismiss"

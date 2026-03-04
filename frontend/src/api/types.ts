@@ -50,6 +50,7 @@ export interface Instrument {
   transfer_adapter: TransferAdapter
   transfer_config: Record<string, unknown> | null
   enabled: boolean
+  last_harvested_at: string | null
   created_at: string
   updated_at: string
   deleted_at: string | null

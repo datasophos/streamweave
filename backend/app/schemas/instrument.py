@@ -59,6 +59,7 @@ class InstrumentRead(BaseModel):
     transfer_adapter: TransferAdapterType
     transfer_config: dict | None
     enabled: bool
+    last_harvested_at: datetime | None
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None

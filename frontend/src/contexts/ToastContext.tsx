@@ -2,16 +2,22 @@ import { createContext } from 'react'
 
 export type ToastType = 'success' | 'error' | 'info'
 
+export interface ToastLink {
+  label: string
+  href: string
+}
+
 export interface Toast {
   id: number
   message: string
   type: ToastType
+  link?: ToastLink
 }
 
 export interface ToastContextValue {
   toasts: Toast[]
   exitingIds: Set<number>
-  showToast: (message: string, type?: ToastType) => void
+  showToast: (message: string, type?: ToastType, link?: ToastLink) => void
   removeToast: (id: number) => void
   startExit: (id: number) => void
 }

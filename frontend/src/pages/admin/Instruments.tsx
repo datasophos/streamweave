@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Eye, EyeOff, KeyRound, Microscope, Search } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, Microscope, Play, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Tooltip } from '@/components/Tooltip'
+import { useToast } from '@/hooks/useToast'
 import { Table } from '@/components/Table'
 import { Modal } from '@/components/Modal'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -14,6 +15,7 @@ import {
   useUpdateInstrument,
   useDeleteInstrument,
   useRestoreInstrument,
+  useHarvestInstrument,
   useServiceAccounts,
   useServiceAccountPassword,
   useCreateServiceAccount,
@@ -427,12 +429,14 @@ function EditServiceAccountModal({
 export function Instruments() {
   const { t } = useTranslation('instruments')
   const { t: tc } = useTranslation('common')
+  const { showToast } = useToast()
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeletedInst, setShowDeletedInst] = useState(false)
   const [showDeletedSA, setShowDeletedSA] = useState(false)
   const [instrSearch, setInstrSearch] = useState('')
   const [saSearch, setSaSearch] = useState('')
+  const [pendingHarvests, setPendingHarvests] = useState<Set<string>>(new Set())
   const [instrSkip, setInstrSkip] = useState(0)
 
   useEffect(() => {
@@ -476,25 +480,55 @@ export function Instruments() {
   const updateInst = useUpdateInstrument()
   const deleteInst = useDeleteInstrument()
   const restoreInst = useRestoreInstrument()
+  const harvestInst = useHarvestInstrument()
+
+  const triggerHarvest = (instrumentId: string) => {
+    if (pendingHarvests.has(instrumentId)) return
+    setPendingHarvests((prev) => new Set(prev).add(instrumentId))
+    harvestInst.mutate(instrumentId, {
+      onSuccess: (resp) => {
+        setPendingHarvests((prev) => {
+          const next = new Set(prev)
+          next.delete(instrumentId)
+          return next
+        })
+        const flowRunId = resp.data?.triggered?.[0]?.flow_run_id
+        showToast(
+          t('harvest_triggered'),
+          'success',
+          flowRunId
+            ? { label: t('view_in_prefect'), href: `/prefect/flow-runs/flow-run/${flowRunId}` }
+            : undefined
+        )
+      },
+      onError: () => {
+        setPendingHarvests((prev) => {
+          const next = new Set(prev)
+          next.delete(instrumentId)
+          return next
+        })
+        showToast(t('harvest_error'), 'error')
+      },
+    })
+  }
   const createSA = useCreateServiceAccount()
   const updateSA = useUpdateServiceAccount()
   const deleteSA = useDeleteServiceAccount()
   const restoreSA = useRestoreServiceAccount()
-
-  const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
 
   const instrumentColumns = [
     { header: tc('name'), key: 'name' as const, sortable: true },
     { header: t('col_host'), key: 'cifs_host' as const, sortable: true },
     { header: t('col_share'), key: 'cifs_share' as const },
     {
-      header: t('col_service_account'),
+      header: t('col_last_harvested'),
+      sortable: true,
+      sortKey: 'last_harvested_at' as const,
       render: (row: Instrument) =>
-        row.service_account_id
-          ? (saMap[row.service_account_id]?.name ?? row.service_account_id)
-          : '—',
+        row.last_harvested_at
+          ? new Date(row.last_harvested_at).toLocaleString()
+          : t('never_harvested'),
     },
-    { header: t('col_adapter'), key: 'transfer_adapter' as const },
     {
       header: tc('status'),
       render: (row: Instrument) =>
@@ -515,6 +549,15 @@ export function Instruments() {
           </button>
         ) : (
           <div className="flex gap-2">
+            <button
+              className="btn btn-sm btn-success"
+              disabled={!row.enabled || pendingHarvests.has(row.id)}
+              onClick={() => triggerHarvest(row.id)}
+              title={t('harvest_now')}
+              aria-label={t('harvest_now')}
+            >
+              <Play size={14} className={pendingHarvests.has(row.id) ? 'animate-spin' : ''} />
+            </button>
             <button
               className="btn btn-sm btn-secondary"
               onClick={() => setModal({ kind: 'editInstrument', instrument: row })}

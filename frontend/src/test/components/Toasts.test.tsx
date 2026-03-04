@@ -5,19 +5,31 @@ import { ToastProvider } from '@/contexts/ToastProvider'
 import { useToast } from '@/hooks/useToast'
 import { Toasts } from '@/components/Toasts'
 
-function ToastTrigger({ message, type }: { message: string; type?: 'success' | 'error' | 'info' }) {
+function ToastTrigger({
+  message,
+  type,
+  link,
+}: {
+  message: string
+  type?: 'success' | 'error' | 'info'
+  link?: { label: string; href: string }
+}) {
   const { showToast } = useToast()
   return (
-    <button onClick={() => showToast(message, type)} data-testid="trigger">
+    <button onClick={() => showToast(message, type, link)} data-testid="trigger">
       Show Toast
     </button>
   )
 }
 
-function renderWithToast(message: string, type?: 'success' | 'error' | 'info') {
+function renderWithToast(
+  message: string,
+  type?: 'success' | 'error' | 'info',
+  link?: { label: string; href: string }
+) {
   return render(
     <ToastProvider>
-      <ToastTrigger message={message} type={type} />
+      <ToastTrigger message={message} type={type} link={link} />
       <Toasts />
     </ToastProvider>
   )
@@ -102,6 +114,22 @@ describe('Toasts', () => {
     // Toast fades out over 500ms before being removed from DOM
     await waitFor(() => expect(screen.getAllByRole('alert')).toHaveLength(1), { timeout: 1000 })
     expect(screen.getAllByRole('alert')[0]).toHaveTextContent('Second toast')
+  })
+
+  it('renders an optional link inside the toast', async () => {
+    const user = userEvent.setup()
+    renderWithToast('Harvest triggered', 'success', {
+      label: 'View in Prefect',
+      href: '/prefect/flow-runs/flow-run/run-123',
+    })
+
+    await user.click(screen.getByTestId('trigger'))
+
+    const toast = await screen.findByRole('alert')
+    expect(toast).toHaveTextContent('Harvest triggered')
+    const link = screen.getByRole('link', { name: 'View in Prefect' })
+    expect(link).toHaveAttribute('href', '/prefect/flow-runs/flow-run/run-123')
+    expect(link).toHaveAttribute('target', '_blank')
   })
 
   it('useToast throws when used outside ToastProvider', () => {

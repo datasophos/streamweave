@@ -359,6 +359,11 @@ async def harvest_instrument_flow(instrument_id: str, schedule_id: str) -> dict:
     new_files = discovery["new_files"]
     if not new_files:
         logger.info("No new files for %s — nothing to do", instrument_name)
+        async with get_db_session() as session:
+            instrument = await session.get(Instrument, uuid.UUID(instrument_id))
+            if instrument:
+                instrument.last_harvested_at = datetime.now(UTC)
+                await session.commit()
         return {
             "instrument_id": instrument_id,
             "total_discovered": discovery["total_discovered"],
@@ -391,6 +396,13 @@ async def harvest_instrument_flow(instrument_id: str, schedule_id: str) -> dict:
         skipped,
         failed,
     )
+
+    # Stamp the instrument with the harvest completion time
+    async with get_db_session() as session:
+        instrument = await session.get(Instrument, uuid.UUID(instrument_id))
+        if instrument:
+            instrument.last_harvested_at = datetime.now(UTC)
+            await session.commit()
 
     return {
         "instrument_id": instrument_id,

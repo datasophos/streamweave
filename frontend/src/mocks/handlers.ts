@@ -221,6 +221,14 @@ export const makeTransfer = (overrides: Partial<FileTransfer> = {}): FileTransfe
 })
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+export function paginated<T>(items: T[], skip = 0, limit = 25) {
+  return { items, total: items.length, skip, limit }
+}
+
+// ---------------------------------------------------------------------------
 // Base URL — must match apiClient.defaults.baseURL set in test/setup.ts
 // MSW v2 Node mode requires ABSOLUTE URLs in handlers (relative paths only
 // work in browser environments).
@@ -247,10 +255,12 @@ export const handlers = [
   http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeUser())),
 
   // Admin users list
-  http.get(`${TEST_BASE}/api/admin/users`, () => HttpResponse.json([makeUser(), makeAdminUser()])),
+  http.get(`${TEST_BASE}/api/admin/users`, () =>
+    HttpResponse.json(paginated([makeUser(), makeAdminUser()]))
+  ),
 
   // Instruments
-  http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json([makeInstrument()])),
+  http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json(paginated([makeInstrument()]))),
   http.post(`${TEST_BASE}/api/instruments`, () =>
     HttpResponse.json(makeInstrument(), { status: 201 })
   ),
@@ -276,7 +286,9 @@ export const handlers = [
   ),
 
   // Storage
-  http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([makeStorageLocation()])),
+  http.get(`${TEST_BASE}/api/storage-locations`, () =>
+    HttpResponse.json(paginated([makeStorageLocation()]))
+  ),
   http.post(`${TEST_BASE}/api/storage-locations`, () =>
     HttpResponse.json(makeStorageLocation(), { status: 201 })
   ),
@@ -292,7 +304,7 @@ export const handlers = [
   ),
 
   // Schedules
-  http.get(`${TEST_BASE}/api/schedules`, () => HttpResponse.json([makeSchedule()])),
+  http.get(`${TEST_BASE}/api/schedules`, () => HttpResponse.json(paginated([makeSchedule()]))),
   http.post(`${TEST_BASE}/api/schedules`, () => HttpResponse.json(makeSchedule(), { status: 201 })),
   http.patch(`${TEST_BASE}/api/schedules/:id`, ({ params }) =>
     HttpResponse.json(makeSchedule({ id: params.id as string }))
@@ -315,7 +327,7 @@ export const handlers = [
       }),
     ])
   ),
-  http.get(`${TEST_BASE}/api/hooks`, () => HttpResponse.json([makeHookConfig()])),
+  http.get(`${TEST_BASE}/api/hooks`, () => HttpResponse.json(paginated([makeHookConfig()]))),
   http.post(`${TEST_BASE}/api/hooks`, () => HttpResponse.json(makeHookConfig(), { status: 201 })),
   http.patch(`${TEST_BASE}/api/hooks/:id`, ({ params }) =>
     HttpResponse.json(makeHookConfig({ id: params.id as string }))
@@ -339,7 +351,7 @@ export const handlers = [
   http.get(`${TEST_BASE}/api/transfers`, () => HttpResponse.json([makeTransfer()])),
 
   // Groups
-  http.get(`${TEST_BASE}/api/groups`, () => HttpResponse.json([makeGroup()])),
+  http.get(`${TEST_BASE}/api/groups`, () => HttpResponse.json(paginated([makeGroup()]))),
   http.post(`${TEST_BASE}/api/groups`, () => HttpResponse.json(makeGroup(), { status: 201 })),
   http.patch(`${TEST_BASE}/api/groups/:id`, ({ params }) =>
     HttpResponse.json(makeGroup({ id: params.id as string }))
@@ -358,7 +370,7 @@ export const handlers = [
   ),
 
   // Projects
-  http.get(`${TEST_BASE}/api/projects`, () => HttpResponse.json([makeProject()])),
+  http.get(`${TEST_BASE}/api/projects`, () => HttpResponse.json(paginated([makeProject()]))),
   http.post(`${TEST_BASE}/api/projects`, () => HttpResponse.json(makeProject(), { status: 201 })),
   http.patch(`${TEST_BASE}/api/projects/:id`, ({ params }) =>
     HttpResponse.json(makeProject({ id: params.id as string }))
@@ -378,7 +390,7 @@ export const handlers = [
 
   // Instrument Requests
   http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-    HttpResponse.json([makeInstrumentRequest()])
+    HttpResponse.json(paginated([makeInstrumentRequest()]))
   ),
   http.post(`${TEST_BASE}/api/instrument-requests`, () =>
     HttpResponse.json(makeInstrumentRequest(), { status: 201 })

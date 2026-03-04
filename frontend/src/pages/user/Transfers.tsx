@@ -28,7 +28,8 @@ export function Transfers() {
   if (statusFilter) params['status'] = statusFilter
 
   const { data: transfers = [], isLoading } = useTransfers(params)
-  const { data: storageLocations = [] } = useStorageLocations()
+  const { data: storageResp } = useStorageLocations({ limit: 500 })
+  const storageLocations = storageResp?.items ?? []
 
   const storageMap = Object.fromEntries(storageLocations.map((s) => [s.id, s.name]))
 

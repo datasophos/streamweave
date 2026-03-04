@@ -4,6 +4,7 @@ import type {
   Instrument,
   InstrumentCreate,
   InstrumentUpdate,
+  PaginatedResponse,
   ServiceAccount,
   ServiceAccountCreate,
   ServiceAccountUpdate,
@@ -12,12 +13,19 @@ import type {
 const INSTRUMENTS_KEY = ['instruments']
 const SERVICE_ACCOUNTS_KEY = ['service-accounts']
 
-export function useInstruments(includeDeleted = false) {
+export function useInstruments(
+  options: { includeDeleted?: boolean; skip?: number; limit?: number } = {}
+) {
+  const { includeDeleted = false, skip = 0, limit = 25 } = options
   return useQuery({
-    queryKey: [...INSTRUMENTS_KEY, { includeDeleted }],
+    queryKey: [...INSTRUMENTS_KEY, { includeDeleted, skip, limit }],
     queryFn: async () => {
-      const resp = await instrumentsApi.list(includeDeleted ? { include_deleted: true } : undefined)
-      return resp.data as Instrument[]
+      const resp = await instrumentsApi.list({
+        ...(includeDeleted ? { include_deleted: true } : {}),
+        skip,
+        limit,
+      })
+      return resp.data as PaginatedResponse<Instrument>
     },
     placeholderData: keepPreviousData,
   })

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { projectsApi } from '@/api/client'
 import type {
+  PaginatedResponse,
   Project,
   ProjectCreate,
   ProjectUpdate,
@@ -11,12 +12,17 @@ import type {
 const KEY = ['projects']
 const membersKey = (id: string) => ['projects', id, 'members']
 
-export function useProjects(includeDeleted = false) {
+export function useProjects(options: { includeDeleted?: boolean; skip?: number } = {}) {
+  const { includeDeleted = false, skip = 0 } = options
   return useQuery({
-    queryKey: [...KEY, { includeDeleted }],
+    queryKey: [...KEY, { includeDeleted, skip }],
     queryFn: async () => {
-      const resp = await projectsApi.list(includeDeleted ? { include_deleted: true } : undefined)
-      return resp.data as Project[]
+      const resp = await projectsApi.list({
+        ...(includeDeleted ? { include_deleted: true } : {}),
+        skip,
+        limit: 25,
+      })
+      return resp.data as PaginatedResponse<Project>
     },
     placeholderData: keepPreviousData,
   })

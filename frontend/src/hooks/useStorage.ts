@@ -1,15 +1,27 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { storageApi } from '@/api/client'
-import type { StorageLocation, StorageLocationCreate, StorageLocationUpdate } from '@/api/types'
+import type {
+  PaginatedResponse,
+  StorageLocation,
+  StorageLocationCreate,
+  StorageLocationUpdate,
+} from '@/api/types'
 
 const KEY = ['storage']
 
-export function useStorageLocations(includeDeleted = false) {
+export function useStorageLocations(
+  options: { includeDeleted?: boolean; skip?: number; limit?: number } = {}
+) {
+  const { includeDeleted = false, skip = 0, limit = 25 } = options
   return useQuery({
-    queryKey: [...KEY, { includeDeleted }],
+    queryKey: [...KEY, { includeDeleted, skip, limit }],
     queryFn: async () => {
-      const resp = await storageApi.list(includeDeleted ? { include_deleted: true } : undefined)
-      return resp.data as StorageLocation[]
+      const resp = await storageApi.list({
+        ...(includeDeleted ? { include_deleted: true } : {}),
+        skip,
+        limit,
+      })
+      return resp.data as PaginatedResponse<StorageLocation>
     },
     placeholderData: keepPreviousData,
   })

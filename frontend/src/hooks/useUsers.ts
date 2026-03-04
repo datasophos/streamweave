@@ -1,15 +1,22 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { usersApi, authApi } from '@/api/client'
-import type { User, UserCreate, UserUpdate } from '@/api/types'
+import type { PaginatedResponse, User, UserCreate, UserUpdate } from '@/api/types'
 
 const KEY = ['users']
 
-export function useUsers(includeDeleted = false) {
+export function useUsers(
+  options: { includeDeleted?: boolean; skip?: number; limit?: number } = {}
+) {
+  const { includeDeleted = false, skip = 0, limit = 25 } = options
   return useQuery({
-    queryKey: [...KEY, { includeDeleted }],
+    queryKey: [...KEY, { includeDeleted, skip, limit }],
     queryFn: async () => {
-      const resp = await usersApi.list(includeDeleted ? { include_deleted: true } : undefined)
-      return resp.data as User[]
+      const resp = await usersApi.list({
+        ...(includeDeleted ? { include_deleted: true } : {}),
+        skip,
+        limit,
+      })
+      return resp.data as PaginatedResponse<User>
     },
     placeholderData: keepPreviousData,
   })

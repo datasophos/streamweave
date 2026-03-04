@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ClipboardList } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { useInstrumentRequests, useReviewInstrumentRequest } from '@/hooks/useInstrumentRequests'
@@ -168,11 +168,15 @@ function RequestDetailModal({
 }
 
 export function InstrumentRequests() {
-  const { data: requests, isLoading, isError } = useInstrumentRequests()
+  const [skip, setSkip] = useState(0)
+  const { data: requestsResponse, isLoading, isError } = useInstrumentRequests(skip)
   const [viewing, setViewing] = useState<InstrumentRequestRecord | null>(null)
   const [filter, setFilter] = useState<string>('all')
 
-  const filtered = filter === 'all' ? requests : requests?.filter((r) => r.status === filter)
+  const filtered = useMemo(() => {
+    const requests = requestsResponse?.items ?? []
+    return filter === 'all' ? requests : requests.filter((r) => r.status === filter)
+  }, [requestsResponse, filter])
 
   return (
     <div>
@@ -252,6 +256,28 @@ export function InstrumentRequests() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+        {requestsResponse && requestsResponse.total > requestsResponse.limit && (
+          <div className="flex items-center justify-between mt-4 text-sm text-sw-fg-muted">
+            <button
+              disabled={skip === 0}
+              onClick={() => setSkip(Math.max(0, skip - requestsResponse.limit))}
+              className="btn-secondary disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <span>
+              {skip + 1}–{Math.min(skip + requestsResponse.limit, requestsResponse.total)} of{' '}
+              {requestsResponse.total}
+            </span>
+            <button
+              disabled={skip + requestsResponse.limit >= requestsResponse.total}
+              onClick={() => setSkip(skip + requestsResponse.limit)}
+              className="btn-secondary disabled:opacity-40"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

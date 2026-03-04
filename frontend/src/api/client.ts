@@ -65,7 +65,8 @@ export const authApi = {
 
 // Resource endpoints
 export const instrumentsApi = {
-  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/instruments', { params }),
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
+    apiClient.get('/api/instruments', { params }),
   get: (id: string) => apiClient.get(`/api/instruments/${id}`),
   create: (data: unknown) => apiClient.post('/api/instruments', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/instruments/${id}`, data),
@@ -86,7 +87,7 @@ export const serviceAccountsApi = {
 }
 
 export const storageApi = {
-  list: (params?: { include_deleted?: boolean }) =>
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
     apiClient.get('/api/storage-locations', { params }),
   get: (id: string) => apiClient.get(`/api/storage-locations/${id}`),
   create: (data: unknown) => apiClient.post('/api/storage-locations', data),
@@ -97,7 +98,8 @@ export const storageApi = {
 }
 
 export const schedulesApi = {
-  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/schedules', { params }),
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
+    apiClient.get('/api/schedules', { params }),
   get: (id: string) => apiClient.get(`/api/schedules/${id}`),
   create: (data: unknown) => apiClient.post('/api/schedules', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/schedules/${id}`, data),
@@ -106,7 +108,8 @@ export const schedulesApi = {
 }
 
 export const hooksApi = {
-  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/hooks', { params }),
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
+    apiClient.get('/api/hooks', { params }),
   get: (id: string) => apiClient.get(`/api/hooks/${id}`),
   builtins: () => apiClient.get('/api/hooks/builtins'),
   create: (data: unknown) => apiClient.post('/api/hooks', data),
@@ -126,7 +129,8 @@ export const transfersApi = {
 }
 
 export const usersApi = {
-  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/admin/users', { params }),
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
+    apiClient.get('/api/admin/users', { params }),
   get: (id: string) => apiClient.get(`/users/${id}`),
   update: (id: string, data: unknown) => apiClient.patch(`/users/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/admin/users/${id}`),
@@ -134,7 +138,8 @@ export const usersApi = {
 }
 
 export const groupsApi = {
-  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/groups', { params }),
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
+    apiClient.get('/api/groups', { params }),
   get: (id: string) => apiClient.get(`/api/groups/${id}`),
   create: (data: unknown) => apiClient.post('/api/groups', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/groups/${id}`, data),
@@ -147,7 +152,8 @@ export const groupsApi = {
 }
 
 export const projectsApi = {
-  list: (params?: { include_deleted?: boolean }) => apiClient.get('/api/projects', { params }),
+  list: (params?: { include_deleted?: boolean; skip?: number; limit?: number }) =>
+    apiClient.get('/api/projects', { params }),
   get: (id: string) => apiClient.get(`/api/projects/${id}`),
   create: (data: unknown) => apiClient.post('/api/projects', data),
   update: (id: string, data: unknown) => apiClient.patch(`/api/projects/${id}`, data),
@@ -168,7 +174,8 @@ export const healthApi = {
 }
 
 export const instrumentRequestsApi = {
-  list: () => apiClient.get('/api/instrument-requests'),
+  list: (params?: { skip?: number; limit?: number }) =>
+    apiClient.get('/api/instrument-requests', { params }),
   get: (id: string) => apiClient.get(`/api/instrument-requests/${id}`),
   create: (data: unknown) => apiClient.post('/api/instrument-requests', data),
   review: (id: string, data: unknown) => apiClient.patch(`/api/instrument-requests/${id}`, data),
@@ -190,6 +197,6 @@ export const auditApi = {
     since?: string
     until?: string
     limit?: number
-    offset?: number
+    skip?: number
   }) => apiClient.get('/api/admin/audit-logs', { params }),
 }

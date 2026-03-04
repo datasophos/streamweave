@@ -4,7 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeUser } from '@/mocks/handlers'
+import { TEST_BASE, makeUser, paginated } from '@/mocks/handlers'
 import {
   useUsers,
   useCreateUser,
@@ -25,14 +25,14 @@ describe('useUsers', () => {
     const qc = makeTestQueryClient()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ email: 'alice@test.com' })])
+        HttpResponse.json(paginated([makeUser({ email: 'alice@test.com' })]))
       )
     )
 
     const { result } = renderHook(() => useUsers(), { wrapper: wrapper(qc) })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toHaveLength(1)
-    expect(result.current.data![0].email).toBe('alice@test.com')
+    expect(result.current.data?.items).toHaveLength(1)
+    expect(result.current.data!.items[0].email).toBe('alice@test.com')
   })
 })
 
@@ -131,7 +131,9 @@ describe('useUsers with includeDeleted', () => {
       })
     )
 
-    const { result } = renderHook(() => useUsers(true), { wrapper: wrapper(qc) })
+    const { result } = renderHook(() => useUsers({ includeDeleted: true }), {
+      wrapper: wrapper(qc),
+    })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(capturedParams!.get('include_deleted')).toBe('true')
   })

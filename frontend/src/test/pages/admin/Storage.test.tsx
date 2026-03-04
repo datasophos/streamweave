@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeAdminUser, makeStorageLocation } from '@/mocks/handlers'
+import { TEST_BASE, makeAdminUser, makeStorageLocation, paginated } from '@/mocks/handlers'
 import { Storage } from '@/pages/admin/Storage'
 
 function setupAdmin() {
@@ -16,7 +16,9 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ name: 'NAS Archive', base_path: '/nas/data' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ name: 'NAS Archive', base_path: '/nas/data' })])
+        )
       )
     )
 
@@ -123,7 +125,9 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ name: 'Old Archive', base_path: '/old/path' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ name: 'Old Archive', base_path: '/old/path' })])
+        )
       )
     )
 
@@ -142,7 +146,9 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'storage-patch-id', name: 'Old Name' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ id: 'storage-patch-id', name: 'Old Name' })])
+        )
       )
     )
 
@@ -174,7 +180,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ name: 'Confirm Me' })])
+        HttpResponse.json(paginated([makeStorageLocation({ name: 'Confirm Me' })]))
       )
     )
 
@@ -337,7 +343,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ type })])
+        HttpResponse.json(paginated([makeStorageLocation({ type })]))
       )
     )
 
@@ -354,7 +360,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeStorageLocation({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -370,9 +376,11 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([
-          makeStorageLocation({ id: 'sl-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeStorageLocation({ id: 'sl-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
+          ])
+        )
       )
     )
 
@@ -397,7 +405,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ enabled: false })])
+        HttpResponse.json(paginated([makeStorageLocation({ enabled: false })]))
       )
     )
 
@@ -476,7 +484,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'sl-test-id' })])
+        HttpResponse.json(paginated([makeStorageLocation({ id: 'sl-test-id' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations/:id/test`, () =>
         HttpResponse.json({ status: 'ok', type: 'posix', name: 'Archive' })
@@ -497,7 +505,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'sl-err-id' })])
+        HttpResponse.json(paginated([makeStorageLocation({ id: 'sl-err-id' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations/:id/test`, () =>
         HttpResponse.json({ detail: 'Connection refused' }, { status: 502 })
@@ -518,7 +526,7 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'sl-nodetail-id' })])
+        HttpResponse.json(paginated([makeStorageLocation({ id: 'sl-nodetail-id' })]))
       ),
       http.get(
         `${TEST_BASE}/api/storage-locations/:id/test`,
@@ -553,7 +561,9 @@ describe('Storage admin page', () => {
       },
     })
     server.use(
-      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([s3Location]))
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json(paginated([s3Location]))
+      )
     )
 
     const { user } = renderWithProviders(<Storage />)
@@ -585,7 +595,9 @@ describe('Storage admin page', () => {
       },
     })
     server.use(
-      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([nfsLocation]))
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json(paginated([nfsLocation]))
+      )
     )
 
     const { user } = renderWithProviders(<Storage />)
@@ -614,7 +626,9 @@ describe('Storage admin page', () => {
       },
     })
     server.use(
-      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([cifsLocation]))
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json(paginated([cifsLocation]))
+      )
     )
 
     const { user } = renderWithProviders(<Storage />)
@@ -634,10 +648,12 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([
-          makeStorageLocation({ id: 'row-1', name: 'Storage A' }),
-          makeStorageLocation({ id: 'row-2', name: 'Storage B' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeStorageLocation({ id: 'row-1', name: 'Storage A' }),
+            makeStorageLocation({ id: 'row-2', name: 'Storage B' }),
+          ])
+        )
       )
     )
 
@@ -658,10 +674,12 @@ describe('Storage admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([
-          makeStorageLocation({ id: 'row-a', name: 'Storage A' }),
-          makeStorageLocation({ id: 'row-b', name: 'Storage B' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeStorageLocation({ id: 'row-a', name: 'Storage A' }),
+            makeStorageLocation({ id: 'row-b', name: 'Storage B' }),
+          ])
+        )
       )
     )
     // Make the test hang so we can observe the pending state
@@ -700,7 +718,9 @@ describe('Storage admin page', () => {
       connection_config: { some_legacy_key: 'value' } as Record<string, unknown>,
     })
     server.use(
-      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([posixWithConfig]))
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json(paginated([posixWithConfig]))
+      )
     )
 
     const { user } = renderWithProviders(<Storage />)

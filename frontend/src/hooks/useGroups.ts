@@ -1,16 +1,30 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { groupsApi } from '@/api/client'
-import type { Group, GroupCreate, GroupUpdate, GroupMember, GroupMemberAdd } from '@/api/types'
+import type {
+  Group,
+  GroupCreate,
+  GroupUpdate,
+  GroupMember,
+  GroupMemberAdd,
+  PaginatedResponse,
+} from '@/api/types'
 
 const KEY = ['groups']
 const membersKey = (id: string) => ['groups', id, 'members']
 
-export function useGroups(includeDeleted = false) {
+export function useGroups(
+  options: { includeDeleted?: boolean; skip?: number; limit?: number } = {}
+) {
+  const { includeDeleted = false, skip = 0, limit = 25 } = options
   return useQuery({
-    queryKey: [...KEY, { includeDeleted }],
+    queryKey: [...KEY, { includeDeleted, skip, limit }],
     queryFn: async () => {
-      const resp = await groupsApi.list(includeDeleted ? { include_deleted: true } : undefined)
-      return resp.data as Group[]
+      const resp = await groupsApi.list({
+        ...(includeDeleted ? { include_deleted: true } : {}),
+        skip,
+        limit,
+      })
+      return resp.data as PaginatedResponse<Group>
     },
     placeholderData: keepPreviousData,
   })

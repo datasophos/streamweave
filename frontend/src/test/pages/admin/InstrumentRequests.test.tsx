@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeAdminUser, makeInstrumentRequest } from '@/mocks/handlers'
+import { TEST_BASE, makeAdminUser, makeInstrumentRequest, paginated } from '@/mocks/handlers'
 import { InstrumentRequests } from '@/pages/admin/InstrumentRequests'
 
 function setupAdmin() {
@@ -17,7 +17,7 @@ describe('InstrumentRequests admin page', () => {
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, async () => {
         await new Promise((r) => setTimeout(r, 200))
-        return HttpResponse.json([])
+        return HttpResponse.json(paginated([]))
       })
     )
     renderWithProviders(<InstrumentRequests />)
@@ -40,7 +40,9 @@ describe('InstrumentRequests admin page', () => {
 
   it('renders "No requests found." when empty', async () => {
     setupAdmin()
-    server.use(http.get(`${TEST_BASE}/api/instrument-requests`, () => HttpResponse.json([])))
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () => HttpResponse.json(paginated([])))
+    )
     renderWithProviders(<InstrumentRequests />)
     await waitFor(() => {
       expect(screen.getByText(/no requests found/i)).toBeInTheDocument()
@@ -51,7 +53,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ status: 'pending' })])
+        HttpResponse.json(paginated([makeInstrumentRequest({ status: 'pending' })]))
       )
     )
     renderWithProviders(<InstrumentRequests />)
@@ -66,7 +68,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ status: 'approved' })])
+        HttpResponse.json(paginated([makeInstrumentRequest({ status: 'approved' })]))
       )
     )
     renderWithProviders(<InstrumentRequests />)
@@ -80,7 +82,9 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ requester_email: 'lab@example.com' })])
+        HttpResponse.json(
+          paginated([makeInstrumentRequest({ requester_email: 'lab@example.com' })])
+        )
       )
     )
     renderWithProviders(<InstrumentRequests />)
@@ -93,9 +97,11 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({ requester_id: 'abcdef12-uuid', requester_email: null }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({ requester_id: 'abcdef12-uuid', requester_email: null }),
+          ])
+        )
       )
     )
     renderWithProviders(<InstrumentRequests />)
@@ -108,7 +114,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -123,13 +129,15 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({
-            name: 'Bruker NMR',
-            location: 'Lab 3B',
-            requester_email: 'lab@example.com',
-          }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({
+              name: 'Bruker NMR',
+              location: 'Lab 3B',
+              requester_email: 'lab@example.com',
+            }),
+          ])
+        )
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -143,7 +151,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ status: 'approved' })])
+        HttpResponse.json(paginated([makeInstrumentRequest({ status: 'approved' })]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -156,7 +164,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -173,7 +181,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -189,7 +197,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       ),
       http.patch(`${TEST_BASE}/api/instrument-requests/:id`, () =>
         HttpResponse.json(makeInstrumentRequest({ status: 'approved' }))
@@ -209,10 +217,12 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({ id: 'r1', status: 'pending', name: 'Pending NMR' }),
-          makeInstrumentRequest({ id: 'r2', status: 'approved', name: 'Approved Mass Spec' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({ id: 'r1', status: 'pending', name: 'Pending NMR' }),
+            makeInstrumentRequest({ id: 'r2', status: 'approved', name: 'Approved Mass Spec' }),
+          ])
+        )
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -228,7 +238,9 @@ describe('InstrumentRequests admin page', () => {
 
   it('shows table headers', async () => {
     setupAdmin()
-    server.use(http.get(`${TEST_BASE}/api/instrument-requests`, () => HttpResponse.json([])))
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () => HttpResponse.json(paginated([])))
+    )
     renderWithProviders(<InstrumentRequests />)
     await waitFor(() => {
       expect(screen.getByText('Instrument')).toBeInTheDocument()
@@ -243,9 +255,11 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({ status: 'rejected', admin_notes: 'Budget constraints.' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({ status: 'rejected', admin_notes: 'Budget constraints.' }),
+          ])
+        )
       )
     )
     renderWithProviders(<InstrumentRequests />)
@@ -258,9 +272,9 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({ description: 'A high-field NMR spectrometer.' }),
-        ])
+        HttpResponse.json(
+          paginated([makeInstrumentRequest({ description: 'A high-field NMR spectrometer.' })])
+        )
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -275,9 +289,11 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({ requester_id: 'abcdef12-uuid', requester_email: null }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({ requester_id: 'abcdef12-uuid', requester_email: null }),
+          ])
+        )
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -292,7 +308,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ harvest_frequency: 'custom_freq' })])
+        HttpResponse.json(paginated([makeInstrumentRequest({ harvest_frequency: 'custom_freq' })]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -307,7 +323,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -325,7 +341,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       )
     )
     const { user } = renderWithProviders(<InstrumentRequests />)
@@ -341,7 +357,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       ),
       http.patch(`${TEST_BASE}/api/instrument-requests/:id`, async () => {
         await new Promise((r) => setTimeout(r, 200))
@@ -362,7 +378,7 @@ describe('InstrumentRequests admin page', () => {
     let patchedBody: unknown
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       ),
       http.patch(`${TEST_BASE}/api/instrument-requests/:id`, async ({ request }) => {
         patchedBody = await request.json()
@@ -383,7 +399,7 @@ describe('InstrumentRequests admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest()])
+        HttpResponse.json(paginated([makeInstrumentRequest()]))
       ),
       http.patch(
         `${TEST_BASE}/api/instrument-requests/:id`,

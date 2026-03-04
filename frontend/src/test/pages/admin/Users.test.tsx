@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeAdminUser, makeUser } from '@/mocks/handlers'
+import { TEST_BASE, makeAdminUser, makeUser, paginated } from '@/mocks/handlers'
 import { Users } from '@/pages/admin/Users'
 
 function setupAdmin() {
@@ -16,10 +16,12 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([
-          makeUser({ email: 'alice@test.com', role: 'user' }),
-          makeAdminUser({ email: 'admin@test.com' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeUser({ email: 'alice@test.com', role: 'user' }),
+            makeAdminUser({ email: 'admin@test.com' }),
+          ])
+        )
       )
     )
 
@@ -121,7 +123,9 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com', role: 'user' })])
+        HttpResponse.json(
+          paginated([makeUser({ id: 'other-id', email: 'other@test.com', role: 'user' })])
+        )
       )
     )
 
@@ -141,9 +145,9 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([
-          makeUser({ id: 'user-patch-id', email: 'patch@test.com', role: 'user' }),
-        ])
+        HttpResponse.json(
+          paginated([makeUser({ id: 'user-patch-id', email: 'patch@test.com', role: 'user' })])
+        )
       )
     )
 
@@ -178,7 +182,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'other-id', email: 'other@test.com' })]))
       )
     )
 
@@ -230,7 +234,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'other-id', email: 'other@test.com' })]))
       )
     )
 
@@ -267,7 +271,9 @@ describe('Users admin page', () => {
     // Current user is admin-uuid-1 (makeAdminUser default id)
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeAdminUser({ id: 'admin-uuid-1', email: 'admin@test.com' })])
+        HttpResponse.json(
+          paginated([makeAdminUser({ id: 'admin-uuid-1', email: 'admin@test.com' })])
+        )
       )
     )
 
@@ -283,7 +289,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'other-id', email: 'other@test.com' })]))
       )
     )
 
@@ -297,7 +303,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'other-id', email: 'other@test.com' })]))
       )
     )
 
@@ -316,7 +322,7 @@ describe('Users admin page', () => {
 
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'del-user-id', email: 'del@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'del-user-id', email: 'del@test.com' })]))
       )
     )
 
@@ -346,7 +352,7 @@ describe('Users admin page', () => {
 
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'other-id', email: 'other@test.com' })]))
       )
     )
 
@@ -376,7 +382,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeUser({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -392,7 +398,9 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'user-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(
+          paginated([makeUser({ id: 'user-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        )
       )
     )
 
@@ -417,7 +425,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ is_active: false })])
+        HttpResponse.json(paginated([makeUser({ is_active: false })]))
       )
     )
 
@@ -460,7 +468,9 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'other-id', email: 'other@test.com', role: 'user' })])
+        HttpResponse.json(
+          paginated([makeUser({ id: 'other-id', email: 'other@test.com', role: 'user' })])
+        )
       ),
       http.patch(`${TEST_BASE}/users/:id`, () =>
         HttpResponse.json({ detail: 'Permission denied' }, { status: 403 })
@@ -484,7 +494,7 @@ describe('Users admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ is_verified: false })])
+        HttpResponse.json(paginated([makeUser({ is_verified: false })]))
       )
     )
 

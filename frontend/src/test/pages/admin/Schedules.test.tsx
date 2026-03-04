@@ -9,6 +9,7 @@ import {
   makeSchedule,
   makeInstrument,
   makeStorageLocation,
+  paginated,
 } from '@/mocks/handlers'
 import { Schedules } from '@/pages/admin/Schedules'
 
@@ -22,18 +23,22 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        )
       ),
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([
-          makeSchedule({
-            instrument_id: 'inst-uuid-1',
-            default_storage_location_id: 'storage-uuid-1',
-          }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeSchedule({
+              instrument_id: 'inst-uuid-1',
+              default_storage_location_id: 'storage-uuid-1',
+            }),
+          ])
+        )
       )
     )
 
@@ -60,10 +65,12 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        )
       )
     )
 
@@ -142,10 +149,12 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        )
       ),
       http.post(`${TEST_BASE}/api/schedules`, () =>
         HttpResponse.json({ detail: 'Schedule conflict' }, { status: 422 })
@@ -176,7 +185,7 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ cron_expression: '0 6 * * *' })])
+        HttpResponse.json(paginated([makeSchedule({ cron_expression: '0 6 * * *' })]))
       )
     )
 
@@ -195,7 +204,7 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ id: 'sched-patch-id' })])
+        HttpResponse.json(paginated([makeSchedule({ id: 'sched-patch-id' })]))
       )
     )
 
@@ -283,10 +292,12 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        )
       )
     )
 
@@ -324,10 +335,12 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       ),
       http.get(`${TEST_BASE}/api/storage-locations`, () =>
-        HttpResponse.json([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        HttpResponse.json(
+          paginated([makeStorageLocation({ id: 'storage-uuid-1', name: 'Archive' })])
+        )
       )
     )
 
@@ -369,7 +382,7 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ prefect_deployment_id: 'deploy-123' })])
+        HttpResponse.json(paginated([makeSchedule({ prefect_deployment_id: 'deploy-123' })]))
       )
     )
 
@@ -384,7 +397,7 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ prefect_deployment_id: null })])
+        HttpResponse.json(paginated([makeSchedule({ prefect_deployment_id: null })]))
       )
     )
 
@@ -398,9 +411,9 @@ describe('Schedules admin page', () => {
   it('shows truncated instrument_id when not in instrument map', async () => {
     setupAdmin()
     server.use(
-      http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json([])),
+      http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json(paginated([]))),
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ instrument_id: 'unknown-inst-id' })])
+        HttpResponse.json(paginated([makeSchedule({ instrument_id: 'unknown-inst-id' })]))
       )
     )
 
@@ -415,9 +428,11 @@ describe('Schedules admin page', () => {
   it('shows truncated storage_id when not in storage map', async () => {
     setupAdmin()
     server.use(
-      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json([])),
+      http.get(`${TEST_BASE}/api/storage-locations`, () => HttpResponse.json(paginated([]))),
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ default_storage_location_id: 'unknown-stor-id' })])
+        HttpResponse.json(
+          paginated([makeSchedule({ default_storage_location_id: 'unknown-stor-id' })])
+        )
       )
     )
 
@@ -446,7 +461,7 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeSchedule({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -462,9 +477,9 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([
-          makeSchedule({ id: 'sched-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
-        ])
+        HttpResponse.json(
+          paginated([makeSchedule({ id: 'sched-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        )
       )
     )
 
@@ -489,7 +504,7 @@ describe('Schedules admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ enabled: false })])
+        HttpResponse.json(paginated([makeSchedule({ enabled: false })]))
       )
     )
 

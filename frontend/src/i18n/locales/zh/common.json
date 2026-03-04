@@ -18,5 +18,8 @@
   "restore": "恢复",
   "show_deleted": "显示已删除",
   "remove": "Remove",
-  "active": "Active"
+  "active": "Active",
+  "previous": "上一页",
+  "next": "下一页",
+  "of": "共"
 }

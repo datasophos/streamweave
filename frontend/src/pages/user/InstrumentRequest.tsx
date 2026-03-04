@@ -296,7 +296,8 @@ function RequestRow({ req }: { req: InstrumentRequestRecord }) {
 export function InstrumentRequest() {
   const { t } = useTranslation('request')
   const [modalOpen, setModalOpen] = useState(false)
-  const { data: requests, isLoading } = useInstrumentRequests()
+  const { data: requestsResp, isLoading } = useInstrumentRequests()
+  const requests = requestsResp?.items
 
   return (
     <div>

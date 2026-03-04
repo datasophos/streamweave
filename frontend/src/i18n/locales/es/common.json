@@ -18,5 +18,8 @@
   "restore": "Restaurar",
   "show_deleted": "Mostrar eliminados",
   "remove": "Remove",
-  "active": "Active"
+  "active": "Active",
+  "previous": "Anterior",
+  "next": "Siguiente",
+  "of": "de"
 }

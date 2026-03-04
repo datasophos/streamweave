@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Webhook } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
@@ -39,7 +39,8 @@ function HookForm({
   error: unknown
 }) {
   const { t } = useTranslation('hooks')
-  const { data: instruments = [] } = useInstruments()
+  const { data: instrumentsResp } = useInstruments({ limit: 500 })
+  const instruments = instrumentsResp?.items ?? []
   const { data: builtins = [] } = useBuiltinHooks()
   const [form, setForm] = useState<HookConfigCreate>({
     name: initial?.name ?? '',
@@ -229,10 +230,15 @@ export function Hooks() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
+  const [skip, setSkip] = useState(0)
 
-  const { data: hooks = [], isLoading } = useHookConfigs(showDeleted)
-  const { data: instruments = [] } = useInstruments()
+  useEffect(() => {
+    setSkip(0)
+  }, [showDeleted])
 
+  const { data: hooksResponse, isLoading } = useHookConfigs({ includeDeleted: showDeleted, skip })
+  const { data: instResp } = useInstruments({ limit: 500 })
+  const instruments = instResp?.items ?? []
   const create = useCreateHookConfig()
   const update = useUpdateHookConfig()
   const del = useDeleteHookConfig()
@@ -241,9 +247,11 @@ export function Hooks() {
   const instMap = Object.fromEntries(instruments.map((i) => [i.id, i.name]))
 
   const columns = [
-    { header: tc('name'), key: 'name' as const },
+    { header: tc('name'), key: 'name' as const, sortable: true },
     {
       header: t('col_trigger'),
+      sortable: true,
+      sortKey: 'trigger' as const,
       render: (row: HookConfig) => (
         <span className={row.trigger === 'pre_transfer' ? 'badge-yellow' : 'badge-blue'}>
           {row.trigger === 'pre_transfer' ? t('trigger_pre') : t('trigger_post')}
@@ -258,9 +266,11 @@ export function Hooks() {
           ? (instMap[row.instrument_id] ?? row.instrument_id.slice(0, 8))
           : t('scope_global'),
     },
-    { header: t('col_priority'), key: 'priority' as const },
+    { header: t('col_priority'), key: 'priority' as const, sortable: true },
     {
       header: tc('status'),
+      sortable: true,
+      sortKey: 'enabled' as const,
       render: (row: HookConfig) =>
         row.deleted_at ? (
           <span className="badge-gray">{tc('deleted')}</span>
@@ -315,10 +325,20 @@ export function Hooks() {
         </div>
         <Table
           columns={columns}
-          data={hooks}
+          data={hooksResponse?.items ?? []}
           isLoading={isLoading}
           emptyMessage={t('no_hooks')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            hooksResponse
+              ? {
+                  skip,
+                  limit: hooksResponse.limit,
+                  total: hooksResponse.total,
+                  onPageChange: setSkip,
+                }
+              : undefined
+          }
         />
       </div>
 

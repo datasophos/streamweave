@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Eye, EyeOff, KeyRound, Microscope } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
@@ -431,9 +431,18 @@ export function Instruments() {
   const close = () => setModal({ kind: 'none' })
   const [showDeletedInst, setShowDeletedInst] = useState(false)
   const [showDeletedSA, setShowDeletedSA] = useState(false)
+  const [instrSkip, setInstrSkip] = useState(0)
 
-  const { data: instruments = [], isLoading: loadingInstruments } = useInstruments(showDeletedInst)
+  useEffect(() => {
+    setInstrSkip(0)
+  }, [showDeletedInst])
+
+  const { data: instrResponse, isLoading: loadingInstruments } = useInstruments({
+    includeDeleted: showDeletedInst,
+    skip: instrSkip,
+  })
   const { data: serviceAccounts = [] } = useServiceAccounts(showDeletedSA)
+  const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
   // For the service account selector in the instrument form, always fetch active only
   const { data: activeSAs = [] } = useServiceAccounts(false)
 
@@ -446,11 +455,9 @@ export function Instruments() {
   const deleteSA = useDeleteServiceAccount()
   const restoreSA = useRestoreServiceAccount()
 
-  const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
-
   const instrumentColumns = [
-    { header: tc('name'), key: 'name' as const },
-    { header: t('col_host'), key: 'cifs_host' as const },
+    { header: tc('name'), key: 'name' as const, sortable: true },
+    { header: t('col_host'), key: 'cifs_host' as const, sortable: true },
     { header: t('col_share'), key: 'cifs_share' as const },
     {
       header: t('col_service_account'),
@@ -498,9 +505,9 @@ export function Instruments() {
   ]
 
   const saColumns = [
-    { header: tc('name'), key: 'name' as const },
+    { header: tc('name'), key: 'name' as const, sortable: true },
     { header: t('sa_domain'), render: (sa: ServiceAccount) => sa.domain ?? '—' },
-    { header: t('col_username'), key: 'username' as const },
+    { header: t('col_username'), key: 'username' as const, sortable: true },
     {
       header: t('col_created'),
       render: (sa: ServiceAccount) => new Date(sa.created_at).toLocaleDateString(),
@@ -553,32 +560,50 @@ export function Instruments() {
       />
 
       <div className="card p-0 overflow-hidden mb-8">
-        <div className="px-4 py-4 border-b border-sw-border flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
+        <div className="px-4 py-4 border-b border-sw-border flex items-center gap-3">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg shrink-0">
             <Microscope size={16} className="text-sw-brand" />
             {t('instruments_section')}
           </h2>
-          <Toggle
-            checked={showDeletedInst}
-            onChange={setShowDeletedInst}
-            label={tc('show_deleted')}
-          />
+          <div className="ml-auto">
+            <Toggle
+              checked={showDeletedInst}
+              onChange={setShowDeletedInst}
+              label={tc('show_deleted')}
+            />
+          </div>
         </div>
         <Table
           columns={instrumentColumns}
-          data={instruments}
+          data={instrResponse?.items ?? []}
           isLoading={loadingInstruments}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            instrResponse
+              ? {
+                  skip: instrSkip,
+                  limit: instrResponse.limit,
+                  total: instrResponse.total,
+                  onPageChange: setInstrSkip,
+                }
+              : undefined
+          }
         />
       </div>
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-4 py-4 border-b border-sw-border flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg">
+        <div className="px-4 py-4 border-b border-sw-border flex items-center gap-3">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-sw-fg shrink-0">
             <KeyRound size={16} className="text-sw-brand" />
             {t('service_accounts_section')}
           </h2>
-          <Toggle checked={showDeletedSA} onChange={setShowDeletedSA} label={tc('show_deleted')} />
+          <div className="ml-auto">
+            <Toggle
+              checked={showDeletedSA}
+              onChange={setShowDeletedSA}
+              label={tc('show_deleted')}
+            />
+          </div>
         </div>
         <Table
           columns={saColumns}

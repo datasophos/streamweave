@@ -3,7 +3,14 @@ import { http, HttpResponse } from 'msw'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeAdminUser, makeGroup, makeGroupMember, makeUser } from '@/mocks/handlers'
+import {
+  TEST_BASE,
+  makeAdminUser,
+  makeGroup,
+  makeGroupMember,
+  makeUser,
+  paginated,
+} from '@/mocks/handlers'
 import { Groups } from '@/pages/admin/Groups'
 
 function setupAdmin() {
@@ -16,10 +23,12 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([
-          makeGroup({ id: 'g1', name: 'Lab A' }),
-          makeGroup({ id: 'g2', name: 'Lab B' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeGroup({ id: 'g1', name: 'Lab A' }),
+            makeGroup({ id: 'g2', name: 'Lab B' }),
+          ])
+        )
       )
     )
 
@@ -96,7 +105,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Target Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Target Group' })]))
       )
     )
 
@@ -114,7 +123,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g-patch-id', name: 'Old Name' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g-patch-id', name: 'Old Name' })]))
       )
     )
 
@@ -149,7 +158,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Del Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Del Group' })]))
       )
     )
 
@@ -167,7 +176,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g-del-id', name: 'To Delete' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g-del-id', name: 'To Delete' })]))
       )
     )
 
@@ -195,7 +204,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeGroup({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -211,7 +220,9 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(
+          paginated([makeGroup({ id: 'g-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        )
       )
     )
 
@@ -236,7 +247,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () =>
         HttpResponse.json([makeGroupMember({ user_id: 'user-uuid-1' })])
@@ -257,13 +268,13 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () =>
         HttpResponse.json([makeGroupMember({ user_id: 'user-uuid-1' })])
       ),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'user-uuid-1', email: 'member@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'user-uuid-1', email: 'member@test.com' })]))
       )
     )
 
@@ -281,13 +292,13 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () =>
         HttpResponse.json([makeGroupMember({ group_id: 'g1', user_id: 'user-uuid-1' })])
       ),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'user-uuid-1', email: 'member@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'user-uuid-1', email: 'member@test.com' })]))
       )
     )
 
@@ -319,7 +330,9 @@ describe('Groups admin page', () => {
         receivedUrl = request.url
         const deleted = new URL(request.url).searchParams.get('include_deleted')
         return HttpResponse.json(
-          deleted === 'true' ? [makeGroup({ deleted_at: '2024-01-01T00:00:00Z' })] : []
+          deleted === 'true'
+            ? paginated([makeGroup({ deleted_at: '2024-01-01T00:00:00Z' })])
+            : paginated([])
         )
       })
     )
@@ -361,7 +374,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () => HttpResponse.json([]))
     )
@@ -379,11 +392,11 @@ describe('Groups admin page', () => {
     let postedBody: unknown
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () => HttpResponse.json([])),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'u-new', email: 'new@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'u-new', email: 'new@test.com' })]))
       ),
       http.post(`${TEST_BASE}/api/groups/:id/members`, async ({ request }) => {
         postedBody = await request.json()
@@ -431,7 +444,7 @@ describe('Groups admin page', () => {
     let mutationCalled = false
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () => HttpResponse.json([])),
       http.post(`${TEST_BASE}/api/groups/:id/members`, () => {
@@ -459,12 +472,12 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () =>
         HttpResponse.json([makeGroupMember({ group_id: 'g1', user_id: 'unknown-user-id' })])
       ),
-      http.get(`${TEST_BASE}/api/admin/users`, () => HttpResponse.json([]))
+      http.get(`${TEST_BASE}/api/admin/users`, () => HttpResponse.json(paginated([])))
     )
 
     const { user } = renderWithProviders(<Groups />)
@@ -480,11 +493,11 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () => HttpResponse.json([])),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'u-fail', email: 'fail@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'u-fail', email: 'fail@test.com' })]))
       ),
       http.post(`${TEST_BASE}/api/groups/:id/members`, () =>
         HttpResponse.json({ detail: 'User already a member' }, { status: 400 })
@@ -533,7 +546,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ description: 'Genomics lab' })])
+        HttpResponse.json(paginated([makeGroup({ description: 'Genomics lab' })]))
       )
     )
 
@@ -548,7 +561,7 @@ describe('Groups admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Lab Group' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Lab Group' })]))
       ),
       http.get(`${TEST_BASE}/api/groups/:id/members`, () => HttpResponse.json([]))
     )

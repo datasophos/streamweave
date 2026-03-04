@@ -49,7 +49,8 @@ export function Dashboard() {
   const { isAdmin } = useAuth()
   const { data: health } = useHealth()
   const { data: transfers } = useTransfers()
-  const { data: instruments } = useInstruments()
+  const { data: instrResp } = useInstruments({ limit: 500 })
+  const instruments = instrResp?.items
   const { data: files } = useFiles()
 
   const recent = transfers?.slice(0, 10) ?? []

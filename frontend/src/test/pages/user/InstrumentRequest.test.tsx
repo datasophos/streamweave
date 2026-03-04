@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeUser, makeInstrumentRequest } from '@/mocks/handlers'
+import { TEST_BASE, makeUser, makeInstrumentRequest, paginated } from '@/mocks/handlers'
 import { InstrumentRequest } from '@/pages/user/InstrumentRequest'
 
 function setupAuth() {
@@ -23,7 +23,9 @@ describe('InstrumentRequest page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ name: 'Bruker NMR', status: 'pending' })])
+        HttpResponse.json(
+          paginated([makeInstrumentRequest({ name: 'Bruker NMR', status: 'pending' })])
+        )
       )
     )
     renderWithProviders(<InstrumentRequest />)
@@ -37,9 +39,14 @@ describe('InstrumentRequest page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({ status: 'approved', admin_notes: 'Looks good, deploying soon.' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({
+              status: 'approved',
+              admin_notes: 'Looks good, deploying soon.',
+            }),
+          ])
+        )
       )
     )
     renderWithProviders(<InstrumentRequest />)
@@ -52,13 +59,15 @@ describe('InstrumentRequest page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([
-          makeInstrumentRequest({
-            name: 'Bruker NMR',
-            status: 'approved',
-            admin_notes: 'Looks good, deploying soon.',
-          }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({
+              name: 'Bruker NMR',
+              status: 'approved',
+              admin_notes: 'Looks good, deploying soon.',
+            }),
+          ])
+        )
       )
     )
     const { user } = renderWithProviders(<InstrumentRequest />)
@@ -74,7 +83,9 @@ describe('InstrumentRequest page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ status: 'approved', admin_notes: 'Great!' })])
+        HttpResponse.json(
+          paginated([makeInstrumentRequest({ status: 'approved', admin_notes: 'Great!' })])
+        )
       )
     )
     const { user } = renderWithProviders(<InstrumentRequest />)
@@ -91,7 +102,9 @@ describe('InstrumentRequest page', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instrument-requests`, () =>
-        HttpResponse.json([makeInstrumentRequest({ status: 'pending', admin_notes: null })])
+        HttpResponse.json(
+          paginated([makeInstrumentRequest({ status: 'pending', admin_notes: null })])
+        )
       )
     )
     renderWithProviders(<InstrumentRequest />)
@@ -101,7 +114,9 @@ describe('InstrumentRequest page', () => {
 
   it('shows empty state when no requests', async () => {
     setupAuth()
-    server.use(http.get(`${TEST_BASE}/api/instrument-requests`, () => HttpResponse.json([])))
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () => HttpResponse.json(paginated([])))
+    )
     renderWithProviders(<InstrumentRequest />)
     await waitFor(() => {
       expect(screen.getByText(/no requests submitted yet/i)).toBeInTheDocument()

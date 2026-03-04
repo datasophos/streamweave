@@ -344,8 +344,8 @@ export interface UserUpdate {
 export interface PaginatedResponse<T> {
   items: T[]
   total: number
-  page: number
-  size: number
+  skip: number
+  limit: number
 }
 
 // Health check

@@ -9,6 +9,7 @@ import {
   makeBuiltinHook,
   makeHookConfig,
   makeInstrument,
+  paginated,
 } from '@/mocks/handlers'
 import { Hooks } from '@/pages/admin/Hooks'
 
@@ -22,7 +23,9 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ name: 'My Hook', implementation: 'builtin' })])
+        HttpResponse.json(
+          paginated([makeHookConfig({ name: 'My Hook', implementation: 'builtin' })])
+        )
       )
     )
 
@@ -38,7 +41,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ trigger: 'post_transfer' })])
+        HttpResponse.json(paginated([makeHookConfig({ trigger: 'post_transfer' })]))
       )
     )
 
@@ -53,7 +56,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ trigger: 'pre_transfer' })])
+        HttpResponse.json(paginated([makeHookConfig({ trigger: 'pre_transfer' })]))
       )
     )
 
@@ -68,10 +71,10 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       ),
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ instrument_id: 'inst-uuid-1' })])
+        HttpResponse.json(paginated([makeHookConfig({ instrument_id: 'inst-uuid-1' })]))
       )
     )
 
@@ -85,9 +88,9 @@ describe('Hooks admin page', () => {
   it('shows truncated instrument_id when not in instrument map', async () => {
     setupAdmin()
     server.use(
-      http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json([])),
+      http.get(`${TEST_BASE}/api/instruments`, () => HttpResponse.json(paginated([]))),
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ instrument_id: 'unknown-inst-id' })])
+        HttpResponse.json(paginated([makeHookConfig({ instrument_id: 'unknown-inst-id' })]))
       )
     )
 
@@ -102,7 +105,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ instrument_id: null })])
+        HttpResponse.json(paginated([makeHookConfig({ instrument_id: null })]))
       )
     )
 
@@ -117,7 +120,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ enabled: false })])
+        HttpResponse.json(paginated([makeHookConfig({ enabled: false })]))
       )
     )
 
@@ -332,7 +335,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ name: 'Existing Hook', priority: 5 })])
+        HttpResponse.json(paginated([makeHookConfig({ name: 'Existing Hook', priority: 5 })]))
       )
     )
 
@@ -351,7 +354,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ id: 'hook-patch-id', name: 'Old Hook' })])
+        HttpResponse.json(paginated([makeHookConfig({ id: 'hook-patch-id', name: 'Old Hook' })]))
       )
     )
 
@@ -380,7 +383,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       )
     )
 
@@ -484,7 +487,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
       )
     )
 
@@ -524,7 +527,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ name: 'Delete Me' })])
+        HttpResponse.json(paginated([makeHookConfig({ name: 'Delete Me' })]))
       )
     )
 
@@ -565,7 +568,7 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeHookConfig({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -581,9 +584,9 @@ describe('Hooks admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([
-          makeHookConfig({ id: 'hook-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
-        ])
+        HttpResponse.json(
+          paginated([makeHookConfig({ id: 'hook-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        )
       )
     )
 

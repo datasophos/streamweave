@@ -1,20 +1,22 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { instrumentRequestsApi } from '@/api/client'
 import type {
   InstrumentRequestCreate,
   InstrumentRequestRecord,
   InstrumentRequestUpdate,
+  PaginatedResponse,
 } from '@/api/types'
 
 const KEY = ['instrument-requests']
 
-export function useInstrumentRequests() {
+export function useInstrumentRequests(skip = 0) {
   return useQuery({
-    queryKey: KEY,
+    queryKey: [...KEY, { skip }],
     queryFn: async () => {
-      const resp = await instrumentRequestsApi.list()
-      return resp.data as InstrumentRequestRecord[]
+      const resp = await instrumentRequestsApi.list({ skip, limit: 25 })
+      return resp.data as PaginatedResponse<InstrumentRequestRecord>
     },
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Users as UsersIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
@@ -93,8 +93,13 @@ export function Users() {
   const close = () => setModal({ kind: 'none' })
   const { user: me } = useAuth()
   const [showDeleted, setShowDeleted] = useState(false)
+  const [skip, setSkip] = useState(0)
 
-  const { data: users = [], isLoading } = useUsers(showDeleted)
+  useEffect(() => {
+    setSkip(0)
+  }, [showDeleted])
+
+  const { data: usersResponse, isLoading } = useUsers({ includeDeleted: showDeleted, skip })
   const createUser = useCreateUser()
   const updateUser = useUpdateUser()
   const deleteUser = useDeleteUser()
@@ -108,9 +113,11 @@ export function Users() {
   }
 
   const columns = [
-    { header: t('col_email'), key: 'email' as const },
+    { header: t('col_email'), key: 'email' as const, sortable: true },
     {
       header: t('col_role'),
+      sortable: true,
+      sortKey: 'role' as const,
       render: (row: User) => (
         <span className={row.role === 'admin' ? 'badge-blue' : 'badge-gray'}>{row.role}</span>
       ),
@@ -179,10 +186,20 @@ export function Users() {
         </div>
         <Table
           columns={columns}
-          data={users}
+          data={usersResponse?.items ?? []}
           isLoading={isLoading}
           emptyMessage={t('no_users')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            usersResponse
+              ? {
+                  skip,
+                  limit: usersResponse.limit,
+                  total: usersResponse.total,
+                  onPageChange: setSkip,
+                }
+              : undefined
+          }
         />
       </div>
 

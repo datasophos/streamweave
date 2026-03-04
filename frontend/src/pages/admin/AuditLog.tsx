@@ -3,7 +3,7 @@ import { ScrollText } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/components/PageHeader'
 import { auditApi } from '@/api/client'
-import type { AuditLogEntry } from '@/api/types'
+import type { AuditLogEntry, PaginatedResponse } from '@/api/types'
 
 const ACTION_LABELS: Record<string, string> = {
   create: 'Create',
@@ -64,22 +64,21 @@ function ChangesCell({ changes }: { changes: AuditLogEntry['changes'] }) {
 export function AuditLog() {
   const [entityType, setEntityType] = useState('')
   const [action, setAction] = useState('')
-  const [page, setPage] = useState(0)
-
+  const [skip, setSkip] = useState(0)
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['audit-logs', entityType, action, page],
+    queryKey: ['audit-logs', entityType, action, skip],
     queryFn: async () => {
       const resp = await auditApi.list({
         entity_type: entityType || undefined,
         action: action || undefined,
         limit: PAGE_SIZE,
-        offset: page * PAGE_SIZE,
+        skip,
       })
-      return resp.data as AuditLogEntry[]
+      return resp.data as PaginatedResponse<AuditLogEntry>
     },
   })
 
-  const entries = data ?? []
+  const entries = data?.items ?? []
 
   return (
     <div>
@@ -95,7 +94,7 @@ export function AuditLog() {
           value={entityType}
           onChange={(e) => {
             setEntityType(e.target.value)
-            setPage(0)
+            setSkip(0)
           }}
           className="input w-auto text-sm"
         >
@@ -111,7 +110,7 @@ export function AuditLog() {
           value={action}
           onChange={(e) => {
             setAction(e.target.value)
-            setPage(0)
+            setSkip(0)
           }}
           className="input w-auto text-sm"
         >
@@ -128,7 +127,7 @@ export function AuditLog() {
             onClick={() => {
               setEntityType('')
               setAction('')
-              setPage(0)
+              setSkip(0)
             }}
             className="btn-secondary text-sm"
           >
@@ -194,16 +193,16 @@ export function AuditLog() {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4 text-sm text-sw-fg-muted">
             <button
-              disabled={page === 0}
-              onClick={() => setPage((p) => p - 1)}
+              disabled={skip === 0}
+              onClick={() => setSkip(Math.max(0, skip - PAGE_SIZE))}
               className="btn-secondary disabled:opacity-40"
             >
               Previous
             </button>
-            <span>Page {page + 1}</span>
+            <span>Page {Math.floor(skip / PAGE_SIZE) + 1}</span>
             <button
-              disabled={entries.length < PAGE_SIZE}
-              onClick={() => setPage((p) => p + 1)}
+              disabled={data == null || skip + PAGE_SIZE >= data.total}
+              onClick={() => setSkip(skip + PAGE_SIZE)}
               className="btn-secondary disabled:opacity-40"
             >
               Next

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { HardDrive } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
@@ -380,9 +380,17 @@ export function Storage() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
+  const [skip, setSkip] = useState(0)
   const { showToast } = useToast()
 
-  const { data: locations = [], isLoading } = useStorageLocations(showDeleted)
+  useEffect(() => {
+    setSkip(0)
+  }, [showDeleted])
+
+  const { data: locationsResponse, isLoading } = useStorageLocations({
+    includeDeleted: showDeleted,
+    skip,
+  })
   const create = useCreateStorageLocation()
   const update = useUpdateStorageLocation()
   const del = useDeleteStorageLocation()
@@ -400,9 +408,11 @@ export function Storage() {
   }
 
   const columns = [
-    { header: tc('name'), key: 'name' as const },
+    { header: tc('name'), key: 'name' as const, sortable: true },
     {
       header: t('col_type'),
+      sortable: true,
+      sortKey: 'type' as const,
       render: (row: StorageLocation) => {
         const cls =
           row.type === 'posix'
@@ -480,10 +490,20 @@ export function Storage() {
         </div>
         <Table
           columns={columns}
-          data={locations}
+          data={locationsResponse?.items ?? []}
           isLoading={isLoading}
           emptyMessage={t('no_locations')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            locationsResponse
+              ? {
+                  skip,
+                  limit: locationsResponse.limit,
+                  total: locationsResponse.total,
+                  onPageChange: setSkip,
+                }
+              : undefined
+          }
         />
       </div>
 

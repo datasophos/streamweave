@@ -89,7 +89,8 @@ function MembersPanel({ group, onClose }: { group: Group; onClose: () => void })
   const { t } = useTranslation('groups')
   const { t: tc } = useTranslation('common')
   const { data: members = [], isLoading } = useGroupMembers(group.id)
-  const { data: users = [] } = useUsers()
+  const { data: usersResp } = useUsers({ limit: 500 })
+  const users = usersResp?.items ?? []
   const addMember = useAddGroupMember(group.id)
   const removeMember = useRemoveGroupMember(group.id)
   const [selectedUserId, setSelectedUserId] = useState('')
@@ -170,15 +171,20 @@ export function Groups() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
+  const [skip, setSkip] = useState(0)
 
-  const { data: groups = [], isLoading } = useGroups(showDeleted)
+  useEffect(() => {
+    setSkip(0)
+  }, [showDeleted])
+
+  const { data: groupsResponse, isLoading } = useGroups({ includeDeleted: showDeleted, skip })
   const createGroup = useCreateGroup()
   const updateGroup = useUpdateGroup()
   const deleteGroup = useDeleteGroup()
   const restoreGroup = useRestoreGroup()
 
   const columns = [
-    { header: t('col_name'), key: 'name' as const },
+    { header: t('col_name'), key: 'name' as const, sortable: true },
     {
       header: t('col_description'),
       render: (row: Group) => <span className="text-sw-muted">{row.description ?? '—'}</span>,
@@ -243,10 +249,20 @@ export function Groups() {
         </div>
         <Table
           columns={columns}
-          data={groups}
+          data={groupsResponse?.items ?? []}
           isLoading={isLoading}
           emptyMessage={t('no_groups')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            groupsResponse
+              ? {
+                  skip,
+                  limit: groupsResponse.limit,
+                  total: groupsResponse.total,
+                  onPageChange: setSkip,
+                }
+              : undefined
+          }
         />
       </div>
 

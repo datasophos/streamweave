@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarClock, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
@@ -38,8 +38,10 @@ function ScheduleForm({
   error: unknown
 }) {
   const { t } = useTranslation('schedules')
-  const { data: instruments = [] } = useInstruments()
-  const { data: storageLocations = [] } = useStorageLocations()
+  const { data: instrumentsResp } = useInstruments({ limit: 500 })
+  const instruments = instrumentsResp?.items ?? []
+  const { data: storageResp } = useStorageLocations({ limit: 500 })
+  const storageLocations = storageResp?.items ?? []
 
   const [form, setForm] = useState<HarvestScheduleCreate>({
     instrument_id: initial?.instrument_id ?? '',
@@ -142,10 +144,17 @@ export function Schedules() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
+  const [skip, setSkip] = useState(0)
 
-  const { data: schedules = [], isLoading } = useSchedules(showDeleted)
-  const { data: instruments = [] } = useInstruments()
-  const { data: storageLocations = [] } = useStorageLocations()
+  useEffect(() => {
+    setSkip(0)
+  }, [showDeleted])
+
+  const { data: schedulesResponse, isLoading } = useSchedules({ includeDeleted: showDeleted, skip })
+  const { data: instrumentsResp2 } = useInstruments({ limit: 500 })
+  const instruments = instrumentsResp2?.items ?? []
+  const { data: storageResp2 } = useStorageLocations({ limit: 500 })
+  const storageLocations = storageResp2?.items ?? []
 
   const create = useCreateSchedule()
   const update = useUpdateSchedule()
@@ -167,6 +176,8 @@ export function Schedules() {
     },
     {
       header: t('col_cron'),
+      sortable: true,
+      sortKey: 'cron_expression' as const,
       render: (row: HarvestSchedule) => (
         <code className="text-xs bg-sw-subtle px-1 py-0.5 rounded text-sw-fg-2">
           {row.cron_expression}
@@ -194,6 +205,8 @@ export function Schedules() {
     },
     {
       header: tc('status'),
+      sortable: true,
+      sortKey: 'enabled' as const,
       render: (row: HarvestSchedule) =>
         row.deleted_at ? (
           <span className="badge-gray">{tc('deleted')}</span>
@@ -248,10 +261,20 @@ export function Schedules() {
         </div>
         <Table
           columns={columns}
-          data={schedules}
+          data={schedulesResponse?.items ?? []}
           isLoading={isLoading}
           emptyMessage={t('no_schedules')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            schedulesResponse
+              ? {
+                  skip,
+                  limit: schedulesResponse.limit,
+                  total: schedulesResponse.total,
+                  onPageChange: setSkip,
+                }
+              : undefined
+          }
         />
       </div>
 

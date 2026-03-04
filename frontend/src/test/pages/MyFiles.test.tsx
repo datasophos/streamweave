@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeUser, makeFileRecord, makeInstrument } from '@/mocks/handlers'
+import { TEST_BASE, makeUser, makeFileRecord, makeInstrument, paginated } from '@/mocks/handlers'
 import { MyFiles } from '@/pages/user/MyFiles'
 
 function setupAuth() {
@@ -212,7 +212,7 @@ describe('MyFiles', () => {
     setupAuth()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-abc', name: 'NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-abc', name: 'NMR' })]))
       )
     )
 

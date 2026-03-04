@@ -90,8 +90,10 @@ function MembersPanel({ project, onClose }: { project: Project; onClose: () => v
   const { t } = useTranslation('projects')
   const { t: tc } = useTranslation('common')
   const { data: members = [], isLoading } = useProjectMembers(project.id)
-  const { data: users = [] } = useUsers()
-  const { data: groups = [] } = useGroups()
+  const { data: usersResp } = useUsers({ limit: 500 })
+  const users = usersResp?.items ?? []
+  const { data: groupsResp } = useGroups({ limit: 500 })
+  const groups = groupsResp?.items ?? []
   const addMember = useAddProjectMember(project.id)
   const removeMember = useRemoveProjectMember(project.id)
   const [memberType, setMemberType] = useState<'user' | 'group'>('user')
@@ -202,15 +204,20 @@ export function Projects() {
   const [modal, setModal] = useState<ModalState>({ kind: 'none' })
   const close = () => setModal({ kind: 'none' })
   const [showDeleted, setShowDeleted] = useState(false)
+  const [skip, setSkip] = useState(0)
 
-  const { data: projects = [], isLoading } = useProjects(showDeleted)
+  useEffect(() => {
+    setSkip(0)
+  }, [showDeleted])
+
+  const { data: projectsResponse, isLoading } = useProjects({ includeDeleted: showDeleted, skip })
   const createProject = useCreateProject()
   const updateProject = useUpdateProject()
   const deleteProject = useDeleteProject()
   const restoreProject = useRestoreProject()
 
   const columns = [
-    { header: t('col_name'), key: 'name' as const },
+    { header: t('col_name'), key: 'name' as const, sortable: true },
     {
       header: t('col_description'),
       render: (row: Project) => <span className="text-sw-muted">{row.description ?? '—'}</span>,
@@ -278,10 +285,20 @@ export function Projects() {
         </div>
         <Table
           columns={columns}
-          data={projects}
+          data={projectsResponse?.items ?? []}
           isLoading={isLoading}
           emptyMessage={t('no_projects')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
+          pagination={
+            projectsResponse
+              ? {
+                  skip,
+                  limit: projectsResponse.limit,
+                  total: projectsResponse.total,
+                  onPageChange: setSkip,
+                }
+              : undefined
+          }
         />
       </div>
 

@@ -22,7 +22,8 @@ export function MyFiles() {
   if (instrumentFilter) params['instrument_id'] = instrumentFilter
 
   const { data: files = [], isLoading } = useFiles(params)
-  const { data: instruments = [] } = useInstruments()
+  const { data: instrumentsResp } = useInstruments({ limit: 500 })
+  const instruments = instrumentsResp?.items ?? []
 
   const instMap = Object.fromEntries(instruments.map((i) => [i.id, i.name]))
 

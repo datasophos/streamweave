@@ -3,7 +3,13 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor, within } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeAdminUser, makeInstrument, makeServiceAccount } from '@/mocks/handlers'
+import {
+  TEST_BASE,
+  makeAdminUser,
+  makeInstrument,
+  makeServiceAccount,
+  paginated,
+} from '@/mocks/handlers'
 import { Instruments } from '@/pages/admin/Instruments'
 
 function setupAdmin() {
@@ -16,7 +22,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'HPLC Unit 1' })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'HPLC Unit 1' })]))
       ),
       http.get(`${TEST_BASE}/api/service-accounts`, () =>
         HttpResponse.json([makeServiceAccount({ name: 'Lab SA', username: 'labuser' })])
@@ -139,9 +145,11 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([
-          makeInstrument({ name: 'Prefilled NMR', cifs_host: '10.0.0.5', cifs_share: 'nmr' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeInstrument({ name: 'Prefilled NMR', cifs_host: '10.0.0.5', cifs_share: 'nmr' }),
+          ])
+        )
       )
     )
 
@@ -163,7 +171,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ id: 'inst-patch-id', name: 'Old Name' })])
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-patch-id', name: 'Old Name' })]))
       )
     )
 
@@ -195,7 +203,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Confirm Me' })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'Confirm Me' })]))
       )
     )
 
@@ -264,7 +272,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ service_account_id: 'sa-uuid-1' })])
+        HttpResponse.json(paginated([makeInstrument({ service_account_id: 'sa-uuid-1' })]))
       ),
       http.get(`${TEST_BASE}/api/service-accounts`, () =>
         HttpResponse.json([makeServiceAccount({ id: 'sa-uuid-1', name: 'Lab Account' })])
@@ -448,7 +456,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'PID NMR', pid: 'ark:/99999/xyz' })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'PID NMR', pid: 'ark:/99999/xyz' })]))
       )
     )
 
@@ -492,7 +500,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeInstrument({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -508,9 +516,9 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([
-          makeInstrument({ id: 'inst-restore-id', deleted_at: '2024-01-01T00:00:00Z' }),
-        ])
+        HttpResponse.json(
+          paginated([makeInstrument({ id: 'inst-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        )
       )
     )
 
@@ -578,7 +586,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Offline NMR', enabled: false })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'Offline NMR', enabled: false })]))
       )
     )
 
@@ -594,7 +602,7 @@ describe('Instruments admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ service_account_id: 'unknown-sa-uuid-99' })])
+        HttpResponse.json(paginated([makeInstrument({ service_account_id: 'unknown-sa-uuid-99' })]))
       ),
       http.get(`${TEST_BASE}/api/service-accounts`, () => HttpResponse.json([]))
     )

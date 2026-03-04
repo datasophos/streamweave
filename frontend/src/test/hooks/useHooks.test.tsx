@@ -4,7 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeBuiltinHook, makeHookConfig } from '@/mocks/handlers'
+import { TEST_BASE, makeBuiltinHook, makeHookConfig, paginated } from '@/mocks/handlers'
 import {
   useBuiltinHooks,
   useHookConfigs,
@@ -46,14 +46,14 @@ describe('useHookConfigs', () => {
     const qc = makeTestQueryClient()
     server.use(
       http.get(`${TEST_BASE}/api/hooks`, () =>
-        HttpResponse.json([makeHookConfig({ name: 'My Hook' })])
+        HttpResponse.json(paginated([makeHookConfig({ name: 'My Hook' })]))
       )
     )
 
     const { result } = renderHook(() => useHookConfigs(), { wrapper: wrapper(qc) })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toHaveLength(1)
-    expect(result.current.data![0].name).toBe('My Hook')
+    expect(result.current.data?.items).toHaveLength(1)
+    expect(result.current.data!.items[0].name).toBe('My Hook')
   })
 })
 
@@ -158,7 +158,9 @@ describe('useHookConfigs with includeDeleted', () => {
       })
     )
 
-    const { result } = renderHook(() => useHookConfigs(true), { wrapper: wrapper(qc) })
+    const { result } = renderHook(() => useHookConfigs({ includeDeleted: true }), {
+      wrapper: wrapper(qc),
+    })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(capturedParams!.get('include_deleted')).toBe('true')
   })

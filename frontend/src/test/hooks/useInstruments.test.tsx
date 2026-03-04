@@ -4,7 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeInstrument, makeServiceAccount } from '@/mocks/handlers'
+import { TEST_BASE, makeInstrument, makeServiceAccount, paginated } from '@/mocks/handlers'
 import {
   useInstruments,
   useServiceAccounts,
@@ -30,15 +30,15 @@ describe('useInstruments', () => {
     const qc = makeTestQueryClient()
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'SAXS Diffractometer' })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'SAXS Diffractometer' })]))
       )
     )
 
     const { result } = renderHook(() => useInstruments(), { wrapper: wrapper(qc) })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toHaveLength(1)
-    expect(result.current.data![0].name).toBe('SAXS Diffractometer')
+    expect(result.current.data?.items).toHaveLength(1)
+    expect(result.current.data!.items[0].name).toBe('SAXS Diffractometer')
   })
 
   it('does not fetch when id is empty string (useInstrument)', async () => {
@@ -251,7 +251,9 @@ describe('useInstruments with includeDeleted', () => {
       })
     )
 
-    const { result } = renderHook(() => useInstruments(true), { wrapper: wrapper(qc) })
+    const { result } = renderHook(() => useInstruments({ includeDeleted: true }), {
+      wrapper: wrapper(qc),
+    })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(capturedParams!.get('include_deleted')).toBe('true')
   })

@@ -4,7 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeSchedule } from '@/mocks/handlers'
+import { TEST_BASE, makeSchedule, paginated } from '@/mocks/handlers'
 import {
   useSchedules,
   useCreateSchedule,
@@ -25,14 +25,14 @@ describe('useSchedules', () => {
     const qc = makeTestQueryClient()
     server.use(
       http.get(`${TEST_BASE}/api/schedules`, () =>
-        HttpResponse.json([makeSchedule({ cron_expression: '0 2 * * *' })])
+        HttpResponse.json(paginated([makeSchedule({ cron_expression: '0 2 * * *' })]))
       )
     )
 
     const { result } = renderHook(() => useSchedules(), { wrapper: wrapper(qc) })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toHaveLength(1)
-    expect(result.current.data![0].cron_expression).toBe('0 2 * * *')
+    expect(result.current.data?.items).toHaveLength(1)
+    expect(result.current.data!.items[0].cron_expression).toBe('0 2 * * *')
   })
 })
 
@@ -136,7 +136,9 @@ describe('useSchedules with includeDeleted', () => {
       })
     )
 
-    const { result } = renderHook(() => useSchedules(true), { wrapper: wrapper(qc) })
+    const { result } = renderHook(() => useSchedules({ includeDeleted: true }), {
+      wrapper: wrapper(qc),
+    })
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(capturedParams!.get('include_deleted')).toBe('true')
   })

@@ -1,11 +1,22 @@
+import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ChevronsUpDown, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Column<T> {
   header: string
   key?: keyof T
   render?: (row: T) => ReactNode
   className?: string
+  sortable?: boolean
+  sortKey?: keyof T
+}
+
+interface PaginationControls {
+  skip: number
+  limit: number
+  total: number
+  onPageChange: (newSkip: number) => void
 }
 
 interface TableProps<T> {
@@ -14,6 +25,7 @@ interface TableProps<T> {
   emptyMessage?: string
   isLoading?: boolean
   rowClassName?: (row: T) => string
+  pagination?: PaginationControls
 }
 
 export function Table<T extends { id: string | number }>({
@@ -22,9 +34,33 @@ export function Table<T extends { id: string | number }>({
   emptyMessage,
   isLoading,
   rowClassName,
+  pagination,
 }: TableProps<T>) {
   const { t } = useTranslation('common')
   const empty = emptyMessage ?? t('no_records')
+
+  const [sortCol, setSortCol] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  const sorted = useMemo(() => {
+    if (!sortCol) return data
+    return [...data].sort((a, b) => {
+      const av = a[sortCol as keyof T] ?? ''
+      const bv = b[sortCol as keyof T] ?? ''
+      const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true })
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [data, sortCol, sortDir])
+
+  function handleSort(col: Column<T>) {
+    const key = String(col.sortKey ?? col.key)
+    if (sortCol === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortCol(key)
+      setSortDir('asc')
+    }
+  }
 
   if (isLoading) {
     return (
@@ -49,6 +85,9 @@ export function Table<T extends { id: string | number }>({
     )
   }
 
+  const pageStart = pagination ? pagination.skip + 1 : 0
+  const pageEnd = pagination ? Math.min(pagination.skip + pagination.limit, pagination.total) : 0
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-max divide-y divide-sw-border">
@@ -61,13 +100,32 @@ export function Table<T extends { id: string | number }>({
                   col.className ?? ''
                 }`}
               >
-                {col.header}
+                {col.sortable ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSort(col)}
+                    className="inline-flex items-center gap-1 hover:text-sw-fg transition-colors"
+                  >
+                    {col.header}
+                    {sortCol === String(col.sortKey ?? col.key) ? (
+                      sortDir === 'asc' ? (
+                        <ChevronUp className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ChevronsUpDown className="h-3 w-3 opacity-50" />
+                    )}
+                  </button>
+                ) : (
+                  col.header
+                )}
               </th>
             ))}
           </tr>
         </thead>
         <tbody className="bg-sw-surface divide-y divide-sw-border-sub">
-          {data.length === 0 ? (
+          {sorted.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
@@ -77,7 +135,7 @@ export function Table<T extends { id: string | number }>({
               </td>
             </tr>
           ) : (
-            data.map((row) => (
+            sorted.map((row) => (
               <tr
                 key={row.id}
                 className={`hover:bg-sw-hover transition-colors ${rowClassName ? rowClassName(row) : ''}`}
@@ -99,6 +157,29 @@ export function Table<T extends { id: string | number }>({
           )}
         </tbody>
       </table>
+      {pagination && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-sw-border text-sm text-sw-fg-muted">
+          <button
+            type="button"
+            disabled={pagination.skip === 0}
+            onClick={() => pagination.onPageChange(Math.max(0, pagination.skip - pagination.limit))}
+            className="btn-secondary disabled:opacity-40"
+          >
+            {t('previous')}
+          </button>
+          <span>
+            {pageStart}–{pageEnd} {t('of')} {pagination.total}
+          </span>
+          <button
+            type="button"
+            disabled={pagination.skip + pagination.limit >= pagination.total}
+            onClick={() => pagination.onPageChange(pagination.skip + pagination.limit)}
+            className="btn-secondary disabled:opacity-40"
+          >
+            {t('next')}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

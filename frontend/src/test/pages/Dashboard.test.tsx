@@ -3,7 +3,14 @@ import { http, HttpResponse } from 'msw'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, setupAuthToken } from '@/test/utils'
 import { server } from '@/mocks/server'
-import { TEST_BASE, makeUser, makeAdminUser, makeTransfer, makeInstrument } from '@/mocks/handlers'
+import {
+  TEST_BASE,
+  makeUser,
+  makeAdminUser,
+  makeTransfer,
+  makeInstrument,
+  paginated,
+} from '@/mocks/handlers'
 import { Dashboard } from '@/pages/Dashboard'
 
 function setupAuth(admin = false) {
@@ -92,7 +99,7 @@ describe('Dashboard', () => {
     setupAuth(true)
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Bruker NMR' })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'Bruker NMR' })]))
       )
     )
 
@@ -140,7 +147,7 @@ describe('Dashboard', () => {
     setupAuth(true)
     server.use(
       http.get(`${TEST_BASE}/api/instruments`, () =>
-        HttpResponse.json([makeInstrument({ name: 'Offline NMR', enabled: false })])
+        HttpResponse.json(paginated([makeInstrument({ name: 'Offline NMR', enabled: false })]))
       )
     )
 

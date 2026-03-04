@@ -10,6 +10,7 @@ import {
   makeProject,
   makeProjectMember,
   makeUser,
+  paginated,
 } from '@/mocks/handlers'
 import { Projects } from '@/pages/admin/Projects'
 
@@ -23,10 +24,12 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([
-          makeProject({ id: 'p1', name: 'Alpha Project' }),
-          makeProject({ id: 'p2', name: 'Beta Project' }),
-        ])
+        HttpResponse.json(
+          paginated([
+            makeProject({ id: 'p1', name: 'Alpha Project' }),
+            makeProject({ id: 'p2', name: 'Beta Project' }),
+          ])
+        )
       )
     )
 
@@ -103,7 +106,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'Target Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'Target Project' })]))
       )
     )
 
@@ -123,7 +126,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p-patch-id', name: 'Old Name' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p-patch-id', name: 'Old Name' })]))
       )
     )
 
@@ -158,7 +161,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'Del Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'Del Project' })]))
       )
     )
 
@@ -176,7 +179,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p-del-id', name: 'To Delete' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p-del-id', name: 'To Delete' })]))
       )
     )
 
@@ -204,7 +207,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(paginated([makeProject({ deleted_at: '2024-01-01T00:00:00Z' })]))
       )
     )
 
@@ -220,7 +223,9 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        HttpResponse.json(
+          paginated([makeProject({ id: 'p-restore-id', deleted_at: '2024-01-01T00:00:00Z' })])
+        )
       )
     )
 
@@ -245,7 +250,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([]))
     )
@@ -264,7 +269,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () =>
         HttpResponse.json([
@@ -272,7 +277,9 @@ describe('Projects admin page', () => {
         ])
       ),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'user-uuid-1', email: 'proj-member@test.com' })])
+        HttpResponse.json(
+          paginated([makeUser({ id: 'user-uuid-1', email: 'proj-member@test.com' })])
+        )
       )
     )
 
@@ -292,7 +299,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () =>
         HttpResponse.json([
@@ -304,7 +311,7 @@ describe('Projects admin page', () => {
         ])
       ),
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'group-uuid-1', name: 'Research Lab' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'group-uuid-1', name: 'Research Lab' })]))
       )
     )
 
@@ -324,7 +331,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () =>
         HttpResponse.json([
@@ -332,7 +339,7 @@ describe('Projects admin page', () => {
         ])
       ),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'user-uuid-1', email: 'member@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'user-uuid-1', email: 'member@test.com' })]))
       )
     )
 
@@ -364,7 +371,9 @@ describe('Projects admin page', () => {
         receivedUrl = request.url
         const deleted = new URL(request.url).searchParams.get('include_deleted')
         return HttpResponse.json(
-          deleted === 'true' ? [makeProject({ deleted_at: '2024-01-01T00:00:00Z' })] : []
+          deleted === 'true'
+            ? paginated([makeProject({ deleted_at: '2024-01-01T00:00:00Z' })])
+            : paginated([])
         )
       })
     )
@@ -385,7 +394,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([]))
     )
@@ -411,11 +420,11 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([])),
       http.get(`${TEST_BASE}/api/groups`, () =>
-        HttpResponse.json([makeGroup({ id: 'g1', name: 'Research Lab' })])
+        HttpResponse.json(paginated([makeGroup({ id: 'g1', name: 'Research Lab' })]))
       )
     )
 
@@ -436,11 +445,11 @@ describe('Projects admin page', () => {
     let postedBody: unknown
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([])),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'u-proj', email: 'proj@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'u-proj', email: 'proj@test.com' })]))
       ),
       http.post(`${TEST_BASE}/api/projects/:id/members`, async ({ request }) => {
         postedBody = await request.json()
@@ -509,7 +518,7 @@ describe('Projects admin page', () => {
     let mutationCalled = false
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([])),
       http.post(`${TEST_BASE}/api/projects/:id/members`, () => {
@@ -537,14 +546,14 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () =>
         HttpResponse.json([
           makeProjectMember({ id: 'pm1', member_type: 'user', member_id: 'ghost-user-id' }),
         ])
       ),
-      http.get(`${TEST_BASE}/api/admin/users`, () => HttpResponse.json([]))
+      http.get(`${TEST_BASE}/api/admin/users`, () => HttpResponse.json(paginated([])))
     )
 
     const { user } = renderWithProviders(<Projects />)
@@ -560,14 +569,14 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () =>
         HttpResponse.json([
           makeProjectMember({ id: 'pm1', member_type: 'group', member_id: 'ghost-group-id' }),
         ])
       ),
-      http.get(`${TEST_BASE}/api/groups`, () => HttpResponse.json([]))
+      http.get(`${TEST_BASE}/api/groups`, () => HttpResponse.json(paginated([])))
     )
 
     const { user } = renderWithProviders(<Projects />)
@@ -583,11 +592,11 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([])),
       http.get(`${TEST_BASE}/api/admin/users`, () =>
-        HttpResponse.json([makeUser({ id: 'u-fail', email: 'fail@test.com' })])
+        HttpResponse.json(paginated([makeUser({ id: 'u-fail', email: 'fail@test.com' })]))
       ),
       http.post(`${TEST_BASE}/api/projects/:id/members`, () =>
         HttpResponse.json({ detail: 'Member already exists' }, { status: 400 })
@@ -636,7 +645,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ description: 'Proteomics project' })])
+        HttpResponse.json(paginated([makeProject({ description: 'Proteomics project' })]))
       )
     )
 
@@ -651,7 +660,7 @@ describe('Projects admin page', () => {
     setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/projects`, () =>
-        HttpResponse.json([makeProject({ id: 'p1', name: 'My Project' })])
+        HttpResponse.json(paginated([makeProject({ id: 'p1', name: 'My Project' })]))
       ),
       http.get(`${TEST_BASE}/api/projects/:id/members`, () => HttpResponse.json([]))
     )

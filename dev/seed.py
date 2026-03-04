@@ -119,7 +119,8 @@ def create_s3_bucket(bucket: str, endpoint: str, access_key: str, secret_key: st
 
 def create_if_absent(token: str, list_path: str, create_path: str, payload: dict, label: str) -> dict:
     """Create a resource only if no existing item has the same name."""
-    existing = _request("GET", list_path, token=token)
+    response = _request("GET", list_path, token=token)
+    existing = response["items"] if isinstance(response, dict) and "items" in response else response
     for item in existing:
         if item.get("name") == payload["name"]:
             print(f"  ⟳  {label} '{payload['name']}' already exists — skipping", flush=True)
@@ -257,7 +258,9 @@ def seed(token: str) -> None:
     print("\n── Schedules ──", flush=True)
 
     def find_schedule(token: str, instrument_id: str, storage_id: str) -> dict | None:
-        for s in _request("GET", "/api/schedules", token=token):
+        resp = _request("GET", "/api/schedules", token=token)
+        schedules = resp["items"] if isinstance(resp, dict) and "items" in resp else resp
+        for s in schedules:
             if s["instrument_id"] == instrument_id and s["default_storage_location_id"] == storage_id:
                 return s
         return None
@@ -322,7 +325,8 @@ def seed(token: str) -> None:
     print("\n── Users ──", flush=True)
 
     def create_user_if_absent(token: str, email: str, password: str, display: str) -> None:
-        users = _request("GET", "/api/admin/users", token=token)
+        resp = _request("GET", "/api/admin/users", token=token)
+        users = resp["items"] if isinstance(resp, dict) and "items" in resp else resp
         if any(u["email"] == email for u in users):
             print(f"  ⟳  User '{email}' already exists — skipping", flush=True)
             return
@@ -346,7 +350,8 @@ def seed(token: str) -> None:
     create_user_if_absent(token, "em-operator@example.com",    "devpass123!", "EM operator")
     create_user_if_absent(token, "bioinformatics@example.com", "devpass123!", "Bioinformatics analyst")
 
-    all_users = _request("GET", "/api/admin/users", token=token)
+    _all_users_resp = _request("GET", "/api/admin/users", token=token)
+    all_users = _all_users_resp["items"] if isinstance(_all_users_resp, dict) and "items" in _all_users_resp else _all_users_resp
 
     def get_user_id(email: str) -> str:
         for u in all_users:
@@ -360,7 +365,8 @@ def seed(token: str) -> None:
     print("\n── Groups ──", flush=True)
 
     def add_group_member_if_absent(token: str, group_id: str, user_id: str, group_name: str) -> None:
-        members = _request("GET", f"/api/groups/{group_id}/members", token=token)
+        _members_resp = _request("GET", f"/api/groups/{group_id}/members", token=token)
+        members = _members_resp["items"] if isinstance(_members_resp, dict) and "items" in _members_resp else _members_resp
         if any(m["user_id"] == user_id for m in members):
             return
         _request("POST", f"/api/groups/{group_id}/members", body={"user_id": user_id}, token=token)
@@ -402,7 +408,8 @@ def seed(token: str) -> None:
     def add_project_member_if_absent(
         token: str, project_id: str, member_type: str, member_id: str, project_name: str
     ) -> None:
-        members = _request("GET", f"/api/projects/{project_id}/members", token=token)
+        _members_resp = _request("GET", f"/api/projects/{project_id}/members", token=token)
+        members = _members_resp["items"] if isinstance(_members_resp, dict) and "items" in _members_resp else _members_resp
         if any(m["member_id"] == member_id and m["member_type"] == member_type for m in members):
             return
         _request("POST", f"/api/projects/{project_id}/members",

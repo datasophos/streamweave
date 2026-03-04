@@ -504,4 +504,29 @@ describe('Users admin page', () => {
       expect(screen.getByText('No')).toBeInTheDocument()
     })
   })
+
+  it('search box filters users by email', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/admin/users`, () =>
+        HttpResponse.json(
+          paginated([
+            makeUser({ id: 'u1', email: 'alice@test.com' }),
+            makeUser({ id: 'u2', email: 'bob@test.com' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<Users />)
+    await waitFor(() => {
+      expect(screen.getByText('alice@test.com')).toBeInTheDocument()
+      expect(screen.getByText('bob@test.com')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'alice')
+
+    expect(screen.getByText('alice@test.com')).toBeInTheDocument()
+    expect(screen.queryByText('bob@test.com')).not.toBeInTheDocument()
+  })
 })

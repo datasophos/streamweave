@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { FolderKanban } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { FolderKanban, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -211,6 +211,21 @@ export function Projects() {
   }, [showDeleted])
 
   const { data: projectsResponse, isLoading } = useProjects({ includeDeleted: showDeleted, skip })
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    const projects = projectsResponse?.items ?? []
+    if (!search.trim()) return projects
+    const q = search.toLowerCase()
+    return projects.filter((row) =>
+      ['name', 'description'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [projectsResponse, search])
+
   const createProject = useCreateProject()
   const updateProject = useUpdateProject()
   const deleteProject = useDeleteProject()
@@ -280,12 +295,24 @@ export function Projects() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
-          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        <div className="px-4 py-3 border-b border-sw-border flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder={tc('search_placeholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="ml-auto">
+            <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+          </div>
         </div>
         <Table
           columns={columns}
-          data={projectsResponse?.items ?? []}
+          data={filtered}
           isLoading={isLoading}
           emptyMessage={t('no_projects')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}

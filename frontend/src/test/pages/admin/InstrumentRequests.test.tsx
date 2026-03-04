@@ -414,4 +414,29 @@ describe('InstrumentRequests admin page', () => {
       expect(screen.getByText(/failed to submit review/i)).toBeInTheDocument()
     })
   })
+
+  it('search box filters requests by instrument name', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instrument-requests`, () =>
+        HttpResponse.json(
+          paginated([
+            makeInstrumentRequest({ id: 'r1', name: 'HPLC Unit', location: 'Lab 1A' }),
+            makeInstrumentRequest({ id: 'r2', name: 'NMR Spectrometer', location: 'Lab 2B' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<InstrumentRequests />)
+    await waitFor(() => {
+      expect(screen.getByText('HPLC Unit')).toBeInTheDocument()
+      expect(screen.getByText('NMR Spectrometer')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'hplc')
+
+    expect(screen.getByText('HPLC Unit')).toBeInTheDocument()
+    expect(screen.queryByText('NMR Spectrometer')).not.toBeInTheDocument()
+  })
 })

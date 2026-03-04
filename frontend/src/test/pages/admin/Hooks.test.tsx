@@ -759,4 +759,29 @@ describe('Hooks admin page', () => {
     })
     expect(deleteRequestMade).toBe(false)
   })
+
+  it('search box filters hooks by name', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/hooks`, () =>
+        HttpResponse.json(
+          paginated([
+            makeHookConfig({ id: 'h1', name: 'Notify Slack' }),
+            makeHookConfig({ id: 'h2', name: 'Archive Files' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<Hooks />)
+    await waitFor(() => {
+      expect(screen.getByText('Notify Slack')).toBeInTheDocument()
+      expect(screen.getByText('Archive Files')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'slack')
+
+    expect(screen.getByText('Notify Slack')).toBeInTheDocument()
+    expect(screen.queryByText('Archive Files')).not.toBeInTheDocument()
+  })
 })

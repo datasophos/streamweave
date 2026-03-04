@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { CalendarClock, ExternalLink } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { CalendarClock, ExternalLink, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Table } from '@/components/Table'
@@ -161,8 +161,21 @@ export function Schedules() {
   const del = useDeleteSchedule()
   const restore = useRestoreSchedule()
 
+  const [search, setSearch] = useState('')
+
   const instMap = Object.fromEntries(instruments.map((i) => [i.id, i.name]))
   const storageMap = Object.fromEntries(storageLocations.map((s) => [s.id, s.name]))
+
+  const filtered = useMemo(() => {
+    const schedules = schedulesResponse?.items ?? []
+    if (!search.trim()) return schedules
+    const q = search.toLowerCase()
+    return schedules.filter(
+      (row) =>
+        row.cron_expression.toLowerCase().includes(q) ||
+        (instMap[row.instrument_id] ?? '').toLowerCase().includes(q)
+    )
+  }, [schedulesResponse, search, instMap])
 
   const columns = [
     {
@@ -256,12 +269,24 @@ export function Schedules() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
-          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        <div className="px-4 py-3 border-b border-sw-border flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder={tc('search_placeholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="ml-auto">
+            <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+          </div>
         </div>
         <Table
           columns={columns}
-          data={schedulesResponse?.items ?? []}
+          data={filtered}
           isLoading={isLoading}
           emptyMessage={t('no_schedules')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}

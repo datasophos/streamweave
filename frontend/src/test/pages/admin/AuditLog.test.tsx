@@ -1,135 +1,130 @@
-import { describe, it, expect } from "vitest";
-import { http, HttpResponse } from "msw";
-import { screen, waitFor } from "@testing-library/react";
-import { renderWithProviders, setupAuthToken } from "@/test/utils";
-import { server } from "@/mocks/server";
-import { TEST_BASE, makeAdminUser } from "@/mocks/handlers";
-import { AuditLog } from "@/pages/admin/AuditLog";
+import { describe, it, expect } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { screen, waitFor } from '@testing-library/react'
+import { renderWithProviders, setupAuthToken } from '@/test/utils'
+import { server } from '@/mocks/server'
+import { TEST_BASE, makeAdminUser } from '@/mocks/handlers'
+import { AuditLog } from '@/pages/admin/AuditLog'
 
 interface AuditLogEntry {
-  id: string;
-  created_at: string;
-  actor_email: string;
-  action: string;
-  entity_type: string;
-  entity_id: string;
-  changes: Record<string, { before: unknown; after: unknown }> | null;
+  id: string
+  created_at: string
+  actor_email: string
+  action: string
+  entity_type: string
+  entity_id: string
+  changes: Record<string, { before: unknown; after: unknown }> | null
 }
 
 function makeAuditEntry(overrides: Partial<AuditLogEntry> = {}): AuditLogEntry {
   return {
-    id: "entry-uuid-1",
-    created_at: "2024-01-15T10:30:00Z",
-    actor_email: "admin@test.com",
-    action: "create",
-    entity_type: "instrument",
-    entity_id: "inst-uuid-1234-5678",
+    id: 'entry-uuid-1',
+    created_at: '2024-01-15T10:30:00Z',
+    actor_email: 'admin@test.com',
+    action: 'create',
+    entity_type: 'instrument',
+    entity_id: 'inst-uuid-1234-5678',
     changes: null,
     ...overrides,
-  };
+  }
 }
 
 function setupAdmin() {
-  setupAuthToken();
-  server.use(
-    http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeAdminUser())),
-  );
+  setupAuthToken()
+  server.use(http.get(`${TEST_BASE}/users/me`, () => HttpResponse.json(makeAdminUser())))
 }
 
-describe("AuditLog admin page", () => {
-  it("shows loading state initially", () => {
-    setupAdmin();
+describe('AuditLog admin page', () => {
+  it('shows loading state initially', () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, async () => {
-        await new Promise((r) => setTimeout(r, 200));
-        return HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 });
-      }),
-    );
+        await new Promise((r) => setTimeout(r, 200))
+        return HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      })
+    )
 
-    renderWithProviders(<AuditLog />);
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-  });
+    renderWithProviders(<AuditLog />)
+    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+  })
 
-  it("renders table headers", async () => {
-    setupAdmin();
+  it('renders table headers', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("When")).toBeInTheDocument();
-      expect(screen.getByText("Actor")).toBeInTheDocument();
-      expect(screen.getByText("Action")).toBeInTheDocument();
-      expect(screen.getByText("Entity")).toBeInTheDocument();
-      expect(screen.getByText("Entity ID")).toBeInTheDocument();
-      expect(screen.getByText("Changes")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('When')).toBeInTheDocument()
+      expect(screen.getByText('Actor')).toBeInTheDocument()
+      expect(screen.getByText('Action')).toBeInTheDocument()
+      expect(screen.getByText('Entity')).toBeInTheDocument()
+      expect(screen.getByText('Entity ID')).toBeInTheDocument()
+      expect(screen.getByText('Changes')).toBeInTheDocument()
+    })
+  })
 
   it('shows "No audit entries found." when list is empty', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText(/no audit entries found/i)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/no audit entries found/i)).toBeInTheDocument()
+    })
+  })
 
   it('shows "Failed to load audit log." on error', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
-      http.get(
-        `${TEST_BASE}/api/admin/audit-logs`,
-        () => new HttpResponse(null, { status: 500 }),
-      ),
-    );
+      http.get(`${TEST_BASE}/api/admin/audit-logs`, () => new HttpResponse(null, { status: 500 }))
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to load audit log/i)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/failed to load audit log/i)).toBeInTheDocument()
+    })
+  })
 
-  it("renders audit log entries in the table", async () => {
-    setupAdmin();
+  it('renders audit log entries in the table', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
           items: [
             makeAuditEntry({
-              actor_email: "alice@test.com",
-              action: "create",
-              entity_type: "instrument",
+              actor_email: 'alice@test.com',
+              action: 'create',
+              entity_type: 'instrument',
             }),
           ],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("alice@test.com")).toBeInTheDocument();
-      expect(screen.getAllByText("Create").length).toBeGreaterThanOrEqual(1);
-    });
-  });
+      expect(screen.getByText('alice@test.com')).toBeInTheDocument()
+      expect(screen.getAllByText('Create').length).toBeGreaterThanOrEqual(1)
+    })
+  })
 
   it('shows "—" in Changes column when changes is null', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
@@ -137,26 +132,26 @@ describe("AuditLog admin page", () => {
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("—")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('—')).toBeInTheDocument()
+    })
+  })
 
   it('shows "N fields ▼" button when changes are present', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
           items: [
             makeAuditEntry({
               changes: {
-                name: { before: "Old Name", after: "New Name" },
+                name: { before: 'Old Name', after: 'New Name' },
                 enabled: { before: true, after: false },
               },
             }),
@@ -164,395 +159,370 @@ describe("AuditLog admin page", () => {
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /2 fields/i }),
-      ).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByRole('button', { name: /2 fields/i })).toBeInTheDocument()
+    })
+  })
 
   it('expands changes when "N fields" button is clicked', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
           items: [
             makeAuditEntry({
               changes: {
-                name: { before: "Old Name", after: "New Name" },
+                name: { before: 'Old Name', after: 'New Name' },
               },
             }),
           ],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByRole("button", { name: /1 field/i }));
-    await user.click(screen.getByRole("button", { name: /1 field/i }));
+    await waitFor(() => screen.getByRole('button', { name: /1 field/i }))
+    await user.click(screen.getByRole('button', { name: /1 field/i }))
 
     await waitFor(() => {
-      expect(screen.getByText("Old Name")).toBeInTheDocument();
-      expect(screen.getByText("New Name")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('Old Name')).toBeInTheDocument()
+      expect(screen.getByText('New Name')).toBeInTheDocument()
+    })
+  })
 
-  it("collapses changes when expanded button is clicked again", async () => {
-    setupAdmin();
+  it('collapses changes when expanded button is clicked again', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
-          items: [
-            makeAuditEntry({
-              changes: { name: { before: "Old", after: "New" } },
-            }),
-          ],
+          items: [makeAuditEntry({ changes: { name: { before: 'Old', after: 'New' } } })],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByRole("button", { name: /1 field/i }));
-    await user.click(screen.getByRole("button", { name: /1 field/i }));
-    await waitFor(() => screen.getByText("Old"));
+    await waitFor(() => screen.getByRole('button', { name: /1 field/i }))
+    await user.click(screen.getByRole('button', { name: /1 field/i }))
+    await waitFor(() => screen.getByText('Old'))
 
     // Click again to collapse
-    await user.click(screen.getByRole("button", { name: /1 field/i }));
+    await user.click(screen.getByRole('button', { name: /1 field/i }))
 
     await waitFor(() => {
-      expect(screen.queryByText("Old")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByText('Old')).not.toBeInTheDocument()
+    })
+  })
 
-  it("renders entity_type with underscore replaced by space", async () => {
-    setupAdmin();
+  it('renders entity_type with underscore replaced by space', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
-          items: [makeAuditEntry({ entity_type: "storage_location" })],
+          items: [makeAuditEntry({ entity_type: 'storage_location' })],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("storage location")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('storage location')).toBeInTheDocument()
+    })
+  })
 
-  it("renders truncated entity_id", async () => {
-    setupAdmin();
+  it('renders truncated entity_id', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
-          items: [makeAuditEntry({ entity_id: "inst-uuid-1234-5678" })],
+          items: [makeAuditEntry({ entity_id: 'inst-uuid-1234-5678' })],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
       // entity_id is sliced to first 8 chars + ellipsis
-      expect(screen.getByText("inst-uui…")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('inst-uui…')).toBeInTheDocument()
+    })
+  })
 
-  it("Previous button is disabled on first page", async () => {
-    setupAdmin();
+  it('Previous button is disabled on first page', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByRole("button", { name: /previous/i }));
-    expect(screen.getByRole("button", { name: /previous/i })).toBeDisabled();
-  });
+    await waitFor(() => screen.getByRole('button', { name: /previous/i }))
+    expect(screen.getByRole('button', { name: /previous/i })).toBeDisabled()
+  })
 
-  it("Next button is disabled when fewer than 50 entries returned", async () => {
-    setupAdmin();
+  it('Next button is disabled when fewer than 50 entries returned', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({
-          items: [makeAuditEntry()],
-          total: 1,
-          skip: 0,
-          limit: 50,
-        }),
-      ),
-    );
+        HttpResponse.json({ items: [makeAuditEntry()], total: 1, skip: 0, limit: 50 })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByRole("button", { name: /next/i }));
-    expect(screen.getByRole("button", { name: /next/i })).toBeDisabled();
-  });
+    await waitFor(() => screen.getByRole('button', { name: /next/i }))
+    expect(screen.getByRole('button', { name: /next/i })).toBeDisabled()
+  })
 
-  it("Next button is enabled when 50 entries are returned", async () => {
-    setupAdmin();
-    const entries = Array.from({ length: 50 }, (_, i) =>
-      makeAuditEntry({ id: `entry-${i}` }),
-    );
+  it('Next button is enabled when 50 entries are returned', async () => {
+    setupAdmin()
+    const entries = Array.from({ length: 50 }, (_, i) => makeAuditEntry({ id: `entry-${i}` }))
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: entries, total: 100, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: entries, total: 100, skip: 0, limit: 50 })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByRole("button", { name: /next/i }));
-    expect(screen.getByRole("button", { name: /next/i })).not.toBeDisabled();
-  });
+    await waitFor(() => screen.getByRole('button', { name: /next/i }))
+    expect(screen.getByRole('button', { name: /next/i })).not.toBeDisabled()
+  })
 
-  it("clicking Next increments page number", async () => {
-    setupAdmin();
-    const entries = Array.from({ length: 50 }, (_, i) =>
-      makeAuditEntry({ id: `entry-${i}` }),
-    );
+  it('clicking Next increments page number', async () => {
+    setupAdmin()
+    const entries = Array.from({ length: 50 }, (_, i) => makeAuditEntry({ id: `entry-${i}` }))
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: entries, total: 100, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: entries, total: 100, skip: 0, limit: 50 })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByText("Page 1"));
-    await user.click(screen.getByRole("button", { name: /next/i }));
+    await waitFor(() => screen.getByText('Page 1'))
+    await user.click(screen.getByRole('button', { name: /next/i }))
 
     await waitFor(() => {
-      expect(screen.getByText("Page 2")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('Page 2')).toBeInTheDocument()
+    })
+  })
 
-  it("clicking Previous decrements page number", async () => {
-    setupAdmin();
-    const entries = Array.from({ length: 50 }, (_, i) =>
-      makeAuditEntry({ id: `entry-${i}` }),
-    );
+  it('clicking Previous decrements page number', async () => {
+    setupAdmin()
+    const entries = Array.from({ length: 50 }, (_, i) => makeAuditEntry({ id: `entry-${i}` }))
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: entries, total: 100, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: entries, total: 100, skip: 0, limit: 50 })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByText("Page 1"));
-    await user.click(screen.getByRole("button", { name: /next/i }));
-    await waitFor(() => screen.getByText("Page 2"));
+    await waitFor(() => screen.getByText('Page 1'))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await waitFor(() => screen.getByText('Page 2'))
 
-    await user.click(screen.getByRole("button", { name: /previous/i }));
+    await user.click(screen.getByRole('button', { name: /previous/i }))
 
     await waitFor(() => {
-      expect(screen.getByText("Page 1")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('Page 1')).toBeInTheDocument()
+    })
+  })
 
-  it("shows Clear filters button when entity_type filter is set", async () => {
-    setupAdmin();
+  it('shows Clear filters button when entity_type filter is set', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getAllByRole("combobox"));
+    await waitFor(() => screen.getAllByRole('combobox'))
 
-    const selects = screen.getAllByRole("combobox");
+    const selects = screen.getAllByRole('combobox')
     // First combobox is entity_type
-    await user.selectOptions(selects[0], "instrument");
+    await user.selectOptions(selects[0], 'instrument')
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /clear filters/i }),
-      ).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument()
+    })
+  })
 
-  it("shows Clear filters button when action filter is set", async () => {
-    setupAdmin();
+  it('shows Clear filters button when action filter is set', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getAllByRole("combobox"));
+    await waitFor(() => screen.getAllByRole('combobox'))
 
-    const selects = screen.getAllByRole("combobox");
+    const selects = screen.getAllByRole('combobox')
     // Second combobox is action
-    await user.selectOptions(selects[1], "create");
+    await user.selectOptions(selects[1], 'create')
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /clear filters/i }),
-      ).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument()
+    })
+  })
 
-  it("Clear filters button resets both filters", async () => {
-    setupAdmin();
+  it('Clear filters button resets both filters', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
-        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 }),
-      ),
-    );
+        HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getAllByRole("combobox"));
-    const selects = screen.getAllByRole("combobox");
-    await user.selectOptions(selects[0], "instrument");
+    await waitFor(() => screen.getAllByRole('combobox'))
+    const selects = screen.getAllByRole('combobox')
+    await user.selectOptions(selects[0], 'instrument')
 
-    await waitFor(() => screen.getByRole("button", { name: /clear filters/i }));
-    await user.click(screen.getByRole("button", { name: /clear filters/i }));
+    await waitFor(() => screen.getByRole('button', { name: /clear filters/i }))
+    await user.click(screen.getByRole('button', { name: /clear filters/i }))
 
     await waitFor(() => {
-      expect(
-        screen.queryByRole("button", { name: /clear filters/i }),
-      ).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByRole('button', { name: /clear filters/i })).not.toBeInTheDocument()
+    })
+  })
 
-  it("filter sends query params to API", async () => {
-    setupAdmin();
-    let capturedParams: URLSearchParams | null = null;
+  it('filter sends query params to API', async () => {
+    setupAdmin()
+    let capturedParams: URLSearchParams | null = null
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, ({ request }) => {
-        capturedParams = new URL(request.url).searchParams;
-        return HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 });
-      }),
-    );
+        capturedParams = new URL(request.url).searchParams
+        return HttpResponse.json({ items: [], total: 0, skip: 0, limit: 50 })
+      })
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getAllByRole("combobox"));
-    const selects = screen.getAllByRole("combobox");
-    await user.selectOptions(selects[0], "instrument");
+    await waitFor(() => screen.getAllByRole('combobox'))
+    const selects = screen.getAllByRole('combobox')
+    await user.selectOptions(selects[0], 'instrument')
 
     await waitFor(() => {
-      expect(capturedParams?.get("entity_type")).toBe("instrument");
-    });
-  });
+      expect(capturedParams?.get('entity_type')).toBe('instrument')
+    })
+  })
 
   it('renders "delete" action with correct label', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
-          items: [makeAuditEntry({ action: "delete" })],
+          items: [makeAuditEntry({ action: 'delete' })],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("Delete")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('Delete')).toBeInTheDocument()
+    })
+  })
 
   it('renders "restore" action with correct label', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
-          items: [makeAuditEntry({ action: "restore" })],
+          items: [makeAuditEntry({ action: 'restore' })],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("Restore")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('Restore')).toBeInTheDocument()
+    })
+  })
 
   it('shows singular "field" label for single change', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
           items: [
             makeAuditEntry({
-              changes: { name: { before: "Old", after: "New" } },
+              changes: { name: { before: 'Old', after: 'New' } },
             }),
           ],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /1 field ▼/i }),
-      ).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByRole('button', { name: /1 field ▼/i })).toBeInTheDocument()
+    })
+  })
 
-  it("renders unknown action using raw action string as fallback", async () => {
-    setupAdmin();
+  it('renders unknown action using raw action string as fallback', async () => {
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
-          items: [makeAuditEntry({ action: "archive" })],
+          items: [makeAuditEntry({ action: 'archive' })],
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    renderWithProviders(<AuditLog />);
+    renderWithProviders(<AuditLog />)
 
     await waitFor(() => {
-      expect(screen.getByText("archive")).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText('archive')).toBeInTheDocument()
+    })
+  })
 
   it('shows null before/after as "—" in expanded changes', async () => {
-    setupAdmin();
+    setupAdmin()
     server.use(
       http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
         HttpResponse.json({
@@ -564,19 +534,47 @@ describe("AuditLog admin page", () => {
           total: 1,
           skip: 0,
           limit: 50,
-        }),
-      ),
-    );
+        })
+      )
+    )
 
-    const { user } = renderWithProviders(<AuditLog />);
+    const { user } = renderWithProviders(<AuditLog />)
 
-    await waitFor(() => screen.getByRole("button", { name: /1 field/i }));
-    await user.click(screen.getByRole("button", { name: /1 field/i }));
+    await waitFor(() => screen.getByRole('button', { name: /1 field/i }))
+    await user.click(screen.getByRole('button', { name: /1 field/i }))
 
     await waitFor(() => {
       // Two "—" elements: one for before, one for after
-      const dashes = screen.getAllByText("—");
-      expect(dashes.length).toBeGreaterThanOrEqual(2);
-    });
-  });
-});
+      const dashes = screen.getAllByText('—')
+      expect(dashes.length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
+  it('search box filters audit entries by actor email', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/admin/audit-logs`, () =>
+        HttpResponse.json({
+          items: [
+            makeAuditEntry({ id: 'e1', actor_email: 'alice@test.com', entity_id: 'uuid-aaaa' }),
+            makeAuditEntry({ id: 'e2', actor_email: 'bob@test.com', entity_id: 'uuid-bbbb' }),
+          ],
+          total: 2,
+          skip: 0,
+          limit: 50,
+        })
+      )
+    )
+
+    const { user } = renderWithProviders(<AuditLog />)
+    await waitFor(() => {
+      expect(screen.getByText('alice@test.com')).toBeInTheDocument()
+      expect(screen.getByText('bob@test.com')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'alice')
+
+    expect(screen.getByText('alice@test.com')).toBeInTheDocument()
+    expect(screen.queryByText('bob@test.com')).not.toBeInTheDocument()
+  })
+})

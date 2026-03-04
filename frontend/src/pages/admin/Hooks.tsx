@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Webhook } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Search, Webhook } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Tooltip } from '@/components/Tooltip'
@@ -239,6 +239,21 @@ export function Hooks() {
   const { data: hooksResponse, isLoading } = useHookConfigs({ includeDeleted: showDeleted, skip })
   const { data: instResp } = useInstruments({ limit: 500 })
   const instruments = instResp?.items ?? []
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    const hooks = hooksResponse?.items ?? []
+    if (!search.trim()) return hooks
+    const q = search.toLowerCase()
+    return hooks.filter((row) =>
+      ['name', 'description'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [hooksResponse, search])
+
   const create = useCreateHookConfig()
   const update = useUpdateHookConfig()
   const del = useDeleteHookConfig()
@@ -320,12 +335,24 @@ export function Hooks() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
-          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        <div className="px-4 py-3 border-b border-sw-border flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder={tc('search_placeholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="ml-auto">
+            <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+          </div>
         </div>
         <Table
           columns={columns}
-          data={hooksResponse?.items ?? []}
+          data={filtered}
           isLoading={isLoading}
           emptyMessage={t('no_hooks')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}

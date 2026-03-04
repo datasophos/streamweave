@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ScrollText } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ScrollText, Search } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/components/PageHeader'
 import { auditApi } from '@/api/client'
@@ -65,6 +65,8 @@ export function AuditLog() {
   const [entityType, setEntityType] = useState('')
   const [action, setAction] = useState('')
   const [skip, setSkip] = useState(0)
+  const [search, setSearch] = useState('')
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['audit-logs', entityType, action, skip],
     queryFn: async () => {
@@ -78,7 +80,18 @@ export function AuditLog() {
     },
   })
 
-  const entries = data?.items ?? []
+  const entries = useMemo(() => {
+    const base = data?.items ?? []
+    if (!search.trim()) return base
+    const q = search.toLowerCase()
+    return base.filter((row) =>
+      ['actor_email', 'entity_id', 'entity_type'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [data, search])
 
   return (
     <div>
@@ -90,6 +103,16 @@ export function AuditLog() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+          <input
+            type="search"
+            className="input pl-9"
+            placeholder="Search…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
         <select
           value={entityType}
           onChange={(e) => {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, Search } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { useInstrumentRequests, useReviewInstrumentRequest } from '@/hooks/useInstrumentRequests'
 import type { InstrumentRequestRecord } from '@/api/types'
@@ -172,11 +172,21 @@ export function InstrumentRequests() {
   const { data: requestsResponse, isLoading, isError } = useInstrumentRequests(skip)
   const [viewing, setViewing] = useState<InstrumentRequestRecord | null>(null)
   const [filter, setFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
 
   const filtered = useMemo(() => {
     const requests = requestsResponse?.items ?? []
-    return filter === 'all' ? requests : requests.filter((r) => r.status === filter)
-  }, [requestsResponse, filter])
+    const statusFiltered = filter === 'all' ? requests : requests.filter((r) => r.status === filter)
+    if (!search.trim()) return statusFiltered
+    const q = search.toLowerCase()
+    return statusFiltered.filter((row) =>
+      ['name', 'location', 'requester_email'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [requestsResponse, filter, search])
 
   return (
     <div>
@@ -190,6 +200,16 @@ export function InstrumentRequests() {
 
       <div className="card">
         <div className="flex items-center gap-3 mb-4">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder="Search…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
           <label className="label mb-0">Filter:</label>
           <select className="input w-36" value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="all">All</option>

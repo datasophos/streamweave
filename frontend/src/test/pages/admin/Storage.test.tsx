@@ -838,4 +838,29 @@ describe('Storage admin page', () => {
       expect(config?.mount_options).toBe('rw,noatime')
     })
   })
+
+  it('search box filters storage locations by name', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json(
+          paginated([
+            makeStorageLocation({ id: 's1', name: 'NAS Archive', base_path: '/nas/data' }),
+            makeStorageLocation({ id: 's2', name: 'S3 Bucket', base_path: '/s3/data' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<Storage />)
+    await waitFor(() => {
+      expect(screen.getByText('NAS Archive')).toBeInTheDocument()
+      expect(screen.getByText('S3 Bucket')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'nas')
+
+    expect(screen.getByText('NAS Archive')).toBeInTheDocument()
+    expect(screen.queryByText('S3 Bucket')).not.toBeInTheDocument()
+  })
 })

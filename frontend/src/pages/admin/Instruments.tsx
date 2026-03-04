@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Eye, EyeOff, KeyRound, Microscope } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Eye, EyeOff, KeyRound, Microscope, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Tooltip } from '@/components/Tooltip'
@@ -431,6 +431,8 @@ export function Instruments() {
   const close = () => setModal({ kind: 'none' })
   const [showDeletedInst, setShowDeletedInst] = useState(false)
   const [showDeletedSA, setShowDeletedSA] = useState(false)
+  const [instrSearch, setInstrSearch] = useState('')
+  const [saSearch, setSaSearch] = useState('')
   const [instrSkip, setInstrSkip] = useState(0)
 
   useEffect(() => {
@@ -442,7 +444,31 @@ export function Instruments() {
     skip: instrSkip,
   })
   const { data: serviceAccounts = [] } = useServiceAccounts(showDeletedSA)
-  const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
+
+  const filteredInstruments = useMemo(() => {
+    const instruments = instrResponse?.items ?? []
+    if (!instrSearch.trim()) return instruments
+    const q = instrSearch.toLowerCase()
+    return instruments.filter((row) =>
+      ['name', 'description', 'location', 'cifs_host', 'cifs_share'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [instrResponse, instrSearch])
+
+  const filteredSAs = useMemo(() => {
+    if (!saSearch.trim()) return serviceAccounts
+    const q = saSearch.toLowerCase()
+    return serviceAccounts.filter((row) =>
+      ['name', 'username', 'domain'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [serviceAccounts, saSearch])
   // For the service account selector in the instrument form, always fetch active only
   const { data: activeSAs = [] } = useServiceAccounts(false)
 
@@ -454,6 +480,8 @@ export function Instruments() {
   const updateSA = useUpdateServiceAccount()
   const deleteSA = useDeleteServiceAccount()
   const restoreSA = useRestoreServiceAccount()
+
+  const saMap = Object.fromEntries(serviceAccounts.map((sa) => [sa.id, sa]))
 
   const instrumentColumns = [
     { header: tc('name'), key: 'name' as const, sortable: true },
@@ -565,6 +593,16 @@ export function Instruments() {
             <Microscope size={16} className="text-sw-brand" />
             {t('instruments_section')}
           </h2>
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder={tc('search_placeholder')}
+              value={instrSearch}
+              onChange={(e) => setInstrSearch(e.target.value)}
+            />
+          </div>
           <div className="ml-auto">
             <Toggle
               checked={showDeletedInst}
@@ -575,7 +613,7 @@ export function Instruments() {
         </div>
         <Table
           columns={instrumentColumns}
-          data={instrResponse?.items ?? []}
+          data={filteredInstruments}
           isLoading={loadingInstruments}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
           pagination={
@@ -597,6 +635,16 @@ export function Instruments() {
             <KeyRound size={16} className="text-sw-brand" />
             {t('service_accounts_section')}
           </h2>
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder={tc('search_placeholder')}
+              value={saSearch}
+              onChange={(e) => setSaSearch(e.target.value)}
+            />
+          </div>
           <div className="ml-auto">
             <Toggle
               checked={showDeletedSA}
@@ -607,7 +655,7 @@ export function Instruments() {
         </div>
         <Table
           columns={saColumns}
-          data={serviceAccounts}
+          data={filteredSAs}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}
         />
       </div>

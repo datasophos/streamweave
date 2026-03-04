@@ -678,4 +678,29 @@ describe('Projects admin page', () => {
       ).not.toBeInTheDocument()
     })
   })
+
+  it('search box filters projects by name', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/projects`, () =>
+        HttpResponse.json(
+          paginated([
+            makeProject({ id: 'p1', name: 'Alpha Project' }),
+            makeProject({ id: 'p2', name: 'Beta Project' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<Projects />)
+    await waitFor(() => {
+      expect(screen.getByText('Alpha Project')).toBeInTheDocument()
+      expect(screen.getByText('Beta Project')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'alpha')
+
+    expect(screen.getByText('Alpha Project')).toBeInTheDocument()
+    expect(screen.queryByText('Beta Project')).not.toBeInTheDocument()
+  })
 })

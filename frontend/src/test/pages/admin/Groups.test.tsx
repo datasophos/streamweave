@@ -19,6 +19,31 @@ function setupAdmin() {
 }
 
 describe('Groups admin page', () => {
+  it('search box filters groups by name', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/groups`, () =>
+        HttpResponse.json(
+          paginated([
+            makeGroup({ id: 'g1', name: 'Lab Alpha' }),
+            makeGroup({ id: 'g2', name: 'Lab Beta' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<Groups />)
+    await waitFor(() => {
+      expect(screen.getByText('Lab Alpha')).toBeInTheDocument()
+      expect(screen.getByText('Lab Beta')).toBeInTheDocument()
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), 'alpha')
+
+    expect(screen.getByText('Lab Alpha')).toBeInTheDocument()
+    expect(screen.queryByText('Lab Beta')).not.toBeInTheDocument()
+  })
+
   it('renders groups in table', async () => {
     setupAdmin()
     server.use(

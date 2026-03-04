@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { HardDrive } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { HardDrive, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/PageHeader'
 import { Tooltip } from '@/components/Tooltip'
@@ -391,6 +391,21 @@ export function Storage() {
     includeDeleted: showDeleted,
     skip,
   })
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    const locations = locationsResponse?.items ?? []
+    if (!search.trim()) return locations
+    const q = search.toLowerCase()
+    return locations.filter((row) =>
+      ['name', 'base_path'].some((k) =>
+        String(row[k as keyof typeof row] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
+    )
+  }, [locationsResponse, search])
+
   const create = useCreateStorageLocation()
   const update = useUpdateStorageLocation()
   const del = useDeleteStorageLocation()
@@ -485,12 +500,24 @@ export function Storage() {
       />
 
       <div className="card p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-sw-border flex justify-end">
-          <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+        <div className="px-4 py-3 border-b border-sw-border flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sw-fg-faint pointer-events-none" />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder={tc('search_placeholder')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="ml-auto">
+            <Toggle checked={showDeleted} onChange={setShowDeleted} label={tc('show_deleted')} />
+          </div>
         </div>
         <Table
           columns={columns}
-          data={locationsResponse?.items ?? []}
+          data={filtered}
           isLoading={isLoading}
           emptyMessage={t('no_locations')}
           rowClassName={(row) => (row.deleted_at ? 'opacity-50' : '')}

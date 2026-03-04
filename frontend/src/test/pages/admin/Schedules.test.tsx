@@ -514,4 +514,33 @@ describe('Schedules admin page', () => {
       expect(screen.getByText('Disabled')).toBeInTheDocument()
     })
   })
+
+  it('search box filters schedules by cron expression', async () => {
+    setupAdmin()
+    server.use(
+      http.get(`${TEST_BASE}/api/instruments`, () =>
+        HttpResponse.json(paginated([makeInstrument({ id: 'inst-uuid-1', name: 'Bruker NMR' })]))
+      ),
+      http.get(`${TEST_BASE}/api/storage-locations`, () =>
+        HttpResponse.json(paginated([makeStorageLocation({ id: 'storage-uuid-1' })]))
+      ),
+      http.get(`${TEST_BASE}/api/schedules`, () =>
+        HttpResponse.json(
+          paginated([
+            makeSchedule({ id: 's1', cron_expression: '0 * * * *' }),
+            makeSchedule({ id: 's2', cron_expression: '0 0 * * *' }),
+          ])
+        )
+      )
+    )
+
+    const { user } = renderWithProviders(<Schedules />)
+    await waitFor(() => {
+      expect(screen.getAllByText(/0 \* \* \* \*|0 0 \* \* \*/).length).toBeGreaterThan(0)
+    })
+
+    await user.type(screen.getByPlaceholderText(/search/i), '0 0')
+
+    expect(screen.queryByText(/^0 \* \* \* \*$/)).not.toBeInTheDocument()
+  })
 })
